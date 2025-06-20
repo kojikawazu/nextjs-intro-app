@@ -44,10 +44,6 @@ resource "google_cloud_run_service" "nextjs_intro_ai_app_service" {
           value = var.gcs_json_path
         }
         env {
-          name  = "GOOGLE_APPLICATION_CREDENTIALS"
-          value = var.google_application_credentials
-        }
-        env {
           name  = "RESEND_API_KEY"
           value = var.resend_api_key
         }
@@ -66,6 +62,10 @@ resource "google_cloud_run_service" "nextjs_intro_ai_app_service" {
         env {
           name  = "NEXT_TELEMETRY_DISABLED"
           value = var.next_telemetry_disabled
+        }
+        env {
+          name  = "GOOGLE_CLOUD_PROJECT_ID"
+          value = var.gcp_project_id
         }
       }
       service_account_name = google_service_account.cloud_run_sa.email
