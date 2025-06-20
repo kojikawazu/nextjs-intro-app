@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-    title: 'TechProfile Pro - koji kawazu',
-    description: 'フリーランスエンジニア koji kawazu のポートフォリオサイト',
+    title: 'TechProfile Pro - フリーランスエンジニア',
+    description: 'フリーランスエンジニアのポートフォリオサイト',
     keywords: [
-        'koji kawazu',
+        'フリーランスエンジニア',
         'フリーランスエンジニア',
         'Java',
         'TypeScript',
@@ -13,20 +13,20 @@ export const metadata: Metadata = {
         'バックエンド開発',
         'システム開発',
     ],
-    authors: [{ name: 'koji kawazu' }],
-    creator: 'koji kawazu',
+    authors: [{ name: 'フリーランスエンジニア' }],
+    creator: 'フリーランスエンジニア',
     openGraph: {
         type: 'website',
         locale: 'ja_JP',
         url: 'https://your-domain.com',
-        title: 'TechProfile Pro - koji kawazu',
-        description: 'フリーランスエンジニア koji kawazu のポートフォリオサイト',
+        title: 'TechProfile Pro - フリーランスエンジニア',
+        description: 'フリーランスエンジニアのポートフォリオサイト',
         siteName: 'TechProfile Pro',
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'TechProfile Pro - koji kawazu',
-        description: 'フリーランスエンジニア koji kawazu のポートフォリオサイト',
+        title: 'TechProfile Pro - フリーランスエンジニア',
+        description: 'フリーランスエンジニアのポートフォリオサイト',
     },
     robots: {
         index: true,

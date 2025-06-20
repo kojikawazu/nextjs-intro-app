@@ -1,6 +1,6 @@
 # TechProfile Pro - Portfolio Site
 
-koji kawazu のポートフォリオサイト
+フリーランスエンジニアのポートフォリオサイト
 
 ## 🚀 技術スタック
 
@@ -151,9 +151,9 @@ npx vercel
 
 ## 👤 作成者
 
-**koji kawazu**
+**フリーランスエンジニア**
 
-- GitHub: [@kojikawazu](https://github.com/kojikawazu)
+- GitHub: [@username](https://github.com/username)
 - X: [@your_twitter](https://twitter.com/home?lang=ja)
 - Zenn: [kou_kawa](https://zenn.dev/kou_kawa)
 - Qiita: [kou_kk](https://qiita.com/kou_kk)
