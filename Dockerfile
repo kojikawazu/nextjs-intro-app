@@ -39,6 +39,8 @@ COPY --from=builder /app/package.json ./package.json
 # 環境変数
 ENV NODE_ENV=production
 ENV PORT=8080
+# Ensure GOOGLE_APPLICATION_CREDENTIALS is not set to use ADC
+ENV GOOGLE_APPLICATION_CREDENTIALS=""
 
 # ポートを開放
 EXPOSE 8080
