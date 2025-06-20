@@ -50,8 +50,7 @@ jobs:
                     --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.REPO_NAME }}/${{ secrets.APP_NAME }} \
                     --region ${{ secrets.GCP_REGION }} \
                     --platform managed \
-                    --allow-unauthenticated \
-                    --service-account=${{ secrets.GCP_CLOUD_RUN_SERVICE_ACCOUNT_KEY_NAME }}
+                    --allow-unauthenticated
 
             - name: Cleanup old images
               run: |
