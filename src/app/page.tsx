@@ -1,14 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/organisms/Header';
 import { ContactForm } from '@/components/organisms/ContactForm';
 import { SocialLinks } from '@/components/molecules/SocialLinks';
 import { SkillCard } from '@/components/molecules/SkillCard';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { Button } from '@/components/atoms/Button';
-import { getPortfolioDataSync } from '@/lib/data';
+import { PortfolioData } from '@/types/portfolio';
 
 function formatCareerPeriod(start: string, end: string): string {
     const startDate = new Date(start);
@@ -30,8 +30,50 @@ const INITIAL_SKILLS_COUNT = 9;
 const SKILLS_INCREMENT = 6;
 
 export default function HomePage() {
-    const portfolioData = getPortfolioDataSync();
+    const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
     const [visibleSkillsCount, setVisibleSkillsCount] = useState(INITIAL_SKILLS_COUNT);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/portfolio');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch portfolio data');
+                }
+                const data = await response.json();
+                setPortfolioData(data);
+            } catch (error) {
+                console.error('Error fetching portfolio data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!portfolioData) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 mb-4">Failed to load portfolio data</p>
+                    <Button onClick={() => window.location.reload()}>Reload Page</Button>
+                </div>
+            </div>
+        );
+    }
 
     const navItems = [
         { name: portfolioData.navbar_data.about_name, href: '#about' },
