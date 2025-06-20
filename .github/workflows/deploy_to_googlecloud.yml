@@ -1,0 +1,69 @@
+name: Deploy to Cloud Run
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '.github/**'
+            - 'src/**'
+            - 'Dockerfile'
+            - 'docker-compose.yml'
+            - 'next.config.mjs'
+            - 'package-lock.json'
+            - 'package.json'
+            - 'playwright.config.ts'
+            - 'postcss.config.js'
+            - 'tailwind.config.js'
+            - 'tsconfig.json'
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Authenticate with Google Cloud
+              uses: google-github-actions/auth@v1
+              with:
+                  credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+            - name: Authenticate Docker with GCR
+              run: |
+                  gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+            - name: Setup Google Cloud SDK
+              uses: google-github-actions/setup-gcloud@v1
+              with:
+                  project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+            - name: Build and push Docker image
+              run: |
+                  docker build -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.REPO_NAME }}/${{ secrets.APP_NAME }} .
+                  docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.REPO_NAME }}/${{ secrets.APP_NAME }}
+
+            - name: Deploy to Cloud Run
+              run: |
+                  gcloud run deploy ${{ secrets.GCP_CLOUD_RUN_SERVICE_NAME }} \
+                    --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.REPO_NAME }}/${{ secrets.APP_NAME }} \
+                    --region ${{ secrets.GCP_REGION }} \
+                    --platform managed \
+                    --allow-unauthenticated \
+                    --service-account=${{ secrets.GCP_CLOUD_RUN_SERVICE_ACCOUNT_KEY_NAME }}
+
+            - name: Cleanup old images
+              run: |
+                  IMAGE_NAME="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.REPO_NAME }}/${{ secrets.APP_NAME }}"
+                  
+                  # 最新5つのタグを取得
+                  KEEP_IMAGES=$(gcloud artifacts docker images list ${IMAGE_NAME} --format="value(DIGEST)" --sort-by="~UPDATE_TIME" | head -n 5)
+
+                  # すべてのタグを取得し、最新5つを除外したものを削除
+                  gcloud artifacts docker images list ${IMAGE_NAME} --format="value(DIGEST)" --sort-by="~UPDATE_TIME" | tail -n +6 | while read -r DIGEST; do
+                      if [[ ! -z "${DIGEST}" ]]; then
+                          echo "Deleting old image: ${IMAGE_NAME}:${DIGEST}"
+                          gcloud artifacts docker images delete "$IMAGE_NAME@$DIGEST" --quiet
+                      fi
+                  done
