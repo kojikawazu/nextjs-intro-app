@@ -2,9 +2,16 @@ import { Storage } from '@google-cloud/storage';
 
 // Google Cloud Storage configuration
 const storage = new Storage({
-    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    // Alternative: Use service account key JSON for production
+    // In Cloud Run, use Application Default Credentials (ADC)
+    // No explicit credentials needed when running on Google Cloud
+    ...(process.env.GOOGLE_CLOUD_PROJECT_ID && {
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    }),
+    // Only use explicit credentials in development or if ADC is not available
+    ...(process.env.NODE_ENV === 'development' && process.env.GOOGLE_APPLICATION_CREDENTIALS && {
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+    }),
+    // Alternative: Use service account key JSON for non-GCP environments
     ...(process.env.GOOGLE_CLOUD_PRIVATE_KEY && {
         credentials: {
             private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY.replace(/\\n/g, '\n'),
