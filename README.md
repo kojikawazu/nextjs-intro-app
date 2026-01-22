@@ -1,6 +1,6 @@
 # TechProfile Pro - Portfolio Site
 
-フリーランスエンジニアのポートフォリオサイト
+ソフトウェアエンジニアのポートフォリオサイト
 
 ## 🚀 技術スタック
 
@@ -116,11 +116,7 @@ npm run type-check # TypeScript型チェック
 - ✅ アクセシビリティ対応
 
 ### 今後の拡張予定
-
-- 📧 メール送信機能
-- 🌐 Cloud Run デプロイ
-- 🗄️ Cloud Storage データ取得
-- 🏗️ Terraform インフラ管理
+- 🗄️ データ更新
 
 ## 🚀 デプロイ
 
@@ -149,11 +145,3 @@ npx vercel
 
 このプロジェクトは MIT ライセンスの下で公開されています。
 
-## 👤 作成者
-
-**フリーランスエンジニア**
-
-- GitHub: [@username](https://github.com/username)
-- X: [@your_twitter](https://twitter.com/home?lang=ja)
-- Zenn: [kou_kawa](https://zenn.dev/kou_kawa)
-- Qiita: [kou_kk](https://qiita.com/kou_kk)
