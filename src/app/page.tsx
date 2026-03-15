@@ -9,10 +9,11 @@ import { SkillCard } from '@/components/molecules/SkillCard';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { Button } from '@/components/atoms/Button';
 import { PortfolioData } from '@/types/portfolio';
+import { toDateString } from '@/lib/costom-date';
 
 function formatCareerPeriod(start: string, end: string): string {
-    const startDate = new Date(start);
-    const endDate = end === 'now' ? new Date() : new Date(end);
+    const startDate = new Date(toDateString(start));
+    const endDate = end === 'now' ? new Date() : new Date(toDateString(end));
 
     const startYear = startDate.getFullYear();
     const startMonth = startDate.getMonth() + 1;
