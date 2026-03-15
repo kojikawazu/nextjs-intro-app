@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '@/components/organisms/Header';
 import { ContactForm } from '@/components/organisms/ContactForm';
 import { SocialLinks } from '@/components/molecules/SocialLinks';
@@ -33,6 +33,7 @@ const SKILLS_INCREMENT = 6;
 export default function HomePage() {
     const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
     const [visibleSkillsCount, setVisibleSkillsCount] = useState(INITIAL_SKILLS_COUNT);
+    const prevVisibleCountRef = useRef(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -91,6 +92,7 @@ export default function HomePage() {
     };
 
     const showMoreSkills = () => {
+        prevVisibleCountRef.current = visibleSkillsCount;
         setVisibleSkillsCount((prev) => prev + SKILLS_INCREMENT);
     };
 
@@ -229,16 +231,23 @@ export default function HomePage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {visibleSkills.map((skill, index) => (
-                            <SkillCard
-                                key={index}
-                                name={skill.skills_card_name}
-                                description={skill.skills_card_contents}
-                                iconUrl={skill.skills_card_icon}
-                                className="animate-fade-in-up"
-                                style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
-                            />
-                        ))}
+                        {visibleSkills.map((skill, index) => {
+                            const isNew = index >= prevVisibleCountRef.current;
+                            return (
+                                <SkillCard
+                                    key={index}
+                                    name={skill.skills_card_name}
+                                    description={skill.skills_card_contents}
+                                    iconUrl={skill.skills_card_icon}
+                                    className={isNew ? 'animate-fade-in-up' : ''}
+                                    style={
+                                        isNew
+                                            ? ({ animationDelay: `${(index - prevVisibleCountRef.current) * 0.1}s` } as React.CSSProperties)
+                                            : undefined
+                                    }
+                                />
+                            );
+                        })}
                     </div>
 
                     <div className="text-center mt-8">
