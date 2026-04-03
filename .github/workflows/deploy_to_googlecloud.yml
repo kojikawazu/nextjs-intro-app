@@ -10,7 +10,7 @@ on:
             - 'Dockerfile'
             - 'docker-compose.yml'
             - 'next.config.mjs'
-            - 'package-lock.json'
+            - 'pnpm-lock.yaml'
             - 'package.json'
             - 'playwright.config.ts'
             - 'postcss.config.js'

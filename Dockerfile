@@ -6,17 +6,20 @@ FROM node:18-alpine AS builder
 # 作業ディレクトリを設定
 WORKDIR /app
 
-# package.json と package-lock.json をコピー
-COPY package*.json ./
+# pnpm を有効化
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
+# package.json と pnpm-lock.yaml をコピー
+COPY package.json pnpm-lock.yaml ./
 
 # 依存関係をインストール
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # プロジェクトのソースコードをコピー
 COPY . .
 
 # ビルド
-RUN npm run build
+RUN pnpm run build
 
 # =======================================================================
 # 実行フェーズ
@@ -46,6 +49,6 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=""
 EXPOSE 8080
 
 # 実行コマンド
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]
 
 # =======================================================================

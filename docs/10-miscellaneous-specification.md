@@ -82,7 +82,7 @@
 | 項目 | 要件 |
 |------|------|
 | Node.js | 18.x 以上 |
-| npm | 9.x 以上 |
+| pnpm | 9.x 以上 |
 | Git | 最新安定版 |
 | エディタ | VS Code 推奨（ESLint / Prettier 拡張機能） |
 
@@ -94,7 +94,7 @@ git clone https://github.com/kojikawazu/nextjs-intro.git
 cd nextjs-intro/nextjs-intro-app
 
 # 2. 依存パッケージのインストール
-npm install
+pnpm install
 
 # 3. 環境変数ファイルの作成
 cp .env.example .env.local  # テンプレートがある場合
@@ -126,7 +126,7 @@ cp .env.example .env.local  # テンプレートがある場合
 # ※ リポジトリには含まれていないため、自分で用意する必要がある
 
 # 開発サーバーの起動
-npm run dev
+pnpm dev
 ```
 
 ブラウザで `http://localhost:3000` にアクセスして動作確認を行う。
@@ -135,13 +135,13 @@ npm run dev
 
 | コマンド | 説明 |
 |----------|------|
-| `npm run dev` | 開発サーバー起動（ホットリロード対応） |
-| `npm run build` | 本番ビルド |
-| `npm run start` | 本番ビルドのローカル実行 |
-| `npm run lint` | ESLint によるコード静的解析 |
-| `npm run format` | Prettier によるコード自動整形 |
-| `npm run format:check` | Prettier による整形チェック（CI用） |
-| `npm run type-check` | TypeScript 型チェック（`tsc --noEmit`） |
+| `pnpm dev` | 開発サーバー起動（ホットリロード対応） |
+| `pnpm build` | 本番ビルド |
+| `pnpm start` | 本番ビルドのローカル実行 |
+| `pnpm lint` | ESLint によるコード静的解析 |
+| `pnpm format` | Prettier によるコード自動整形 |
+| `pnpm format:check` | Prettier による整形チェック（CI用） |
+| `pnpm type-check` | TypeScript 型チェック（`tsc --noEmit`） |
 
 ---
 
