@@ -82,12 +82,12 @@
 
 ```bash
 # ユニットテスト・統合テスト
-npm install -D vitest @testing-library/react @testing-library/jest-dom \
+pnpm add -D vitest @testing-library/react @testing-library/jest-dom \
   @testing-library/user-event jsdom msw @vitest/coverage-v8 @vitest/ui
 
 # E2Eテスト
-npm install -D @playwright/test
-npx playwright install
+pnpm add -D @playwright/test
+pnpm exec playwright install
 ```
 
 ### 3.2 Vitest 設定ファイル
@@ -188,7 +188,7 @@ export default defineConfig({
     { name: 'mobile-safari', use: { ...devices['iPhone 12'] } },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },

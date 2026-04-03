@@ -297,7 +297,7 @@ export const ContactFormSchema = z.object({
 
 | 改善項目 | 説明 | 実装方法 |
 |---------|------|---------|
-| 依存パッケージ監査 | 既知の脆弱性を含むパッケージの検出・更新 | `npm audit` の定期実行、Dependabot/Renovateの導入 |
+| 依存パッケージ監査 | 既知の脆弱性を含むパッケージの検出・更新 | `pnpm audit` の定期実行、Dependabot/Renovateの導入 |
 | Subresource Integrity (SRI) | 外部リソース (Google Fonts) の改ざん検知 | `next/font/google` への移行による外部リソース依存の排除 |
 | メールテンプレートのサニタイズ | HTMLメール本文に埋め込まれるユーザー入力のサニタイズ | HTMLエスケープ処理の追加 |
 

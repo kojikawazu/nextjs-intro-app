@@ -113,7 +113,7 @@
 | 項目 | 要件 |
 |------|------|
 | Node.js | >= 18.0.0 |
-| npm | >= 9.0.0（Node.js 18 に同梱） |
+| pnpm | >= 9.0.0 |
 | 対応ブラウザ | Chrome 最新, Firefox 最新, Safari 最新, Edge 最新 |
 | TypeScript ターゲット | ES5（tsconfig.json の target 設定） |
 
@@ -127,7 +127,7 @@
 nextjs-intro-app/
 ├── .next/                      # Next.js ビルド出力（git 管理外）
 ├── docs/                       # プロジェクトドキュメント
-├── node_modules/               # npm パッケージ（git 管理外）
+├── node_modules/               # pnpm パッケージ（git 管理外）
 ├── public/                     # 静的ファイル配信ディレクトリ
 ├── src/                        # アプリケーションソースコード
 │   ├── app/                    # Next.js App Router

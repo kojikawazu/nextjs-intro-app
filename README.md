@@ -13,7 +13,7 @@
 ## 📋 必要条件
 
 - Node.js 18.0.0 以上
-- npm または yarn
+- pnpm
 
 ## 🛠️ セットアップ
 
@@ -27,7 +27,7 @@
 2. **依存関係のインストール**
 
     ```bash
-    npm install
+    pnpm install
     ```
 
 3. **環境変数の設定**
@@ -93,12 +93,12 @@ src/
 ## 🔧 利用可能なスクリプト
 
 ```bash
-npm run dev        # 開発サーバー起動
-npm run build      # プロダクションビルド
-npm run start      # プロダクションサーバー起動
-npm run lint       # ESLint実行
-npm run format     # Prettier実行
-npm run type-check # TypeScript型チェック
+pnpm dev        # 開発サーバー起動
+pnpm build      # プロダクションビルド
+pnpm start      # プロダクションサーバー起動
+pnpm lint       # ESLint実行
+pnpm format     # Prettier実行
+pnpm type-check # TypeScript型チェック
 ```
 
 ## 🎯 機能
@@ -123,8 +123,8 @@ npm run type-check # TypeScript型チェック
 ### ローカルビルド
 
 ```bash
-npm run build
-npm run start
+pnpm build
+pnpm start
 ```
 
 ### Vercel（簡易デプロイ）
