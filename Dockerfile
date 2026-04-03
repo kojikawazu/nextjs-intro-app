@@ -26,6 +26,9 @@ RUN pnpm run build
 # =======================================================================
 FROM node:18-alpine
 
+# pnpm を有効化
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
 # 作業ディレクトリを設定
 WORKDIR /app
 
