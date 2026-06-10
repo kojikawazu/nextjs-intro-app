@@ -1,0 +1,142 @@
+{
+    "navbar_data": {
+        "link_title": "TechProfile Pro",
+        "about_name": "About",
+        "career_name": "Career",
+        "skills_name": "Skills",
+        "contact_name": "Contact"
+    },
+    "hero_data": {
+        "hero_img_url": "https://placehold.co/1920x1080/0f172a/38bdf8/png?text=Hero"
+    },
+    "about_data": {
+        "about_name": "Taro Yamada",
+        "about_icon_url": "https://placehold.co/96x96/1e293b/38bdf8/png?text=T",
+        "about_img_url": "https://placehold.co/400x400/1e293b/38bdf8/png?text=Profile",
+        "sns_list": [
+            {
+                "sns_name": "GitHub",
+                "sns_url": "https://github.com/",
+                "sns_img": "https://placehold.co/40x40/ffffff/000000/png?text=GH"
+            },
+            {
+                "sns_name": "X",
+                "sns_url": "https://x.com/",
+                "sns_img": "https://placehold.co/40x40/ffffff/000000/png?text=X"
+            },
+            {
+                "sns_name": "Zenn",
+                "sns_url": "https://zenn.dev/",
+                "sns_img": "https://placehold.co/40x40/ffffff/3ea8ff/png?text=Z"
+            }
+        ],
+        "about_contents": [
+            "フリーランスのソフトウェアエンジニアです。Web アプリケーションのバックエンド／フロントエンド開発を中心に活動しています。",
+            "このプロフィールはデモ用のサンプルデータです。`sample.json` を編集すると、画面の表示内容を差し替えられます。"
+        ]
+    },
+    "career_title_data": {
+        "career_title_period": "期間",
+        "career_title_member": "チーム規模",
+        "career_title_contents": "概要",
+        "career_title_stack": "技術スタック",
+        "career_title_phase": "担当フェーズ",
+        "career_title_role": "役割"
+    },
+    "career_data": [
+        {
+            "career_title": "ポートフォリオ基盤の開発",
+            "career_start": "2024年04月",
+            "career_end": "now",
+            "career_member": "1〜3名",
+            "career_contents": "Next.js 14 (App Router) を用いたポートフォリオサイトの設計・実装。GCS をデータソースとし、Cloud Run へ継続的にデプロイ。",
+            "career_skill_stack": ["Next.js", "TypeScript", "Tailwind CSS", "Google Cloud Run"],
+            "career_skill_phase": ["要件定義", "設計", "実装", "運用"],
+            "career_role": "フルスタックエンジニア"
+        },
+        {
+            "career_title": "業務系 Web アプリケーション開発",
+            "career_start": "2022年01月",
+            "career_end": "2024年03月",
+            "career_member": "5〜10名",
+            "career_contents": "業務システムのフロントエンド刷新およびバックエンド API の設計・実装を担当。",
+            "career_skill_stack": ["React", "Node.js", "PostgreSQL"],
+            "career_skill_phase": ["設計", "実装", "テスト"],
+            "career_role": "バックエンドエンジニア"
+        }
+    ],
+    "skills_data": {
+        "skills_cards": [
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=TS",
+                "skills_card_name": "TypeScript",
+                "skills_card_contents": "型安全なアプリケーション開発。フロント／バックエンド双方で利用。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Nx",
+                "skills_card_name": "Next.js",
+                "skills_card_contents": "App Router を用いた SSR / CSR ハイブリッド構成。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Re",
+                "skills_card_name": "React",
+                "skills_card_contents": "コンポーネント設計・状態管理・パフォーマンス最適化。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=TW",
+                "skills_card_name": "Tailwind CSS",
+                "skills_card_contents": "ユーティリティファーストのスタイリングとデザインシステム構築。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=No",
+                "skills_card_name": "Node.js",
+                "skills_card_contents": "REST API・バッチ処理の実装。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=PG",
+                "skills_card_name": "PostgreSQL",
+                "skills_card_contents": "スキーマ設計・クエリ最適化・インデックス設計。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=GC",
+                "skills_card_name": "Google Cloud",
+                "skills_card_contents": "Cloud Run / Cloud Storage を中心としたサーバーレス構成。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Dk",
+                "skills_card_name": "Docker",
+                "skills_card_contents": "マルチステージビルドによるコンテナ化。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=GH",
+                "skills_card_name": "GitHub Actions",
+                "skills_card_contents": "CI/CD パイプラインの構築・自動デプロイ。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Tf",
+                "skills_card_name": "Terraform",
+                "skills_card_contents": "IaC によるクラウドインフラ管理。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Zd",
+                "skills_card_name": "Zod",
+                "skills_card_contents": "スキーマバリデーションによる入力検証。"
+            },
+            {
+                "skills_card_icon": "https://placehold.co/48x48/1e293b/38bdf8/png?text=Gt",
+                "skills_card_name": "Git",
+                "skills_card_contents": "GitHub Flow に基づくバージョン管理。"
+            }
+        ],
+        "skills_more": "ほかにも幅広い技術スタックに対応しています。"
+    },
+    "contact_data": {
+        "contact_name": "Contact",
+        "contact_email": "your@email.com",
+        "contact_contents": "お仕事のご相談・ご質問はお気軽にどうぞ。",
+        "contact_btn_name": "送信する"
+    },
+    "footer_data": {
+        "copyright": "© 2024 TechProfile Pro. All rights reserved."
+    }
+}

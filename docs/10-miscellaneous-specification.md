@@ -9,6 +9,40 @@
 
 ---
 
+## 目次
+
+- [1. 用語集（Glossary）](#1-用語集glossary)
+- [2. 外部参照・ドキュメントリンク](#2-外部参照ドキュメントリンク)
+    - [2.1 フレームワーク・ライブラリ](#21-フレームワークライブラリ)
+    - [2.2 開発ツール](#22-開発ツール)
+    - [2.3 インフラ・サービス](#23-インフラサービス)
+- [3. 開発環境セットアップガイド](#3-開発環境セットアップガイド)
+    - [3.1 前提条件](#31-前提条件)
+    - [3.2 初期セットアップ](#32-初期セットアップ)
+    - [3.3 環境変数](#33-環境変数)
+    - [3.4 ローカル開発（GCSなし）](#34-ローカル開発gcsなし)
+    - [3.5 利用可能なスクリプト](#35-利用可能なスクリプト)
+- [4. コーディング規約](#4-コーディング規約)
+    - [4.1 TypeScript 規約](#41-typescript-規約)
+    - [4.2 コードフォーマット（Prettier）](#42-コードフォーマットprettier)
+    - [4.3 コンポーネント命名規則](#43-コンポーネント命名規則)
+    - [4.4 ファイル構成規則](#44-ファイル構成規則)
+    - [4.5 コンポーネント実装パターン](#45-コンポーネント実装パターン)
+    - [4.6 CSS / スタイル規約](#46-css--スタイル規約)
+- [5. Git ワークフロー・ブランチ戦略](#5-git-ワークフローブランチ戦略)
+    - [5.1 ブランチ構成](#51-ブランチ構成)
+    - [5.2 開発フロー](#52-開発フロー)
+    - [5.3 コミットメッセージ](#53-コミットメッセージ)
+    - [5.4 CI/CD パイプライン](#54-cicd-パイプライン)
+- [6. 既知の問題と制限事項](#6-既知の問題と制限事項)
+    - [6.1 既知の問題](#61-既知の問題)
+    - [6.2 機能的な制限事項](#62-機能的な制限事項)
+    - [6.3 ブラウザサポート](#63-ブラウザサポート)
+- [7. セキュリティ考慮事項](#7-セキュリティ考慮事項)
+- [8. パフォーマンス指標](#8-パフォーマンス指標)
+
+---
+
 ## 1. 用語集（Glossary）
 
 本プロジェクトで使用される技術用語・略語の定義を以下にまとめる。
@@ -82,7 +116,7 @@
 | 項目 | 要件 |
 |------|------|
 | Node.js | 18.x 以上 |
-| pnpm | 9.x 以上 |
+| pnpm | 10.x（`pnpm@10.33.0` を `packageManager` でピン留め） |
 | Git | 最新安定版 |
 | エディタ | VS Code 推奨（ESLint / Prettier 拡張機能） |
 
@@ -90,15 +124,17 @@
 
 ```bash
 # 1. リポジトリのクローン
-git clone https://github.com/kojikawazu/nextjs-intro.git
-cd nextjs-intro/nextjs-intro-app
+git clone https://github.com/kojikawazu/nextjs-intro-app.git
+cd nextjs-intro-app
 
 # 2. 依存パッケージのインストール
 pnpm install
 
-# 3. 環境変数ファイルの作成
-cp .env.example .env.local  # テンプレートがある場合
-# または手動で .env.local を作成
+# 3. 表示データの用意（同梱サンプルをコピー）
+cp sample.example.json sample.json
+
+# 4. 環境変数ファイルの作成（お問い合わせ送信・GCS を使う場合）
+cp .env.example .env.local
 ```
 
 ### 3.3 環境変数
@@ -118,12 +154,13 @@ cp .env.example .env.local  # テンプレートがある場合
 
 ### 3.4 ローカル開発（GCSなし）
 
-`data-server.ts` にはローカルフォールバックのロジックが実装されているが、**`sample.json` はリポジトリに含まれていない**。GCS接続なしでローカル開発を行うには、手動で `sample.json` を作成する必要がある。
+`data-server.ts` にはローカルフォールバックのロジックが実装されている。`sample.json` 自体は `.gitignore` 済みでリポジトリに含まれないが、**同梱の `sample.example.json` をコピーすれば GCS 接続なしで即座に動作する**。
 
 ```bash
-# sample.json を手動作成（PortfolioData 型に準拠したJSONファイル）
-# プロジェクトルート直下に配置すると、data-server.ts が自動的にフォールバックとして読み込む
-# ※ リポジトリには含まれていないため、自分で用意する必要がある
+# 同梱サンプルをコピー（PortfolioData 型に準拠したデモデータ）
+cp sample.example.json sample.json
+# プロジェクトルート直下の sample.json を data-server.ts が自動的に読み込む
+# 自分のデータで sample.json を上書きすれば表示内容を差し替えられる
 
 # 開発サーバーの起動
 pnpm dev
@@ -283,7 +320,7 @@ main（本番）
 5. Cloud Run へのデプロイ
 6. 古いイメージのクリーンアップ（最新5件を保持）
 
-**トリガー対象パス**: `.github/**`, `src/**`, `Dockerfile`, `docker-compose.yml`, `next.config.mjs`, `package-lock.json`, `package.json`, `postcss.config.js`, `tailwind.config.js`, `tsconfig.json`
+**トリガー対象パス**: `.github/**`, `src/**`, `Dockerfile`, `docker-compose.yml`, `next.config.mjs`, `pnpm-lock.yaml`, `package.json`, `playwright.config.ts`, `postcss.config.js`, `tailwind.config.js`, `tsconfig.json`
 
 ---
 
