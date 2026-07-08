@@ -1,0 +1,37 @@
+name: CI
+
+on:
+    pull_request:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    quality:
+        name: Quality checks
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Type check (tsc --noEmit)
+              run: pnpm type-check
+
+            - name: Lint (ESLint + JSDoc)
+              run: pnpm lint
+
+            - name: Format check (Prettier)
+              run: pnpm format:check

@@ -142,6 +142,7 @@
 | eslint-config-next | 14.2.5 | Next.js 用 ESLint 設定 |
 | @typescript-eslint/eslint-plugin | ^7.18.0 | TypeScript ESLint プラグイン |
 | @typescript-eslint/parser | ^7.18.0 | TypeScript ESLint パーサー |
+| eslint-plugin-jsdoc | ^48.11.0 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象。ESLint 8 互換のため v48 系を採用） |
 | prettier | ^3.3.2 | コードフォーマッター |
 
 ### 2.3 動作環境要件

@@ -16,10 +16,13 @@ export async function GET() {
         console.error('API Error fetching portfolio data:', error);
         console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 
-        return NextResponse.json({ 
-            error: 'Failed to fetch portfolio data',
-            details: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: new Date().toISOString()
-        }, { status: 500 });
+        return NextResponse.json(
+            {
+                error: 'Failed to fetch portfolio data',
+                details: error instanceof Error ? error.message : 'Unknown error',
+                timestamp: new Date().toISOString(),
+            },
+            { status: 500 },
+        );
     }
 }

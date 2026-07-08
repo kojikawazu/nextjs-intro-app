@@ -242,7 +242,9 @@ export default function HomePage() {
                                     className={isNew ? 'animate-fade-in-up' : ''}
                                     style={
                                         isNew
-                                            ? ({ animationDelay: `${(index - prevVisibleCountRef.current) * 0.1}s` } as React.CSSProperties)
+                                            ? ({
+                                                  animationDelay: `${(index - prevVisibleCountRef.current) * 0.1}s`,
+                                              } as React.CSSProperties)
                                             : undefined
                                     }
                                 />
