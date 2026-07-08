@@ -64,6 +64,7 @@
 | 21 | Skills セクション「and more...」アニメーション遅延バグ修正 | 完了 | 高 | PR #12。累積的な animationDelay が増加し続ける問題を修正。`prevVisibleCountRef` を導入し、新規追加分のみにアニメーション適用 |
 | 22 | 日付表示バグ修正 | 完了 | 高 | Career セクションの期間表示に関する不具合修正。`costom-date.ts` の `toDateString()` 関数追加 |
 | 23 | GitHub Actions デプロイバグ修正（複数回） | 完了 | 高 | PR #2 - #6。CI/CD パイプラインの設定修正を複数回実施 |
+| 50 | お問い合わせ送信の Resend API エラーが成功扱いになる不具合修正 | 完了 | 高 | `resend.ts` が `emails.send()` の `result.error` を検査しておらず、Resend が HTTP エラー（非2xx）を返しても `success: true` を返していた。統合テストで検出し、`result.error` 検知時に `success: false` を返すよう修正（`/api/contact` が仕様どおり 500 を返すようになった） |
 
 ### 1.3 インフラ・CI/CD
 
@@ -85,7 +86,7 @@
 | 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
 | 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/utils/validation.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
 | 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
-| 31 | API Route テスト実装 | 未着手 | 中 | `/api/portfolio`, `/api/contact` のリクエスト・レスポンステスト |
+| 31 | API Route / データフェッチ統合テスト実装 | 完了 | 中 | 統合テスト（`*.integration.test.ts`）を実装。GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証、Resend は MSW で HTTP モック。`GET /api/portfolio`（`route.integration.test.ts`）/ `POST /api/contact`（同）/ `gcs`（`gcs.integration.test.ts`）を対象、計 10 ケース（正常・準正常・異常）。`vitest.integration.config.ts` + `pnpm test:it`、CI（`ci.yml`）で実行 |
 | 32 | E2E テスト導入（Playwright / Cypress） | 未着手 | 低 | `playwright.config.ts` がCI設定に言及されているが未導入 |
 
 ### 2.2 パフォーマンス最適化

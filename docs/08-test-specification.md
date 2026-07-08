@@ -89,9 +89,14 @@
 
 ### 1.1 現状分析
 
-テスト基盤（**Vitest 4 + Testing Library + jsdom**）を導入済み。`package.json` に `test` / `test:run` / `test:coverage` スクリプトを定義し、CI で `pnpm test:run` を実行している。ユニットテストはユーティリティ関数 3 ファイル（`cn` / `toDateString` / `ContactFormSchema`、計 30 ケース）まで実装済み。
+テスト基盤（**Vitest 4 + Testing Library + jsdom**）を導入済み。`package.json` に `test` / `test:run` / `test:coverage` / `test:it` スクリプトを定義し、CI で `pnpm test:run`（UT）と `pnpm test:it`（IT）を実行している。
 
-一方、コンポーネント / API Route / データフェッチのテスト、MSW によるモック、Playwright による E2E は未実装。`@vitejs/plugin-react` は TypeScript 5.5.2 と非互換のため未導入で、React コンポーネントテストを追加する際に TS 5.5 互換の JSX 設定を別途整える必要がある。
+- **ユニットテスト**: ユーティリティ関数 3 ファイル（`cn` / `toDateString` / `ContactFormSchema`、計 33 ケース）を実装済み（`vitest.config.ts`）。
+- **統合テスト**: `*.integration.test.ts`（`vitest.integration.config.ts` + `pnpm test:it`）を実装済み、計 10 ケース。**GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証**し、**Resend は MSW で HTTP をモック**（testing.md: 外部 I/O のみモック）。対象は `GET /api/portfolio`・`POST /api/contact`・`gcs.getPortfolioDataFromGCS`。要 Docker。
+  - GCS エミュレータ接続は `gcs.ts` の `GCS_API_ENDPOINT`（本番未設定）で `apiEndpoint` を上書きして実現。
+  - この IT により、`resend.ts` が Resend の HTTP エラーを成功扱いする不具合を検出・修正した（`result.error` を検査するよう修正、`docs/11` #50）。
+
+一方、コンポーネントテストと Playwright による E2E は未実装。`@vitejs/plugin-react` は TypeScript 5.5.2 と非互換のため未導入で、React コンポーネントテストを追加する際に TS 5.5 互換の JSX 設定を別途整える必要がある。
 
 本仕様書では、プロジェクトの品質保証を目的として、目標とするテスト戦略とテストケースを包括的に定義する（未実装部分は今後の指針）。
 
@@ -759,12 +764,13 @@ handlers.ts で定義すべきハンドラー:
   1. 型チェック (tsc --noEmit)          ← 実装済み（ci.yml）
   2. リント (next lint)                 ← 実装済み（ci.yml。ESLint + JSDoc）
   3. フォーマットチェック (prettier --check .)  ← 実装済み（ci.yml。.prettierignore でコードのみ対象）
-  4. ユニットテスト (vitest run)         ← 実装済み（ci.yml。現状はユーティリティ UT のみ。統合テスト・カバレッジ計測は未）
-  5. ビルド (next build)                 ← デプロイ時に実行（deploy_to_googlecloud.yml）
-  6. E2Eテスト (playwright test)         ← 未実装
+  4. ユニットテスト (vitest run)         ← 実装済み（ci.yml。ユーティリティ UT）
+  5. 統合テスト (vitest run --config …)   ← 実装済み（ci.yml。Testcontainers + MSW。要 Docker）
+  6. ビルド (next build)                 ← デプロイ時に実行（deploy_to_googlecloud.yml）
+  7. E2Eテスト (playwright test)         ← 未実装
 ```
 
-> **現状**: 上記 1〜4（型チェック・Lint・フォーマットチェック・ユニットテスト）は `main` 宛 PR で走る `ci.yml` として実装済み。ただし 4 はユーティリティ関数の UT のみで、統合テスト・カバレッジ閾値・6 の E2E は未導入（`docs/08` §1.1 参照）。5 のビルドはデプロイワークフロー内で実行される。
+> **現状**: 上記 1〜5（型チェック・Lint・フォーマットチェック・ユニットテスト・統合テスト）は `main` 宛 PR で走る `ci.yml` として実装済み。カバレッジ閾値・7 の E2E は未導入（`docs/08` §1.1 参照）。6 のビルドはデプロイワークフロー内で実行される。
 
 ### 9.2 実行条件
 

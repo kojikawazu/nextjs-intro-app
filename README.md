@@ -166,12 +166,16 @@ pnpm lint          # ESLint 実行（JSDoc ルール含む）
 pnpm format        # Prettier で整形
 pnpm format:check  # Prettier 整形チェック（差分のみ）
 pnpm type-check    # TypeScript 型チェック（tsc --noEmit）
-pnpm test          # Vitest（watch モード）
+pnpm test          # Vitest（watch モード。ユニットテスト）
 pnpm test:run      # Vitest（1回実行。CI で使用）
 pnpm test:coverage # Vitest + カバレッジ計測
+pnpm test:it       # 統合テスト（要 Docker。fake-gcs-server コンテナ + MSW）
 ```
 
-> ℹ️ テスト基盤は **Vitest + Testing Library** を導入済み。現状はユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）のユニットテストを実装しており、コンポーネント / API / E2E テストは今後拡充予定です。テスト方針・全テストケース設計は [`docs/08-test-specification.md`](./docs/08-test-specification.md) を参照してください。
+> ℹ️ テストは **Vitest + Testing Library** を使用。
+> - **ユニットテスト**: ユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）を実装済み。
+> - **統合テスト（`pnpm test:it`、要 Docker）**: GCS は [fake-gcs-server](https://github.com/fsouza/fake-gcs-server) コンテナ（Testcontainers）で実データ経路を検証、Resend は [MSW](https://mswjs.io/) で HTTP をモック。`GET /api/portfolio`・`POST /api/contact`・`gcs` を対象。
+> - コンポーネント / E2E テストは今後拡充予定。テスト方針・全テストケース設計は [`docs/08-test-specification.md`](./docs/08-test-specification.md) を参照してください。
 
 ## 🎯 機能
 

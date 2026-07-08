@@ -38,3 +38,11 @@ jobs:
 
             - name: Test (Vitest)
               run: pnpm test:run
+
+            # 統合テスト。Testcontainers が fake-gcs-server コンテナを起動する
+            # （GitHub Actions の ubuntu runner は Docker 利用可）。Resend は MSW でモック。
+            - name: Integration test (Testcontainers + MSW)
+              run: pnpm test:it
+              env:
+                  # ephemeral な CI runner では reaper 不要。起動失敗による flaky を避けるため無効化。
+                  TESTCONTAINERS_RYUK_DISABLED: 'true'

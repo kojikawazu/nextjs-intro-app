@@ -30,6 +30,12 @@ if (process.env.NODE_ENV === 'production') {
     };
 }
 
+// エミュレータ／カスタムエンドポイント接続用（本番では未設定）。
+// GCS_API_ENDPOINT があれば apiEndpoint を上書きする（SDK 推奨。baseUrl が `<endpoint>/storage/v1` になる）。
+if (process.env.GCS_API_ENDPOINT) {
+    storageConfig.apiEndpoint = process.env.GCS_API_ENDPOINT;
+}
+
 const storage = new Storage(storageConfig);
 
 const bucketName = process.env.GCS_PRIVATE_BUCKET_NAME || 'intro_k_pri_bucket';

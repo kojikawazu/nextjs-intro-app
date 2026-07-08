@@ -10,7 +10,8 @@ export default defineConfig({
         globals: true,
         setupFiles: ['./src/__tests__/setup.ts'],
         include: ['src/**/*.{test,spec}.{ts,tsx}'],
-        exclude: ['node_modules', '.next', 'e2e'],
+        // 統合テスト（*.integration.test.ts）は別設定（vitest.integration.config.ts）で実行するため除外。
+        exclude: ['node_modules', '.next', 'e2e', 'src/**/*.integration.test.ts'],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
