@@ -14,3 +14,9 @@
 | documentation.md | 全体 | ドキュメント更新ルール |
 | git.md | 全体 | GitHub Flow・ブランチ命名・push 禁止物 |
 | testing.md | 全体 | テスト分類・原則 |
+| coding-standards.md | 全体 | コーディング規約（TypeScript strict・pnpm・ESLint/Prettier・環境変数） |
+| error-handling.md | 全体 | エラーハンドリング方針（バリデーション・HTTPステータス・統一レスポンス・ログ） |
+| security.md | 全体 | セキュリティ設計方針（認証認可・通信・インジェクション対策・シークレット管理） |
+| jsdoc.md | src/** | JSDoc（TSDoc）規約（公開シンボルへのドキュメントコメント必須） |
+| frontend.md | src/components/**, src/app/**, src/hooks/**, src/lib/** | Next.js App Router フロントエンド設計・コンポーネント規約 |
+| api.md | src/app/api/** | Next.js BFF（Route Handlers）設計・API ルール |
