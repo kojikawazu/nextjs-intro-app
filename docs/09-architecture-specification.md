@@ -150,6 +150,8 @@
 | @testing-library/jest-dom | ^6.9.1 | DOM アサーションマッチャー拡張 |
 | @testing-library/user-event | ^14.6.1 | ユーザー操作のシミュレーション |
 | jsdom | ^29.1.1 | テスト実行時のブラウザ環境エミュレーション |
+| testcontainers | ^12.0.4 | 統合テストで fake-gcs-server コンテナを起動（要 Docker） |
+| msw | ^2.15.0 | 統合テストで Resend の HTTP をモック |
 
 ### 2.3 動作環境要件
 
@@ -598,6 +600,7 @@ CI/CD パイプライン:
 | `GOOGLE_CLOUD_CLIENT_EMAIL` | 実質未使用 | GCS サービスアカウントメール（同上） | gcs.ts |
 | `GCS_PRIVATE_BUCKET_NAME` | 任意 | GCS バケット名（デフォルト: `intro_k_pri_bucket`） | gcs.ts |
 | `GCS_JSON_PATH` | 任意 | GCS 内の JSON ファイルパス（デフォルト: `json/navbar_intro.json`） | gcs.ts |
+| `GCS_API_ENDPOINT` | 任意（テスト用） | GCS の `apiEndpoint` 上書き。統合テストで fake-gcs-server エミュレータに接続するために使用（本番では未設定） | gcs.ts |
 | `RESEND_API_KEY` | 必須 | Resend API キー（`re_` プレフィックス） | resend.ts |
 | `RESEND_FROM_EMAIL` | 必須 | メール送信元アドレス | resend.ts |
 | `MY_MAIL_ADDRESS` | 必須 | お問い合わせメール受信先アドレス | resend.ts |

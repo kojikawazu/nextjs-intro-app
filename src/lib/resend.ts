@@ -79,6 +79,18 @@ ${message}
       `,
         });
 
+        // Resend は HTTP エラー時に例外ではなく { data: null, error } を返す。
+        // ここで検知しないと送信失敗を成功として扱ってしまう。
+        if (result.error) {
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Resend API returned an error:', result.error);
+            }
+            return {
+                success: false,
+                error: result.error.message || 'Resend API error',
+            };
+        }
+
         return {
             success: true,
             messageId: result.data?.id,
