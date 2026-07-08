@@ -21,7 +21,8 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  # testcontainers（→ undici@8）が Node >= 22.19 を要求するため 24 を使用。
+                  node-version: 24
                   cache: pnpm
 
             - name: Install dependencies
