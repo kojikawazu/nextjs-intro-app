@@ -54,6 +54,21 @@ export async function resolveDisplayName(
 }
 ```
 
-## Lint による強制（推奨）
+## Lint による強制（導入済み）
 
-`eslint-plugin-jsdoc` を導入し、公開シンボルへの JSDoc 欠落・`@param` / `@returns` 漏れを CI で検出する。TypeScript プロジェクトでは型ブレース系ルールを無効化する（`jsdoc/require-param-type` / `jsdoc/require-returns-type` を off）。
+`eslint-plugin-jsdoc`（ESLint 8 互換の v48 系）を導入し、`.eslintrc.json` の `overrides` で `src/**/*.{ts,tsx}` に機械判定可能なルールを適用している。`settings.jsdoc.mode: "typescript"` で TS モードを有効化。
+
+| ルール | レベル | 目的 |
+|---|---|---|
+| `jsdoc/no-types` | error | 型の再掲を禁止（TS シグネチャが型の唯一の真実） |
+| `jsdoc/require-param` | error | JSDoc ブロックを持つ関数は全引数を `@param` で説明（分割代入 props は型が真実のため展開しない: `checkDestructured: false`） |
+| `jsdoc/require-param-description` | error | `@param` に説明文を必須化 |
+| `jsdoc/check-param-names` | error | `@param` 名と実引数名の突き合わせ（名前ズレ・順序・過不足を検出） |
+| `jsdoc/require-returns` | error | 返り値がある関数は `@returns` を必須化（後述の `.tsx` を除く） |
+| `jsdoc/require-returns-description` | error | `@returns` に説明文を必須化 |
+| `jsdoc/check-alignment` | warn | JSDoc ブロックの体裁を整える |
+| `jsdoc/no-multi-asterisks` | warn | アスタリスクの重複を検出 |
+
+- **`.tsx`（React コンポーネント）は `require-returns` / `require-returns-description` を off**: JSX を返す要素に「@returns …の要素」を書くのはノイズになるため。`.ts`（フック / lib / API）では `@returns` 必須のまま。
+- `require-jsdoc` は行コメント（`//`）を誤検知するため未採用。JSDoc ブロックの有無・質はレビューで確認する（＝コメント無しの既存コードは lint を壊さない）。
+- 参考: 上記方針は `youtube-my-collection`（ESLint 9 フラット config）を ESLint 8 レガシー config 向けに移植したもの。

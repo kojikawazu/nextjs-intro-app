@@ -9,7 +9,10 @@ if (process.env.NODE_ENV === 'production') {
     storageConfig = {};
 } else if (process.env.NODE_ENV === 'development') {
     // Development environment
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_APPLICATION_CREDENTIALS !== '') {
+    if (
+        process.env.GOOGLE_APPLICATION_CREDENTIALS &&
+        process.env.GOOGLE_APPLICATION_CREDENTIALS !== ''
+    ) {
         storageConfig = {
             keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
         };
@@ -35,7 +38,7 @@ const jsonPath = process.env.GCS_JSON_PATH || 'json/navbar_intro.json';
 export async function getPortfolioDataFromGCS() {
     try {
         console.log(`GCS: Attempting to fetch from bucket: ${bucketName}, file: ${jsonPath}`);
-        
+
         const bucket = storage.bucket(bucketName);
         const file = bucket.file(jsonPath);
 
@@ -61,7 +64,9 @@ export async function getPortfolioDataFromGCS() {
             bucketName,
             jsonPath,
             projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-            hasCredentials: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_PRIVATE_KEY)
+            hasCredentials: !!(
+                process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_PRIVATE_KEY
+            ),
         });
         throw new Error(
             `Failed to fetch portfolio data: ${error instanceof Error ? error.message : 'Unknown error'}`,

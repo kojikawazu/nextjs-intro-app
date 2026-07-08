@@ -1,0 +1,19 @@
+# 依存関係・ビルド成果物
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+
+# パッケージマネージャのロックファイル（pnpm が管理）
+pnpm-lock.yaml
+
+# 手書きの Markdown ドキュメント・プロジェクトメタ（Prettier 管理外）
+*.md
+docs/
+.claude/
+
+# GitHub 設定（ワークフロー YAML は Prettier 管理外）
+.github/
+
+LICENSE

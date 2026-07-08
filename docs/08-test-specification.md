@@ -754,13 +754,15 @@ handlers.ts で定義すべきハンドラー:
 
 ```
 テスト実行フロー:
-  1. 型チェック (tsc --noEmit)
-  2. リント (next lint)
-  3. フォーマットチェック (prettier --check .)
-  4. ユニットテスト + 統合テスト (vitest run --coverage)
-  5. ビルド (next build)
-  6. E2Eテスト (playwright test)
+  1. 型チェック (tsc --noEmit)          ← 実装済み（ci.yml）
+  2. リント (next lint)                 ← 実装済み（ci.yml。ESLint + JSDoc）
+  3. フォーマットチェック (prettier --check .)  ← 実装済み（ci.yml。.prettierignore でコードのみ対象）
+  4. ユニットテスト + 統合テスト (vitest run --coverage)  ← 未実装（テスト未導入）
+  5. ビルド (next build)                 ← デプロイ時に実行（deploy_to_googlecloud.yml）
+  6. E2Eテスト (playwright test)         ← 未実装
 ```
+
+> **現状**: 上記 1〜3（型チェック・Lint・フォーマットチェック）は `main` 宛 PR で走る `ci.yml` として実装済み。4・6 のテスト系はテストランナー未導入のため未実装（`docs/08` §1.1 参照）。5 のビルドはデプロイワークフロー内で実行される。
 
 ### 9.2 実行条件
 

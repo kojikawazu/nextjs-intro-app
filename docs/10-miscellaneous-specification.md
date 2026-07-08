@@ -192,6 +192,7 @@ pnpm dev
 | 未使用変数 | エラー（`@typescript-eslint/no-unused-vars: "error"`） |
 | any 型の使用 | 警告（`@typescript-eslint/no-explicit-any: "warn"`） |
 | const 優先 | 必須（`prefer-const: "error"`） |
+| JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須。`.tsx` は `@returns` を除外）。詳細は `.claude/rules/jsdoc.md` |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
 | パスエイリアス | `@/*` は `./src/*` にマッピング |
@@ -311,11 +312,26 @@ main（本番）
 
 ### 5.4 CI/CD パイプライン
 
-`main` ブランチへのプッシュ時に GitHub Actions が以下を自動実行する:
+GitHub Actions は 2 本のワークフローで構成する。
+
+#### CI（品質チェック / `.github/workflows/ci.yml`）
+
+`main` 宛の **Pull Request**（および手動実行 `workflow_dispatch`）で以下を実行する。いずれか失敗するとチェックが赤くなり、マージ前に検知できる。
+
+1. コードのチェックアウト
+2. pnpm / Node.js 20 のセットアップ（依存キャッシュ有効）
+3. 依存インストール（`pnpm install --frozen-lockfile`）
+4. 型チェック（`pnpm type-check` = `tsc --noEmit`）
+5. Lint（`pnpm lint` = ESLint + JSDoc ルール。エラーで失敗、警告は許容）
+6. フォーマットチェック（`pnpm format:check` = Prettier。`.prettierignore` で docs / lockfile / `.github` を除外し、コードのみ対象）
+
+#### Deploy（`.github/workflows/deploy_to_googlecloud.yml`）
+
+`main` ブランチへのプッシュ時に以下を自動実行する:
 
 1. コードのチェックアウト
 2. Google Cloud 認証
-3. Docker イメージのビルド
+3. Docker イメージのビルド（`next build` 実行時に ESLint エラーがあれば失敗）
 4. Artifact Registry へのプッシュ
 5. Cloud Run へのデプロイ
 6. 古いイメージのクリーンアップ（最新5件を保持）
