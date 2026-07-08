@@ -170,12 +170,14 @@ pnpm test          # Vitest（watch モード。ユニットテスト）
 pnpm test:run      # Vitest（1回実行。CI で使用）
 pnpm test:coverage # Vitest + カバレッジ計測
 pnpm test:it       # 統合テスト（要 Docker。fake-gcs-server コンテナ + MSW）
+pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server コンテナ）
 ```
 
-> ℹ️ テストは **Vitest + Testing Library** を使用。
+> ℹ️ テストは **Vitest + Testing Library**（UT/IT）と **Playwright**（E2E）を使用。
 > - **ユニットテスト**: ユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）を実装済み。
 > - **統合テスト（`pnpm test:it`、要 Docker）**: GCS は [fake-gcs-server](https://github.com/fsouza/fake-gcs-server) コンテナ（Testcontainers）で実データ経路を検証、Resend は [MSW](https://mswjs.io/) で HTTP をモック。`GET /api/portfolio`・`POST /api/contact`・`gcs` を対象。
-> - コンポーネント / E2E テストは今後拡充予定。テスト方針・全テストケース設計は [`docs/08-test-specification.md`](./docs/08-test-specification.md) を参照してください。
+> - **E2E（`pnpm test:e2e`、要 Docker + 事前 `pnpm build`）**: [Playwright](https://playwright.dev/) で実ブラウザからシナリオ検証。ポートフォリオ表示は fake-gcs-server コンテナの実データ、お問い合わせ送信・失敗系はブラウザで API をスタブ（Resend はエミュレータ無し）。正常/準正常/異常のシナリオを網羅。
+> - コンポーネントテストは今後拡充予定。テスト方針・全テストケース設計は [`docs/08-test-specification.md`](./docs/08-test-specification.md) を参照してください。
 
 ## 🎯 機能
 

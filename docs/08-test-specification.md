@@ -96,7 +96,10 @@
   - GCS エミュレータ接続は `gcs.ts` の `GCS_API_ENDPOINT`（本番未設定）で `apiEndpoint` を上書きして実現。
   - この IT により、`resend.ts` が Resend の HTTP エラーを成功扱いする不具合を検出・修正した（`result.error` を検査するよう修正、`docs/11` #50）。
 
-一方、コンポーネントテストと Playwright による E2E は未実装。`@vitejs/plugin-react` は TypeScript 5.5.2 と非互換のため未導入で、React コンポーネントテストを追加する際に TS 5.5 互換の JSX 設定を別途整える必要がある。
+- **E2E テスト**: Playwright で `e2e/` にシナリオテストを実装済み、計 7 ケース（`pnpm test:e2e`）。**ポートフォリオ表示は fake-gcs-server コンテナの実データ**（本番ビルドのサーバを `GCS_API_ENDPOINT` でコンテナへ向ける）、**お問い合わせ送信・失敗系はブラウザで `page.route` により API をスタブ**（Resend はエミュレータ無し）。正常/準正常/異常を網羅。flaky 対策として CI では `retries: 2` + 失敗時 trace/screenshot/video。専用ワークフロー `.github/workflows/e2e.yml`（PR）で実行。要 Docker + `pnpm build`。
+  - E2E 導入時に、`/api/portfolio` がビルド時プリレンダーされ実行時に GCS を参照しない不具合を検出・修正した（`export const dynamic = 'force-dynamic'`、`docs/11` #51）。
+
+一方、コンポーネントテストは未実装。`@vitejs/plugin-react` は TypeScript 5.5.2 と非互換のため未導入で、React コンポーネントテストを追加する際に TS 5.5 互換の JSX 設定を別途整える必要がある。
 
 本仕様書では、プロジェクトの品質保証を目的として、目標とするテスト戦略とテストケースを包括的に定義する（未実装部分は今後の指針）。
 
