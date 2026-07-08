@@ -144,6 +144,12 @@
 | @typescript-eslint/parser | ^7.18.0 | TypeScript ESLint パーサー |
 | eslint-plugin-jsdoc | ^48.11.0 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象。ESLint 8 互換のため v48 系を採用） |
 | prettier | ^3.3.2 | コードフォーマッター |
+| vitest | ^4.1.10 | テストランナー（ユニットテスト） |
+| @vitest/coverage-v8 | ^4.1.10 | カバレッジ計測（v8 プロバイダ） |
+| @testing-library/react | ^16.3.2 | React コンポーネントの描画・操作テスト（コンポーネントテスト導入時に使用） |
+| @testing-library/jest-dom | ^6.9.1 | DOM アサーションマッチャー拡張 |
+| @testing-library/user-event | ^14.6.1 | ユーザー操作のシミュレーション |
+| jsdom | ^29.1.1 | テスト実行時のブラウザ環境エミュレーション |
 
 ### 2.3 動作環境要件
 

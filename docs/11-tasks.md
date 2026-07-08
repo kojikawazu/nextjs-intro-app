@@ -82,9 +82,9 @@
 
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
-| 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 未着手 | 高 | 現在テストフレームワーク未導入。`package.json` にテスト関連の依存パッケージなし。推奨ツールは `docs/08-test-specification.md` 参照 |
-| 29 | ユニットテスト実装（ユーティリティ関数） | 未着手 | 高 | `cn()`, `toDateString()`, `ContactFormSchema` のテスト |
-| 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト |
+| 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
+| 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/utils/validation.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
+| 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
 | 31 | API Route テスト実装 | 未着手 | 中 | `/api/portfolio`, `/api/contact` のリクエスト・レスポンステスト |
 | 32 | E2E テスト導入（Playwright / Cypress） | 未着手 | 低 | `playwright.config.ts` がCI設定に言及されているが未導入 |
 
