@@ -159,16 +159,19 @@ nextjs-intro-app/
 ## 🔧 利用可能なスクリプト
 
 ```bash
-pnpm dev          # 開発サーバー起動
-pnpm build        # プロダクションビルド
-pnpm start        # プロダクションサーバー起動
-pnpm lint         # ESLint 実行
-pnpm format       # Prettier で整形
-pnpm format:check # Prettier 整形チェック（差分のみ）
-pnpm type-check   # TypeScript 型チェック（tsc --noEmit）
+pnpm dev           # 開発サーバー起動
+pnpm build         # プロダクションビルド
+pnpm start         # プロダクションサーバー起動
+pnpm lint          # ESLint 実行（JSDoc ルール含む）
+pnpm format        # Prettier で整形
+pnpm format:check  # Prettier 整形チェック（差分のみ）
+pnpm type-check    # TypeScript 型チェック（tsc --noEmit）
+pnpm test          # Vitest（watch モード）
+pnpm test:run      # Vitest（1回実行。CI で使用）
+pnpm test:coverage # Vitest + カバレッジ計測
 ```
 
-> ℹ️ テストランナーは未導入です（`test` スクリプトはありません）。テスト方針は [`docs/08-test-specification.md`](./docs/08-test-specification.md) に「今後の計画」として記載しています。
+> ℹ️ テスト基盤は **Vitest + Testing Library** を導入済み。現状はユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）のユニットテストを実装しており、コンポーネント / API / E2E テストは今後拡充予定です。テスト方針・全テストケース設計は [`docs/08-test-specification.md`](./docs/08-test-specification.md) を参照してください。
 
 ## 🎯 機能
 

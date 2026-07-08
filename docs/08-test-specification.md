@@ -1,6 +1,6 @@
 # テスト仕様書
 
-> ⚠️ **本書は「今後導入するテスト戦略」の計画書です。現時点でテストは未実装**であり、`package.json` にテストランナー（Vitest 等）も `test` スクリプトも存在しません。以下のツール選定・設定・テストケースはすべて導入時の指針であり、実在するコードではありません。
+> ℹ️ **テスト基盤は導入済み（Vitest + Testing Library）。現状はユーティリティ関数のユニットテストのみ実装**しています。`cn`（`src/utils/cn.test.ts`）/ `toDateString`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/utils/validation.test.ts`）の 3 ファイル・計 30 ケースが実装・PASS 済みで、CI（`.github/workflows/ci.yml`）の `pnpm test:run` で実行されます。コンポーネント / API Route / データフェッチ / E2E テスト、および MSW・Playwright は**未導入（今後の計画）**です。本書のうち未導入部分は導入時の指針であり、実在するコードではありません。
 
 ## 目次
 
@@ -89,9 +89,11 @@
 
 ### 1.1 現状分析
 
-現時点でプロジェクトにはテストフレームワークが導入されていない。`package.json` にはテスト関連の依存パッケージ（Jest、Vitest、Testing Library、Cypress、Playwright 等）が含まれておらず、`scripts` にも `test` コマンドが定義されていない。
+テスト基盤（**Vitest 4 + Testing Library + jsdom**）を導入済み。`package.json` に `test` / `test:run` / `test:coverage` スクリプトを定義し、CI で `pnpm test:run` を実行している。ユニットテストはユーティリティ関数 3 ファイル（`cn` / `toDateString` / `ContactFormSchema`、計 30 ケース）まで実装済み。
 
-本仕様書では、プロジェクトの品質保証を目的として、今後導入すべきテスト戦略とテストケースを包括的に定義する。
+一方、コンポーネント / API Route / データフェッチのテスト、MSW によるモック、Playwright による E2E は未実装。`@vitejs/plugin-react` は TypeScript 5.5.2 と非互換のため未導入で、React コンポーネントテストを追加する際に TS 5.5 互換の JSX 設定を別途整える必要がある。
+
+本仕様書では、プロジェクトの品質保証を目的として、目標とするテスト戦略とテストケースを包括的に定義する（未実装部分は今後の指針）。
 
 ### 1.2 テストピラミッド
 
@@ -757,12 +759,12 @@ handlers.ts で定義すべきハンドラー:
   1. 型チェック (tsc --noEmit)          ← 実装済み（ci.yml）
   2. リント (next lint)                 ← 実装済み（ci.yml。ESLint + JSDoc）
   3. フォーマットチェック (prettier --check .)  ← 実装済み（ci.yml。.prettierignore でコードのみ対象）
-  4. ユニットテスト + 統合テスト (vitest run --coverage)  ← 未実装（テスト未導入）
+  4. ユニットテスト (vitest run)         ← 実装済み（ci.yml。現状はユーティリティ UT のみ。統合テスト・カバレッジ計測は未）
   5. ビルド (next build)                 ← デプロイ時に実行（deploy_to_googlecloud.yml）
   6. E2Eテスト (playwright test)         ← 未実装
 ```
 
-> **現状**: 上記 1〜3（型チェック・Lint・フォーマットチェック）は `main` 宛 PR で走る `ci.yml` として実装済み。4・6 のテスト系はテストランナー未導入のため未実装（`docs/08` §1.1 参照）。5 のビルドはデプロイワークフロー内で実行される。
+> **現状**: 上記 1〜4（型チェック・Lint・フォーマットチェック・ユニットテスト）は `main` 宛 PR で走る `ci.yml` として実装済み。ただし 4 はユーティリティ関数の UT のみで、統合テスト・カバレッジ閾値・6 の E2E は未導入（`docs/08` §1.1 参照）。5 のビルドはデプロイワークフロー内で実行される。
 
 ### 9.2 実行条件
 
