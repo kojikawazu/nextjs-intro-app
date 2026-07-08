@@ -312,18 +312,24 @@ main（本番）
 
 ### 5.4 CI/CD パイプライン
 
-GitHub Actions は 2 本のワークフローで構成する。
+GitHub Actions は 3 本のワークフローで構成する。
 
 #### CI（品質チェック / `.github/workflows/ci.yml`）
 
 `main` 宛の **Pull Request**（および手動実行 `workflow_dispatch`）で以下を実行する。いずれか失敗するとチェックが赤くなり、マージ前に検知できる。
 
 1. コードのチェックアウト
-2. pnpm / Node.js 20 のセットアップ（依存キャッシュ有効）
+2. pnpm / Node.js 24 のセットアップ（依存キャッシュ有効。testcontainers→undici@8 が Node>=22.19 要求）
 3. 依存インストール（`pnpm install --frozen-lockfile`）
 4. 型チェック（`pnpm type-check` = `tsc --noEmit`）
 5. Lint（`pnpm lint` = ESLint + JSDoc ルール。エラーで失敗、警告は許容）
 6. フォーマットチェック（`pnpm format:check` = Prettier。`.prettierignore` で docs / lockfile / `.github` を除外し、コードのみ対象）
+7. ユニットテスト（`pnpm test:run` = Vitest）
+8. 統合テスト（`pnpm test:it` = Vitest。Testcontainers で fake-gcs-server 起動 + MSW。要 Docker）
+
+#### E2E（`.github/workflows/e2e.yml`）
+
+UT/IT より重い（ブラウザ + build + Docker）ため CI とは別ワークフローに分離。`main` 宛 PR（および `workflow_dispatch`）で、Playwright ブラウザ導入 → `pnpm build` → `pnpm test:e2e`（fake-gcs-server コンテナ + Playwright）を実行し、`playwright-report` をアーティファクト保存する。
 
 #### Deploy（`.github/workflows/deploy_to_googlecloud.yml`）
 

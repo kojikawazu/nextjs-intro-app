@@ -150,8 +150,9 @@
 | @testing-library/jest-dom | ^6.9.1 | DOM アサーションマッチャー拡張 |
 | @testing-library/user-event | ^14.6.1 | ユーザー操作のシミュレーション |
 | jsdom | ^29.1.1 | テスト実行時のブラウザ環境エミュレーション |
-| testcontainers | ^12.0.4 | 統合テストで fake-gcs-server コンテナを起動（要 Docker） |
+| testcontainers | ^12.0.4 | 統合 / E2E テストで fake-gcs-server コンテナを起動（要 Docker） |
 | msw | ^2.15.0 | 統合テストで Resend の HTTP をモック |
+| @playwright/test | ^1.61.1 | E2E（実ブラウザ）テスト |
 
 ### 2.3 動作環境要件
 

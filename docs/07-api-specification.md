@@ -424,6 +424,8 @@ Resend API emails.send()
 
 ### 5.1 GET /api/portfolio のキャッシュ
 
+> **注**: この Route Handler は `export const dynamic = 'force-dynamic'` によりリクエスト時に実行され、都度 GCS からデータを取得する（ビルド時プリレンダーではない）。オリジンでの再取得を抑えるキャッシュは、下記 `Cache-Control` により CDN / 共有キャッシュ側で行う。
+
 ```
 Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 ```

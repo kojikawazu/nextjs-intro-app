@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getPortfolioDataServer } from '@/lib/data-server';
 
+// GCS 上の可変データをリクエスト時に取得する（ビルド時プリレンダーだと
+// データがビルド時点で固定され、ビルドに GCS 認証も必要になるため）。
+// エッジ/CDN 側のキャッシュはレスポンスの Cache-Control(s-maxage=300) で行う。
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         console.log('API: Starting portfolio data fetch...');
