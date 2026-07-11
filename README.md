@@ -173,6 +173,15 @@ pnpm test:it       # 統合テスト（要 Docker。fake-gcs-server コンテナ
 pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server コンテナ）
 ```
 
+> 🛠️ **Makefile も同梱**しています。上記スクリプトや Docker / Terraform / セットアップ手順を短いコマンドで実行できます。`make`（または `make help`）でターゲット一覧を表示します。
+>
+> ```bash
+> make setup   # pnpm install + sample.json 用意（= クイックスタートの 2〜3）
+> make dev     # 開発サーバー起動
+> make check   # lint + format:check + type-check + test:run をまとめて実行
+> make test-it # 統合テスト（要 Docker）
+> ```
+
 > ℹ️ テストは **Vitest + Testing Library**（UT/IT）と **Playwright**（E2E）を使用。
 > - **ユニットテスト**: ユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）を実装済み。
 > - **統合テスト（`pnpm test:it`、要 Docker）**: GCS は [fake-gcs-server](https://github.com/fsouza/fake-gcs-server) コンテナ（Testcontainers）で実データ経路を検証、Resend は [MSW](https://mswjs.io/) で HTTP をモック。`GET /api/portfolio`・`POST /api/contact`・`gcs` を対象。
