@@ -74,7 +74,7 @@ pnpm dev
 
 ブラウザで http://localhost:3000 を開くと、サンプルデータで表示されます。
 
-> **仕組み**: 開発環境（`NODE_ENV=development`）では、プロジェクトルートに `sample.json` があればそれを優先的に読み込みます（`src/lib/data-server.ts`）。`sample.json` は `.gitignore` 済みなので、自分のデータで自由に上書きできます。GCS 認証情報は不要です。
+> **仕組み**: 開発環境（`NODE_ENV=development`）では、プロジェクトルートに `sample.json` があればそれを優先的に読み込みます（`src/repositories/portfolio.ts`）。`sample.json` は `.gitignore` 済みなので、自分のデータで自由に上書きできます。GCS 認証情報は不要です。
 >
 > ⚠️ **お問い合わせフォームの送信**には Resend の環境変数が別途必要です（下記「セットアップ詳細」参照）。未設定でも画面表示・他セクションの動作には影響しません。
 
@@ -104,12 +104,17 @@ nextjs-intro-app/
 │   │   ├── api/             # API ルート (portfolio / contact)
 │   │   ├── globals.css      # グローバルスタイル
 │   │   ├── layout.tsx       # ルートレイアウト（メタデータ・SEO）
-│   │   └── page.tsx         # ホームページ（'use client'）
+│   │   ├── page.tsx         # ホームページ（Server Component・データ取得）
+│   │   ├── client.tsx       # ホームページの描画・対話（Client Component）
+│   │   ├── error.tsx        # データ取得失敗時のエラーバウンダリ
+│   │   ├── sitemap.ts       # sitemap.xml の生成
+│   │   └── robots.ts        # robots.txt の生成
 │   ├── components/          # UI コンポーネント（Atomic Design）
 │   │   ├── atoms/           # Atoms（最小単位）
 │   │   ├── molecules/       # Molecules（複合）
 │   │   └── organisms/       # Organisms（有機体）
-│   ├── lib/                 # サーバー側ライブラリ（GCS / Resend / データ取得）
+│   ├── repositories/        # 外部 I/O（GCS / Resend / ポートフォリオ取得）
+│   ├── lib/                 # 純粋ユーティリティ（通信しない: 日付整形 / サイトURL解決）
 │   ├── types/               # TypeScript 型定義（PortfolioData 等）
 │   └── utils/               # クライアント側ユーティリティ（cn など）
 ├── docs/                    # 仕様・設計ドキュメント（索引: docs/README.md）
@@ -140,8 +145,8 @@ nextjs-intro-app/
 
 ポートフォリオ表示データは `GET /api/portfolio` 経由で取得します。
 
-- **本番**: Google Cloud Storage 上の JSON を読み込み（`src/lib/gcs.ts`）
-- **開発**: プロジェクトルートの `sample.json` があればフォールバックとして利用（`src/lib/data-server.ts`）
+- **本番**: Google Cloud Storage 上の JSON を読み込み（`src/repositories/gcs.ts`）
+- **開発**: プロジェクトルートの `sample.json` があればフォールバックとして利用（`src/repositories/portfolio.ts`）
 
 データ構造の正準は型定義 [`src/types/portfolio.ts`](./src/types/portfolio.ts)、実例は [`sample.example.json`](./sample.example.json) を参照してください。主なトップレベルキー:
 
@@ -200,6 +205,7 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | Skills の段階表示（初期 9 件 → 6 件ずつ追加） | ✅ | `page.tsx` の `and more...` |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
+| サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
 | sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
 | アクセシビリティ | 🟡 | 一部に `aria-label`。フォームの label 関連付け（`htmlFor`）や `aria-live` は未対応 |
 | 自動テスト | 🔜 | ランナー未導入（[docs/08](./docs/08-test-specification.md)） |

@@ -126,14 +126,15 @@ page.tsx (クライアントコンポーネント)
 ### 2.2 データフロー
 
 ```
-[Google Cloud Storage] -- JSON --> [GET /api/portfolio] -- fetch --> [page.tsx (useState)]
+[Google Cloud Storage] -- JSON --> [page.tsx (Server Component)] --> [client.tsx] --> 本文入り HTML
 [ContactForm] -- POST /api/contact --> [Resend API] --> メール送信
 ```
 
-1. ページ読み込み時に `GET /api/portfolio` を呼び出し、ポートフォリオデータを取得する。
+1. ページ読み込み時、`page.tsx`（Server Component）が**サーバー側で**ポートフォリオデータを取得し、`client.tsx` に渡して HTML を生成する。ブラウザは本文を含む HTML を受け取る。
 2. 本番環境では GCS バケットからJSONファイルを取得する。開発環境では `sample.json` へのフォールバックロジックが存在するが、`sample.json` はリポジトリに含まれていないため、実質的に GCS 接続が必要。
-3. API レスポンスには `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400` が設定される。
-4. お問い合わせフォームは `POST /api/contact` 経由で Resend API を使用してメール送信を行う。
+3. 取得に失敗した場合は例外が伝播し、`error.tsx` のエラーバウンダリが描画される。
+4. `GET /api/portfolio` は BFF の公開 I/F として維持しているが、**本ページはこれを経由しない**。
+5. お問い合わせフォームは `POST /api/contact` 経由で Resend API を使用してメール送信を行う。
 
 ---
 
@@ -422,15 +423,19 @@ page.tsx (クライアントコンポーネント)
 
 ```
 1. ユーザーがページにアクセス
-2. ローディング状態を表示 (フルスクリーンスピナー)
-   - スピナー: animate-spin, 128px, border-blue-600
-   - テキスト: "Loading..."
-3. GET /api/portfolio を fetch
-4a. 成功: portfolioData をセット -> 全セクションをレンダリング
-4b. 失敗: エラー画面を表示
-   - テキスト: "Failed to load portfolio data" (赤)
-   - "Reload Page" ボタン -> window.location.reload()
+2. サーバー側で page.tsx がポートフォリオデータを取得
+3a. 成功: client.tsx に渡して描画 -> 全セクションを含む HTML を返す
+    - ブラウザはローディング表示を経ずに本文を表示する
+    - ハイドレーション後に Skills の段階表示などの対話が有効になる
+3b. 失敗: error.tsx のエラーバウンダリを描画
+    - テキスト: "Failed to load portfolio data" (赤)
+    - "Try Again" ボタン -> reset()（セグメントの再レンダリング）
+    - "Reload Page" ボタン -> window.location.reload()
 ```
+
+> **旧フロー（〜2026-09-19）**: ページ全体が Client Component で、フルスクリーンスピナーを
+> 表示してから `useEffect` で `GET /api/portfolio` を呼んでいた。初期 HTML には
+> `Loading...` の 10 文字しか含まれず、JS を実行しないクローラからは本文が見えなかった。
 
 ### 4.2 ナビゲーションフロー
 

@@ -192,7 +192,7 @@
 
 #### 認証方式
 
-環境に応じた認証方式が `src/lib/gcs.ts` に実装されている。ただし、分岐条件は `NODE_ENV` の値に基づくため、通常運用で有効なのは上位2つのみ。
+環境に応じた認証方式が `src/repositories/gcs.ts` に実装されている。ただし、分岐条件は `NODE_ENV` の値に基づくため、通常運用で有効なのは上位2つのみ。
 
 | 環境 | 条件 | 認証方式 | 使用する環境変数 | 備考 |
 |---|---|---|---|---|
@@ -218,7 +218,7 @@
 
 GCS からの取得に失敗した場合、開発環境かつ `sample.json` が存在する場合のみフォールバックが機能する。
 
-データ取得ロジックの実装は `src/lib/data-server.ts` にある。
+データ取得ロジックの実装は `src/repositories/portfolio.ts` にある。
 
 ## 4. データフロー
 
@@ -237,29 +237,27 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
     |
     | (3) 環境に応じてGCS / ローカルを切り替え
     v
-[API Route: GET /api/portfolio]
+[page.tsx: Server Component]
     |
-    | (4) NextResponse.json() + キャッシュヘッダー付与
+    | (4) getPortfolioDataServer() をサーバー側で await
     v
-[HTTP レスポンス (JSON)]
+[client.tsx: HomeClient に props として渡す]
     |
-    | (5) fetch('/api/portfolio') by useEffect
+    | (5) 各セクションコンポーネントへ props として渡す
     v
-[page.tsx: React State (portfolioData)]
-    |
-    | (6) 各セクションコンポーネントへ props として渡す
-    v
-[UI レンダリング]
+[本文を含む HTML を生成してブラウザへ返す]
+
+※ GET /api/portfolio は BFF の公開 I/F として維持しているが、本ページは経由しない。
 ```
 
 #### 詳細フロー
 
-1. **GCS データ取得** (`src/lib/gcs.ts`)
+1. **GCS データ取得** (`src/repositories/gcs.ts`)
    - `Storage` クライアントを環境に応じた認証設定で初期化
    - バケット・ファイルの存在確認後、ファイルをダウンロード
    - ダウンロードしたバイナリコンテンツを `JSON.parse()` でパース
 
-2. **サーバーサイドデータ取得** (`src/lib/data-server.ts`)
+2. **サーバーサイドデータ取得** (`src/repositories/portfolio.ts`)
    - 開発環境かつ `FORCE_GCS` 未設定かつ `sample.json` が存在する場合、ローカルデータを返却
    - それ以外の場合、GCS からデータを取得
    - GCS 取得失敗時、開発環境ではローカルデータにフォールバック
@@ -269,11 +267,11 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
    - 成功時: `PortfolioData` を JSON として返却（キャッシュヘッダー付き）
    - 失敗時: エラーオブジェクトをステータス 500 で返却
 
-4. **クライアントサイド取得** (`src/app/page.tsx`)
-   - `useEffect` 内で `fetch('/api/portfolio')` を実行
-   - 取得成功: `setPortfolioData(data)` で React State に設定
-   - 取得中: ローディングスピナーを表示
-   - 取得失敗: エラーメッセージとリロードボタンを表示
+4. **ページのデータ取得** (`src/app/page.tsx` / Server Component)
+   - `getPortfolioDataServer()` をサーバー側で `await`
+   - 取得成功: `client.tsx` の `HomeClient` に props として渡し、本文入りの HTML を生成
+   - 取得失敗: 例外を伝播させ、`error.tsx` のエラーバウンダリを描画
+   - ローディング表示は無い（データが揃った状態で HTML が返るため）
 
 ### 4.2 お問い合わせフォームデータフロー
 

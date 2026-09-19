@@ -48,9 +48,9 @@
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
         - [5.1.2 POST /api/contact (`src/app/api/contact/route.ts`)](#512-post-apicontact-srcappapicontactroutets)
     - [5.2 データフェッチフロー](#52-データフェッチフロー)
-        - [5.2.1 data-server (`src/lib/data-server.ts`)](#521-data-server-srclibdata-serverts)
-        - [5.2.2 GCSクライアント (`src/lib/gcs.ts`)](#522-gcsクライアント-srclibgcsts)
-        - [5.2.3 Resendクライアント (`src/lib/resend.ts`)](#523-resendクライアント-srclibresendts)
+        - [5.2.1 data-server (`src/repositories/portfolio.ts`)](#521-data-server-srclibdata-serverts)
+        - [5.2.2 GCSクライアント (`src/repositories/gcs.ts`)](#522-gcsクライアント-srclibgcsts)
+        - [5.2.3 Resendクライアント (`src/repositories/resend.ts`)](#523-resendクライアント-srclibresendts)
 - [6. E2Eテスト仕様](#6-e2eテスト仕様)
     - [6.1 ホームページ表示テスト](#61-ホームページ表示テスト)
     - [6.2 ナビゲーションテスト](#62-ナビゲーションテスト)
@@ -59,6 +59,8 @@
     - [6.5 レスポンシブデザインテスト](#65-レスポンシブデザインテスト)
     - [6.6 アクセシビリティテスト](#66-アクセシビリティテスト)
     - [6.7 SEOメタデータテスト](#67-seoメタデータテスト)
+    - [6.8 サーバーサイドレンダリングテスト](#68-サーバーサイドレンダリングテスト)
+    - [6.9 データ取得失敗テスト](#69-データ取得失敗テスト)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -637,7 +639,7 @@ e2e/
 
 ### 5.2 データフェッチフロー
 
-#### 5.2.1 data-server (`src/lib/data-server.ts`)
+#### 5.2.1 data-server (`src/repositories/portfolio.ts`)
 
 | テストID | テストケース | 前提条件 | 期待結果 |
 |----------|------------|---------|---------|
@@ -647,7 +649,7 @@ e2e/
 | IT-DS-004 | GCS失敗時にローカルデータにフォールバックする | NODE_ENV='development', GCS失敗, sample.json存在 | ローカルデータが返却される |
 | IT-DS-005 | 本番環境でGCS失敗時にエラーを投げる | NODE_ENV='production', GCS失敗 | Error がスローされる |
 
-#### 5.2.2 GCSクライアント (`src/lib/gcs.ts`)
+#### 5.2.2 GCSクライアント (`src/repositories/gcs.ts`)
 
 | テストID | テストケース | 前提条件 | 期待結果 |
 |----------|------------|---------|---------|
@@ -658,7 +660,7 @@ e2e/
 | IT-GCS-005 | testGCSConnection が接続成功を返す | バケット存在（モック） | true |
 | IT-GCS-006 | testGCSConnection が接続失敗を返す | バケット未存在（モック） | false |
 
-#### 5.2.3 Resendクライアント (`src/lib/resend.ts`)
+#### 5.2.3 Resendクライアント (`src/repositories/resend.ts`)
 
 | テストID | テストケース | 前提条件 | 期待結果 |
 |----------|------------|---------|---------|
@@ -763,6 +765,52 @@ e2e/
 > **E2E-SEO-001 の注意**: Next.js は `metadataBase` に対する相対パス `/` の解決時にルートの末尾スラッシュを落とすため、
 > canonical は `https://introtechkkplus.com`、sitemap の `<loc>` は `https://introtechkkplus.com/` と表記が異なる。
 > ルート URL としては同一リソースを指す。
+
+### 6.8 サーバーサイドレンダリングテスト
+
+実装: `e2e/seo.spec.ts`。Playwright の `request` フィクスチャは JavaScript を実行しないため、
+**ブラウザが JS を動かす前の生の HTML** を検証できる。JS を実行しない SNS のクローラが
+見るものと同じ内容になる。
+
+| テストID | 分類 | テストケース | 検証内容 |
+|----------|------|------------|---------|
+| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Skills` / `Contact` を含む |
+| E2E-SSR-002 | 準正常系 | 退行の検出 | `animate-spin` を含まず、タグ除去後の本文が 300 文字超 |
+
+> **閾値の根拠**: 300 は E2E シードデータ基準（現状 973 文字）。データ取得が `useEffect` に
+> 戻ると本文は 10 文字程度（`Loading...` のみ）まで落ちるため、桁で区別できる値にしている。
+> 本番のデータ量とは無関係である点に注意。
+
+### 6.9 データ取得失敗テスト
+
+実装: `e2e/error.spec.ts`。**専用の webServer（ポート 3001）** で実行する。
+
+`page.tsx` がサーバー側でデータ取得するようになったため、ブラウザで `/api/portfolio` を
+スタブしてもページの描画には影響しない（サーバーの取得はブラウザを経由しないため）。
+代わりに `GCS_JSON_PATH` を存在しないオブジェクトに向けたサーバを別ポートで起動し、
+**本番と同じ経路で実際に取得を失敗させて** `error.tsx` の描画を検証する。
+
+| テストID | 分類 | テストケース | 検証内容 |
+|----------|------|------------|---------|
+| E2E-ERR-001 | 異常系 | エラー画面の表示 | `Failed to load portfolio data` と `Try Again` / `Reload Page` ボタンが表示される |
+| E2E-ERR-002 | 異常系 | 本文の非描画 | 失敗時に本文セクションの見出しが描画されない（空に近いページが 200 でインデックスされるのを防ぐ） |
+
+#### Playwright の構成
+
+```
+webServer: [
+  { port 3000, GCS_JSON_PATH: 'json/portfolio.json' },       ← 正常系
+  { port 3001, GCS_JSON_PATH: 'json/does-not-exist.json' },  ← 異常系
+]
+projects: [
+  { name: 'chromium',       baseURL: :3000, testIgnore: error.spec.ts },
+  { name: 'chromium-error', baseURL: :3001, testMatch:  error.spec.ts },
+]
+```
+
+> **起動確認先に注意**: webServer の `url` は `/robots.txt`（静的ルート）を指す。`/` は
+> サーバー側で GCS を叩くため、`globalSetup`（エミュレータ起動）より先に走る
+> ヘルスチェックでは必ず失敗する。
 
 ---
 

@@ -122,6 +122,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 未着手 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 未着手 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 56 | page.tsx の server-first 化 | 完了 | 高 | issue #76。初期 HTML の本文が 10 文字（`Loading...`）しか無く SEO 対策が空振りしていた問題を解消。`lib/` の外部 I/O を `repositories/` へ移設し、`page.tsx`（Server Component）/ `client.tsx` / `error.tsx` に分離 |
 | 55 | JSDoc(TSDoc) 未付与の公開シンボル 45 件を解消 | 完了 | 中 | 親 issue #64。`jsdoc.md` は公開シンボルへの JSDoc を必須とするが、ブロックの有無を見る `require-jsdoc` が未採用のため lint をすり抜けていた。レイヤ別に 5 サブ issue へ分割（#65 types/utils・#66 lib/api・#67 components・#68 app ルート・#69 lint 強制）。型のフィールド説明は docs/05 を出典とする |
 
 ### 2.5 テスト・CI/CD 拡充（残タスク）
@@ -221,6 +222,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | `page.tsx` を server-first 構成へ作り替え、初期 HTML に本文を含めた。`lib/` の外部 I/O を `repositories/` へ移設（issue #76） | - |
 | 2026-09-19 | `jsdoc/require-jsdoc` を `contexts` 指定で導入し、JSDoc 欠落を lint で検出できるようにした。末尾 `export { X }` 形式が検出対象外である制約を jsdoc.md に明記（issue #69 / 親 #64） | - |
 | 2026-09-19 | JSDoc 付与を完了。`src/app/` ルート + テスト足場（4 シンボル）へ付与し、欠落 45 件を解消（issue #68 / 親 #64） | - |
 | 2026-09-19 | JSDoc 付与を継続。`src/components/`（17 シンボル）へ付与。あわせて docs/04 §5.2 の `<label>` に関する記述を実態（`htmlFor` 未対応）へ修正（issue #67 / 親 #64） | - |

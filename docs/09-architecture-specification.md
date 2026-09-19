@@ -71,7 +71,7 @@
 │  │  │ Section │  │          │                               │  │
 │  │  └─────────┘  └──────────┘                               │  │
 │  └───────────────────────────────────────────────────────────┘  │
-│          │ useEffect: fetch()              │ POST                │
+│          │ (サーバー側で直接取得)            │ POST                │
 │          ▼                                 ▼                    │
 │  ┌──────────────────┐            ┌──────────────────┐          │
 │  │ GET /api/portfolio│            │ POST /api/contact │          │
@@ -109,7 +109,7 @@
 | クライアントサイドレンダリング (CSR) | page.tsx | トップページ全体が `'use client'` ディレクティブによりクライアントコンポーネントとして動作 |
 | API Routes パターン | /api/portfolio, /api/contact | サーバーサイドロジックを Next.js API Routes として分離 |
 | Atomic Design | components/ | UI コンポーネントを Atoms / Molecules / Organisms の3階層で構造化 |
-| Repository パターン（簡易） | lib/data-server.ts | データソースの抽象化（GCS / ローカルファイルのフォールバック） |
+| Repository パターン | repositories/portfolio.ts | データソースの抽象化（GCS / ローカルファイルのフォールバック） |
 
 ---
 
@@ -181,7 +181,8 @@ nextjs-intro-app/
 ├── src/                        # アプリケーションソースコード
 │   ├── app/                    # Next.js App Router
 │   ├── components/             # UI コンポーネント
-│   ├── lib/                    # サーバーサイドライブラリ・外部サービスクライアント
+│   ├── repositories/           # 外部 I/O（GCS / Resend / ポートフォリオ取得）
+│   ├── lib/                    # 純粋ユーティリティ（通信しない）
 │   ├── types/                  # TypeScript 型定義
 │   └── utils/                  # クライアントサイドユーティリティ
 ├── .eslintrc.json              # ESLint 設定
@@ -207,11 +208,12 @@ src/
 │   ├── layout.tsx              # ルートレイアウト
 │   │                             - HTML メタデータ設定 (OGP, Twitter Card, SEO)
 │   │                             - html lang="ja" 設定
-│   ├── page.tsx                # ホームページ（クライアントコンポーネント）
-│   │                             - データフェッチ (useEffect + fetch)
-│   │                             - 全セクションの統合表示
-│   │                             - ローディング/エラー状態管理
-│   │                             - スキル表示のページネーション管理
+│   ├── page.tsx                # ホームページ（Server Component・データ取得）
+│   ├── client.tsx              # ホームページの描画・対話（Client Component）
+│   │                             - page.tsx: repositories からサーバー側でデータ取得
+│   │                             - client.tsx: 全セクションの統合表示
+│   │                             - client.tsx: スキル表示のページネーション管理
+│   │                             - error.tsx: 取得失敗時のエラー表示
 │   └── api/
 │       ├── portfolio/
 │       │   └── route.ts        # GET: ポートフォリオデータ取得 API
@@ -340,18 +342,17 @@ page.tsx
 
 ### 5.1 ポートフォリオデータ取得フロー
 
+`page.tsx` は Server Component であり、データ取得はサーバー側で完結する。ブラウザは
+完成した HTML を受け取るため、初期 HTML に全セクションの本文が含まれる。
+
 ```
 ブラウザ                  Cloud Run                  外部サービス
   │                         │                          │
   │  1. ページ読み込み        │                          │
   │─────────────────────────>│                          │
   │                         │                          │
-  │  2. page.tsx レンダリング  │                          │
-  │  (useEffect 実行)        │                          │
-  │                         │                          │
-  │  3. GET /api/portfolio   │                          │
-  │─────────────────────────>│                          │
-  │                         │  4. getPortfolioDataServer()
+  │                         │  2. page.tsx (Server)     │
+  │                         │     getPortfolioDataServer()
   │                         │─────────────────────────>│
   │                         │                          │
   │                         │     [本番環境]             │
@@ -362,18 +363,31 @@ page.tsx
   │                         │     (存在する場合のみ。      │
   │                         │      リポジトリには未同梱)   │
   │                         │                          │
-  │                         │  5. JSON データ返却        │
+  │                         │  3. JSON データ返却        │
   │                         │<─────────────────────────│
   │                         │                          │
-  │  6. JSON レスポンス       │                          │
-  │  (Cache-Control:         │                          │
-  │   s-maxage=300)          │                          │
+  │                         │  4. HomeClient を描画      │
+  │                         │     (本文を含む HTML を生成) │
+  │                         │                          │
+  │  5. 本文入りの HTML       │                          │
   │<─────────────────────────│                          │
   │                         │                          │
-  │  7. setState(data)       │                          │
-  │  8. UI 再レンダリング     │                          │
+  │  6. ハイドレーション       │                          │
+  │  (Skills 段階表示などの    │                          │
+  │   対話が有効になる)        │                          │
   │                         │                          │
 ```
+
+**取得に失敗した場合**: `page.tsx` は例外を握りつぶさず伝播させ、`error.tsx` の
+エラーバウンダリが描画される。握りつぶすと「本文が無いのに 200 が返る」状態になり、
+検索エンジンに空ページとしてインデックスされうるため。
+
+**`/api/portfolio` との関係**: 本ページは同エンドポイントを経由しない。エンドポイント自体は
+BFF の公開 I/F として維持しており、仕様は `docs/07-api-specification.md` を参照。
+
+> **旧構成（〜2026-09-19）**: `page.tsx` 全体が Client Component で、`useEffect` から
+> `/api/portfolio` を fetch していた。そのため初期 HTML には `Loading...` の 10 文字しか
+> 含まれず、JS を実行しないクローラからは本文が見えなかった。
 
 ### 5.2 お問い合わせ送信フロー
 
