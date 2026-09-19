@@ -238,11 +238,18 @@ src/
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
 │       └── Header.tsx          # ヘッダー (ナビゲーション, モバイルメニュー, スクロール検知)
 │
-├── lib/                        # サーバーサイド専用ライブラリ
-│   ├── costom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
-│   ├── data-server.ts          # データ取得ロジック (GCS取得 + ローカルフォールバック)
+├── repositories/               # 外部 I/O（fetch / 外部サービスクライアントはここだけ）
 │   ├── gcs.ts                  # Google Cloud Storage クライアント (環境別認証設定)
+│   ├── portfolio.ts            # データ取得ロジック (GCS取得 + ローカルフォールバック)
 │   └── resend.ts               # Resend メールクライアント (HTML/テキスト両対応)
+│
+├── schemas/                    # Zod スキーマ（クライアント / サーバーで共有）
+│   └── contact.ts              # ContactFormSchema・ContactFormInput
+│
+├── lib/                        # 純粋ユーティリティ（通信しない）
+│   ├── costom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
+│   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
+│   └── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
 │
 ├── types/
 │   └── portfolio.ts            # ポートフォリオデータ型定義
@@ -254,8 +261,7 @@ src/
 │                                 - ContactFormData, ContactFormErrors
 │
 └── utils/
-    ├── cn.ts                   # クラス名結合ユーティリティ (clsx + tailwind-merge)
-    └── validation.ts           # Zod バリデーションスキーマ (ContactFormSchema)
+    └── cn.ts                   # クラス名結合ユーティリティ (clsx + tailwind-merge)
 ```
 
 ---
@@ -431,7 +437,7 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 
 ```
 ┌─────────────────────────────────────────────────┐
-│             data-server.ts                      │
+│         repositories/portfolio.ts               │
 │                                                 │
 │  getPortfolioDataServer()                       │
 │  │                                              │
@@ -623,7 +629,7 @@ CI/CD パイプライン:
 | `RESEND_API_KEY` | 必須 | Resend API キー（`re_` プレフィックス） | resend.ts |
 | `RESEND_FROM_EMAIL` | 必須 | メール送信元アドレス | resend.ts |
 | `MY_MAIL_ADDRESS` | 必須 | お問い合わせメール受信先アドレス | resend.ts |
-| `FORCE_GCS` | 任意 | 開発環境で GCS からの取得を強制する | data-server.ts |
+| `FORCE_GCS` | 任意 | 開発環境で GCS からの取得を強制する | repositories/portfolio.ts |
 | `NODE_ENV` | 自動 | 実行環境（development/production） | 複数箇所 |
 
 ### 7.3 GCS 認証戦略

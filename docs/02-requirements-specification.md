@@ -124,7 +124,7 @@
 | ID | 要件名 | 説明 | 優先度 | ステータス |
 |----|--------|------|--------|------------|
 | FR-DATA-001 | GCSデータ取得 | Google Cloud Storageのプライベートバケットからポートフォリオデータ（JSON）を取得する。 | 必須 | 実装済 |
-| FR-DATA-002 | ローカルフォールバック | 開発環境（NODE_ENV=development）ではsample.jsonからローカルデータを読み込む。**注意**: `data-server.ts` にフォールバックロジックは実装済みだが、`sample.json` はリポジトリに含まれていない。fresh checkout ではフォールバックは成立せず、GCS 接続が必須となる。 | 必須 | 一部実装（ロジックのみ） |
+| FR-DATA-002 | ローカルフォールバック | 開発環境（NODE_ENV=development）ではsample.jsonからローカルデータを読み込む。**注意**: `repositories/portfolio.ts` にフォールバックロジックは実装済みだが、`sample.json` はリポジトリに含まれていない。fresh checkout ではフォールバックは成立せず、GCS 接続が必須となる。 | 必須 | 一部実装（ロジックのみ） |
 | FR-DATA-003 | GCSフォールバック | 開発環境でGCS取得に失敗した場合、ローカルデータにフォールバックする。**注意**: FR-DATA-002 と同様、`sample.json` が存在しない場合はフォールバック不可。 | 推奨 | 一部実装（ロジックのみ） |
 | FR-DATA-004 | APIキャッシュ | ポートフォリオデータAPIのレスポンスにCache-Controlヘッダー（s-maxage=300、stale-while-revalidate=86400）を設定する。 | 推奨 | 実装済 |
 | FR-DATA-005 | GCS認証 | 本番環境（`NODE_ENV=production`）では Application Default Credentials (ADC)、開発環境（`NODE_ENV=development`）ではサービスアカウントキーファイルを使用する。**注意**: `gcs.ts` には `GOOGLE_CLOUD_PRIVATE_KEY` による JSON キー認証の分岐（`else if`）も存在するが、`NODE_ENV` が `production`/`development` のいずれでもない場合にのみ到達するため、通常運用ではデッドコードとなっている。 | 必須 | 一部実装（2分岐のみ有効） |
@@ -287,16 +287,20 @@ src/
 │   └── organisms/          # 機能単位コンポーネント
 │       ├── ContactForm.tsx # お問い合わせフォーム
 │       └── Header.tsx      # ヘッダーナビゲーション
-├── lib/
-│   ├── data-server.ts      # データ取得ロジック（GCS/ローカル切替）
+├── repositories/           # 外部 I/O（通信はここだけ）
+│   ├── portfolio.ts        # データ取得ロジック（GCS/ローカル切替）
 │   ├── gcs.ts              # Google Cloud Storage接続
-│   ├── resend.ts           # Resendメール送信
-│   └── costom-date.ts      # 日付フォーマットユーティリティ
+│   └── resend.ts           # Resendメール送信
+├── schemas/                # Zod スキーマ
+│   └── contact.ts          # お問い合わせフォームの検証スキーマ
+├── lib/                    # 純粋ユーティリティ（通信しない）
+│   ├── costom-date.ts      # 日付フォーマットユーティリティ
+│   ├── html-escape.ts      # HTML 出力エスケープ
+│   └── site-url.ts         # サイト公開 URL の解決
 ├── types/
 │   └── portfolio.ts        # ポートフォリオデータ型定義
 └── utils/
-    ├── cn.ts               # clsx + tailwind-merge ユーティリティ
-    └── validation.ts       # Zodバリデーションスキーマ
+    └── cn.ts               # clsx + tailwind-merge ユーティリティ
 ```
 
 ### 4.3 API仕様

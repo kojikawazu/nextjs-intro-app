@@ -48,7 +48,7 @@
 | 10 | モバイルハンバーガーメニュー実装 | 完了 | 高 | レスポンシブ対応、`md:` ブレークポイントで切替 |
 | 11 | レスポンシブデザイン対応 | 完了 | 高 | モバイル / タブレット / デスクトップの3段階対応 |
 | 12 | GCS データソース連携 | 完了 | 最高 | プライベートバケットからの JSON 取得、ADC / サービスアカウント認証対応 |
-| 13 | ローカル開発フォールバック（sample.json） | 完了 | 中 | `data-server.ts` にロジック実装済み。`sample.json` は `.gitignore` 済みだが、デモデータ `sample.example.json` を同梱。`cp sample.example.json sample.json` で GCS なしで起動可能 |
+| 13 | ローカル開発フォールバック（sample.json） | 完了 | 中 | `repositories/portfolio.ts` にロジック実装済み。`sample.json` は `.gitignore` 済みだが、デモデータ `sample.example.json` を同梱。`cp sample.example.json sample.json` で GCS なしで起動可能 |
 | 14 | API Route 実装（/api/portfolio） | 完了 | 最高 | ポートフォリオデータ取得、Cache-Control ヘッダー設定 |
 | 15 | API Route 実装（/api/contact） | 完了 | 最高 | お問い合わせ送信、サーバーサイドバリデーション、Resend 連携 |
 | 16 | SEO メタデータ設定 | 完了 | 中 | title, description, keywords, OGP, Twitter Card, robots |
@@ -122,6 +122,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 59 | 問い合わせメール HTML のユーザー入力をエスケープ（XSS 対策） | 完了 | 高 | issue #55（親 #53）。`resend.ts` がフォーム入力を未エスケープで HTML メールへ埋め込んでいた。`src/lib/html-escape.ts` の `escapeHtml()` を新設し html パートのみ適用（text / subject は HTML でないため対象外）。Zod の入力検証は出力エスケープの代わりにならない点を docs/06 §8.1 に明文化 |
 | 58 | `next` を 15.5.25 へ更新（メジャー更新 フェーズ1） | 完了 | 高 | issue #86。`next` のアドバイザリが 0 件に（critical 2→0 / high 8→0）。Node / ESLint / React はいずれも据え置きで対応可能だった。`experimental.typedRoutes` → `typedRoutes` の移動が必要 |
 | 57 | `next` を 14.2.35 へ更新 | 完了 | 高 | issue #81。`next@14.2.5` の既知脆弱性のうち 12 件（critical 1 / high 4 を含む）を解消。Cache Poisoning と Server Components DoS の一部が対象。15.x でのみ修正されるものは残存し、メジャー更新の判断は別途 |
 | 56 | page.tsx の server-first 化 | 完了 | 高 | issue #76。初期 HTML の本文が 10 文字（`Loading...`）しか無く SEO 対策が空振りしていた問題を解消。`lib/` の外部 I/O を `repositories/` へ移設し、`page.tsx`（Server Component）/ `client.tsx` / `error.tsx` に分離 |
@@ -204,19 +205,21 @@
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 33 |
-| 未着手 | 16 |
+| 完了 | 41 |
+| 未着手 | 14 |
 | 検討中 | 4 |
-| **合計** | **53** |
+| **合計** | **59** |
 
 | 優先度 | 件数 |
 |--------|------|
-| 最高 | 4 |
-| 高 | 20 |
+| 最高 | 5 |
+| 高 | 25 |
 | 中 | 21 |
 | 低 | 8 |
 
-> 直近の完了: #28/#29（Vitest + UT）、#31（IT: Testcontainers + MSW）、#32（E2E: Playwright）、#50（Resend エラー握り潰し修正）、#51（`/api/portfolio` を force-dynamic 化）。新規未着手: #52（カバレッジ閾値）、#53（Node バージョン整合）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#45（レート制限）、#52（カバレッジ閾値）、#53（Node バージョン整合）。
+>
+> 件数は 2026-09-20 に実テーブルから再集計した（従来値 完了 33 / 合計 53 は追随漏れ）。再掲行（#30 / #47）は 1 件として数える。
 
 ---
 
@@ -224,6 +227,8 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-20 | 問い合わせメール HTML のユーザー入力をエスケープ。`src/lib/html-escape.ts` を新設し、入力検証（Zod）と出力エスケープを別レイヤの対策として整理（issue #55 / 親 #53） | - |
+| 2026-09-20 | ドキュメントと実装の乖離を是正。`data-server.ts` 等の旧パス 16 箇所（docs/02・05・08・09・10・11）を `repositories/` / `schemas/` 移設後の実態へ更新し、タスク統計サマリを再集計（issue #55 のセルフレビューで検出） | - |
 | 2026-09-19 | フォームのアクセシビリティを改善。`htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role` 通知に対応（issue #83） | - |
 | 2026-09-19 | actionlint を CI に導入。ワークフロー 3 本の検証と `run:` ブロックの shellcheck が入った（issue #78） | - |
 | 2026-09-19 | 依存監査を導入（Dependabot + CI の 2 段構え）。本番依存 critical をブロッキング、全レベルを可視化（issue #80） | - |

@@ -160,7 +160,7 @@ cp .env.example .env.local
 ```bash
 # 同梱サンプルをコピー（PortfolioData 型に準拠したデモデータ）
 cp sample.example.json sample.json
-# プロジェクトルート直下の sample.json を data-server.ts が自動的に読み込む
+# プロジェクトルート直下の sample.json を repositories/portfolio.ts が自動的に読み込む
 # 自分のデータで sample.json を上書きすれば表示内容を差し替えられる
 
 # 開発サーバーの起動
@@ -241,16 +241,20 @@ src/
 │   ├── atoms/             # 最小単位の汎用コンポーネント
 │   ├── molecules/         # 複数 atoms の組み合わせ
 │   └── organisms/         # 複合的な機能コンポーネント
-├── lib/                   # 外部サービス連携・データ取得
+├── repositories/          # 外部サービス連携・データ取得（通信はここだけ）
 │   ├── gcs.ts             # Google Cloud Storage クライアント
 │   ├── resend.ts          # Resend メール送信
-│   ├── data-server.ts     # サーバーサイドデータ取得（GCS + ローカルフォールバック）
-│   └── costom-date.ts     # 日付フォーマットユーティリティ
+│   └── portfolio.ts       # サーバーサイドデータ取得（GCS + ローカルフォールバック）
+├── schemas/               # Zod スキーマ
+│   └── contact.ts         # お問い合わせフォームの検証スキーマ
+├── lib/                   # 純粋ユーティリティ（通信しない）
+│   ├── costom-date.ts     # 日付フォーマットユーティリティ
+│   ├── html-escape.ts     # HTML 出力エスケープ
+│   └── site-url.ts        # サイト公開 URL の解決
 ├── types/                 # TypeScript 型定義
 │   └── portfolio.ts       # ポートフォリオデータ型
 └── utils/                 # ユーティリティ関数
-    ├── cn.ts              # clsx + tailwind-merge ヘルパー
-    └── validation.ts      # Zod バリデーションスキーマ
+    └── cn.ts              # clsx + tailwind-merge ヘルパー
 ```
 
 ### 4.5 コンポーネント実装パターン

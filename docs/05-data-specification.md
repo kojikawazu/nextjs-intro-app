@@ -202,9 +202,9 @@
 
 ### 3.2 ローカル開発用データ
 
-`data-server.ts` には `sample.json`（プロジェクトルート直下）をフォールバックとして読み込むロジックが実装されている。ただし、**`sample.json` はリポジトリに含まれていない**（`.gitignore` 等による除外、またはそもそも未コミット）。そのため、fresh checkout の状態ではフォールバックは成立せず、GCS 接続が必須となる。
+`repositories/portfolio.ts` には `sample.json`（プロジェクトルート直下）をフォールバックとして読み込むロジックが実装されている。ただし、**`sample.json` はリポジトリに含まれていない**（`.gitignore` 等による除外、またはそもそも未コミット）。そのため、fresh checkout の状態ではフォールバックは成立せず、GCS 接続が必須となる。
 
-`data-server.ts:8-11` では `require('../../sample.json')` を `try/catch` で囲み、ファイルが存在しない場合は警告を出力して `null` のまま続行する。
+`repositories/portfolio.ts:11-17` では `require('../../sample.json')` を `try/catch` で囲み、ファイルが存在しない場合は警告を出力して `null` のまま続行する。
 
 #### ローカルデータの使用条件
 
@@ -233,7 +233,7 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
     |
     | (2) JSON パース・PortfolioData として返却
     v
-[data-server.ts: getPortfolioDataServer()]
+[repositories/portfolio.ts: getPortfolioDataServer()]
     |
     | (3) 環境に応じてGCS / ローカルを切り替え
     v
@@ -410,7 +410,7 @@ toLocaleString('ja-JP', {
 | `GOOGLE_CLOUD_PROJECT_ID` | No | GCP プロジェクトID（開発用） | `gcs.ts` |
 | `GOOGLE_CLOUD_PRIVATE_KEY` | No | GCS サービスアカウント秘密鍵（その他環境用） | `gcs.ts` |
 | `GOOGLE_CLOUD_CLIENT_EMAIL` | No | GCS サービスアカウントメール（その他環境用） | `gcs.ts` |
-| `FORCE_GCS` | No | 開発環境で GCS を強制使用するフラグ | `data-server.ts` |
+| `FORCE_GCS` | No | 開発環境で GCS を強制使用するフラグ | `repositories/portfolio.ts` |
 | `RESEND_API_KEY` | Yes* | Resend API キー（`re_` プレフィックス） | `resend.ts` |
 | `RESEND_FROM_EMAIL` | Yes* | メール送信元アドレス | `resend.ts` |
 | `MY_MAIL_ADDRESS` | Yes* | メール受信先アドレス | `resend.ts` |
