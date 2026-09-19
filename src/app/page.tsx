@@ -11,6 +11,16 @@ import { Button } from '@/components/atoms/Button';
 import { PortfolioData } from '@/types/portfolio';
 import { toDateString } from '@/lib/costom-date';
 
+/**
+ * 経歴の開始・終了年月を表示用の期間文字列に整形する。
+ *
+ * `career_end` が `'now'` の場合は在籍中を意味するため、終了年月の代わりに「現在」を出す。
+ * `'now'` は `new Date()` として解釈されるが、その値は表示に使われないため月跨ぎの影響はない。
+ *
+ * @param start - 開始年月（`YYYY年MM月` 形式）
+ * @param end - 終了年月（`YYYY年MM月` 形式）、または在籍中を表す `'now'`
+ * @returns `2023年4月 - 2024年3月` のような期間文字列。在籍中は `2023年4月 - 現在`
+ */
 function formatCareerPeriod(start: string, end: string): string {
     const startDate = new Date(toDateString(start));
     const endDate = end === 'now' ? new Date() : new Date(toDateString(end));
@@ -30,6 +40,20 @@ function formatCareerPeriod(start: string, end: string): string {
 const INITIAL_SKILLS_COUNT = 9;
 const SKILLS_INCREMENT = 6;
 
+/**
+ * ポートフォリオのトップページ。全セクションを 1 ページに縦積みで描画する。
+ *
+ * **ページ全体が Client Component（`'use client'`）で、マウント後に `useEffect` から
+ * `/api/portfolio` を fetch している。** `frontend.md` は「server-first を基本とし、
+ * データ取得・SEO はサーバーコンポーネントで行う」「`page.tsx` と `client.tsx` を分離する」
+ * と定めており、現状はそこから外れている。結果として初期 HTML にコンテンツが含まれず、
+ * クローラや JS 無効環境ではローディング表示しか見えない。
+ *
+ * Skills セクションは初期 {@link INITIAL_SKILLS_COUNT} 件を表示し、
+ * 「and more...」で {@link SKILLS_INCREMENT} 件ずつ追加する。
+ * 追加分だけをフェードインさせるため、直前の表示件数を `prevVisibleCountRef` で保持している
+ * （state にすると再描画のたびに既存カードまで再アニメーションしてしまう）。
+ */
 export default function HomePage() {
     const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
     const [visibleSkillsCount, setVisibleSkillsCount] = useState(INITIAL_SKILLS_COUNT);

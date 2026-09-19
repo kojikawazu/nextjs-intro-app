@@ -28,12 +28,24 @@ const seededPortfolio = {
 
 // vitest の inject に型を通すためのコンテキスト拡張。
 declare module 'vitest' {
+    /**
+     * globalSetup から各 IT テストへ `inject()` で渡される値。
+     *
+     * エミュレータの接続先はコンテナ起動時に動的なポートが割り当てられるため、
+     * テストファイル側にハードコードできない。ここを経由して受け渡す。
+     */
     export interface ProvidedContext {
+        /** fake-gcs-server コンテナのエンドポイント（`http://host:ランダムポート`） */
         gcsEndpoint: string;
+        /** テスト用に作成済みのバケット名 */
         gcsBucket: string;
+        /** 正常な JSON を配置済みのオブジェクトパス（正常系で使う） */
         gcsValidPath: string;
+        /** 壊れた JSON を配置済みのオブジェクトパス（パース失敗の検証で使う） */
         gcsInvalidPath: string;
+        /** 意図的に存在させていないオブジェクトパス（404 相当の検証で使う） */
         gcsMissingPath: string;
+        /** 投入済み JSON の `navbar_data.link_title`。取得結果の照合に使う */
         seededLinkTitle: string;
     }
 }
