@@ -177,6 +177,7 @@ pnpm dev
 | `pnpm build` | 本番ビルド |
 | `pnpm start` | 本番ビルドのローカル実行 |
 | `pnpm lint` | ESLint によるコード静的解析 |
+| `make lint-actions` | GitHub Actions ワークフローを actionlint で検証（要 Docker） |
 | `pnpm audit` | 組み込みコマンド。dev を含む全依存を監査（CI では可視化のみ） |
 | `pnpm audit:prod` | 本番依存のみを全レベルで監査（`audit` は組み込み名と衝突するため別名） |
 | `pnpm audit:ci` | 本番依存の critical のみで失敗する監査（CI のブロッキングゲート） |
@@ -196,6 +197,7 @@ pnpm dev
 | 未使用変数 | エラー（`@typescript-eslint/no-unused-vars: "error"`） |
 | any 型の使用 | 警告（`@typescript-eslint/no-explicit-any: "warn"`） |
 | const 優先 | 必須（`prefer-const: "error"`） |
+| GitHub Actions | `actionlint` でワークフロー定義を検証（式・ランナーラベル・コンテキスト参照）。`run:` ブロックは shellcheck に掛かる。CI でブロッキング |
 | JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須、公開シンボルへの JSDoc ブロックを `require-jsdoc` で必須化。`.tsx` は `@returns` を除外）。末尾の `export { X }` 形式は検出できないため、宣言と同時に export する。詳細は `.claude/rules/jsdoc.md` |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
