@@ -74,6 +74,7 @@
 | 25 | 古い Docker イメージのクリーンアップ自動化 | 完了 | 中 | 最新5件を保持し、古いイメージを自動削除 |
 | 26 | Cloud Run デプロイ設定 | 完了 | 高 | GitHub Actions + Docker による Cloud Run 自動デプロイ |
 | 27 | LICENSE ファイル追加 | 完了 | 低 | PR #13 |
+| 54 | 独自ドメイン `introtechkkplus.com` への切り替え | 完了 | 高 | Cloudflare（DNS）× Cloud Run（オリジン）。apex / www を両方マッピングし canonical は apex。`metadataBase` / `sitemap.ts` / `robots.ts` / `SITE_URL` 環境変数を整備。旧ドメイン `introtechkk.com`（失効）のマッピングは削除。issue #62 |
 
 ---
 
@@ -219,6 +220,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | 独自ドメイン `introtechkkplus.com` へ切り替え。`metadataBase` / canonical / sitemap.xml / robots.txt を追加し、`NEXT_PUBLIC_SITE_URL` を `SITE_URL` へ整理（issue #62） | - |
 | 2026-07-08 | テスト基盤導入（UT/IT/E2E）と CI 整備、JSDoc lint・ルール拡充を完了（PR #21〜#25）。残タスク（#30/#52/#53）を追記 | - |
 | 2026-03-20 | タスク管理ドキュメント初版作成 | - |
 | 2026-03-15 | Skills アニメーション遅延バグ修正完了（PR #12） | - |

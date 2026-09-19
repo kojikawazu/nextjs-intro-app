@@ -32,6 +32,9 @@ export default defineConfig({
             GCS_API_ENDPOINT: `http://127.0.0.1:${GCS_EMULATOR_PORT}`,
             GCS_PRIVATE_BUCKET_NAME: 'e2e-bucket',
             GCS_JSON_PATH: 'json/portfolio.json',
+            // メタデータ検証（seo.spec.ts）を開発者の .env.local に左右されないよう固定する。
+            // `next start` は本番モードでも .env.local を読むため、明示しないと期待値がぶれる。
+            SITE_URL: 'https://introtechkkplus.com',
         },
     },
 });

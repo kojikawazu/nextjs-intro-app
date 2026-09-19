@@ -41,7 +41,9 @@ variable "app_name" {
   type = string
 }
 
-variable "backend_site_url" {
+# サイトの公開 URL。Cloud Run には SITE_URL として注入する。
+# NEXT_PUBLIC_ を付けるとビルド時に焼き込まれ実行時注入が効かないため、接頭辞は付けない。
+variable "site_url" {
   type = string
 }
 

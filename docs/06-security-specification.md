@@ -146,7 +146,7 @@ export const ContactFormSchema = z.object({
 
 | 変数名 | 用途 | 公開範囲 | 必須 |
 |--------|------|---------|------|
-| `NEXT_PUBLIC_SITE_URL` | サイトURL | クライアント公開 (`NEXT_PUBLIC_` プレフィックス) | 任意 |
+| `SITE_URL` | サイトの公開 URL（メタデータ / canonical / sitemap / robots の基準） | サーバーサイドのみ。`NEXT_PUBLIC_` は付けない（付けるとビルド時に値が焼き込まれ、Cloud Run の実行時環境変数で上書きできなくなる） | 任意（未設定時は `src/lib/site-url.ts` の正規オリジンにフォールバック） |
 | `GCS_PRIVATE_BUCKET_NAME` | GCSバケット名 | サーバーサイドのみ | 必須 (本番) |
 | `GCS_JSON_PATH` | GCS上のJSONファイルパス | サーバーサイドのみ | 必須 (本番) |
 | `GOOGLE_APPLICATION_CREDENTIALS` | GCSサービスアカウントキーファイルパス | サーバーサイドのみ | 開発環境用 |
@@ -154,7 +154,7 @@ export const ContactFormSchema = z.object({
 | `GOOGLE_CLOUD_PRIVATE_KEY` | GCPサービスアカウント秘密鍵 | サーバーサイドのみ | 実質未使用（`gcs.ts` の `else if` 分岐は `NODE_ENV` が `production`/`development` 以外の場合のみ到達するデッドコード） |
 | `GOOGLE_CLOUD_CLIENT_EMAIL` | GCPサービスアカウントメール | サーバーサイドのみ | 同上（デッドコード分岐） |
 | `RESEND_API_KEY` | Resend APIキー | サーバーサイドのみ | 必須（`resend.ts` で検証済み） |
-| `RESEND_FROM_EMAIL` | メール送信元アドレス | サーバーサイドのみ | 必須（`resend.ts` で検証済み。`.env.example` にも記載済み） |
+| `RESEND_FROM_EMAIL` | メール送信元アドレス（`noreply@introtechkkplus.com`。Resend でドメイン検証済みであることが前提） | サーバーサイドのみ | 必須（`resend.ts` で検証済み。`.env.example` にも記載済み） |
 | `MY_MAIL_ADDRESS` | お問い合わせメール受信先 | サーバーサイドのみ | 必須（`resend.ts` で検証済み） |
 | `NODE_ENV` | 実行環境 | サーバーサイドのみ | 自動設定 |
 | `NEXT_TELEMETRY_DISABLED` | Next.jsテレメトリ無効化 | サーバーサイドのみ | 任意 |

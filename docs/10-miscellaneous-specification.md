@@ -106,6 +106,7 @@
 | Google Artifact Registry | Docker イメージ管理 | https://cloud.google.com/artifact-registry/docs |
 | Resend | メール送信 | https://resend.com/docs |
 | GitHub Actions | CI/CD | https://docs.github.com/en/actions |
+| Cloudflare | ドメインレジストラ / 権威 DNS（`introtechkkplus.com`） | https://developers.cloudflare.com/dns/ |
 
 ---
 
