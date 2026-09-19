@@ -38,7 +38,7 @@
 
 | 分類 | 採用技術 |
 |------|----------|
-| Framework | Next.js 14.2.5 (App Router) |
+| Framework | Next.js 14.2.35 (App Router) |
 | Language | TypeScript 5.5 |
 | Styling | Tailwind CSS 3.4 |
 | Form | React Hook Form + Zod（`@hookform/resolvers`） |

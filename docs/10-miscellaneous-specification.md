@@ -51,7 +51,7 @@
 |------|----------|------|
 | GCS | Google Cloud Storage | Google Cloud が提供するオブジェクトストレージサービス。本プロジェクトではポートフォリオデータ（JSON）をプライベートバケットに格納し、サーバーサイドから取得する。 |
 | ADC | Application Default Credentials | Google Cloud の認証メカニズム。本番環境（Cloud Run）では自動的にサービスアカウント認証が適用される。 |
-| ISR | Incremental Static Regeneration | Next.js の機能で、静的ページをバックグラウンドで再生成する仕組み。要件として言及されているが、現在は API Route + クライアントフェッチ方式を採用。 |
+| ISR | Incremental Static Regeneration | Next.js の機能で、静的ページをバックグラウンドで再生成する仕組み。要件として言及されているが、現在は Server Component によるリクエスト時取得（`dynamic = 'force-dynamic'`）を採用。 |
 | SPA | Single Page Application | 単一ページで動作するWebアプリケーション。ページ遷移なしに動的なコンテンツ切り替えを実現する。本プロジェクトはSPA形式のポートフォリオサイト。 |
 | App Router | Next.js App Router | Next.js 13以降で導入されたファイルベースのルーティングシステム。`app/` ディレクトリにページやレイアウトを配置する。 |
 | Atomic Design | Atomic Design | Brad Frost が提唱したUI設計手法。atoms（最小単位）、molecules（組み合わせ）、organisms（複合体）の階層でコンポーネントを分類する。 |
@@ -75,7 +75,7 @@
 
 | 技術 | バージョン | ドキュメント |
 |------|-----------|-------------|
-| Next.js | 14.2.5 | https://nextjs.org/docs |
+| Next.js | 14.2.35 | https://nextjs.org/docs |
 | React | 18.3.1 | https://react.dev |
 | TypeScript | 5.5.2 | https://www.typescriptlang.org/docs/ |
 | Tailwind CSS | 3.4.4 | https://tailwindcss.com/docs |
