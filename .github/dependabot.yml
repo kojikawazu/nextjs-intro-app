@@ -1,0 +1,35 @@
+# Dependabot 設定
+#
+# 目的は「依存の脆弱性と陳腐化を自動で検知し、更新 PR として上げること」。
+# GitHub 側の Dependabot alerts（Settings → Code security）も併せて有効化しておく必要がある。
+# CI 側の監査ステップ（.github/workflows/ci.yml）と役割を分担する:
+#   - Dependabot : 更新 PR を作る（能動的な追随）
+#   - CI の audit : マージ前に本番依存の critical を止める（受動的な防波堤）
+version: 2
+updates:
+    - package-ecosystem: npm
+      directory: /
+      schedule:
+          interval: weekly
+      # 個人プロジェクトで PR が溢れないよう上限を設ける。
+      open-pull-requests-limit: 5
+      groups:
+          # パッチ・マイナーはまとめて 1 PR にする（個別に上がると本数が増えすぎるため）。
+          minor-and-patch:
+              update-types:
+                  - minor
+                  - patch
+      # next のメジャー更新は Node / ESLint の前提条件が絡むため自動 PR の対象外とする
+      # （issue #88 で個別に判断する）。
+      ignore:
+          - dependency-name: next
+            update-types:
+              - version-update:semver-major
+
+    # ワークフローが参照する action のバージョンも追随対象にする。
+    # deploy_to_googlecloud.yml は actions/checkout@v3 など古い参照が残っている。
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+          interval: weekly
+      open-pull-requests-limit: 5
