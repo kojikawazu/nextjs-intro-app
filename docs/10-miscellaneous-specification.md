@@ -193,7 +193,7 @@ pnpm dev
 | 未使用変数 | エラー（`@typescript-eslint/no-unused-vars: "error"`） |
 | any 型の使用 | 警告（`@typescript-eslint/no-explicit-any: "warn"`） |
 | const 優先 | 必須（`prefer-const: "error"`） |
-| JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須。`.tsx` は `@returns` を除外）。詳細は `.claude/rules/jsdoc.md` |
+| JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須、公開シンボルへの JSDoc ブロックを `require-jsdoc` で必須化。`.tsx` は `@returns` を除外）。末尾の `export { X }` 形式は検出できないため、宣言と同時に export する。詳細は `.claude/rules/jsdoc.md` |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
 | パスエイリアス | `@/*` は `./src/*` にマッピング |

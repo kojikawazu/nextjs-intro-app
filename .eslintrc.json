@@ -30,7 +30,22 @@
                 "jsdoc/require-returns": "error",
                 "jsdoc/require-returns-description": "error",
                 "jsdoc/check-alignment": "warn",
-                "jsdoc/no-multi-asterisks": "warn"
+                "jsdoc/no-multi-asterisks": "warn",
+                "jsdoc/require-jsdoc": [
+                    "error",
+                    {
+                        "publicOnly": true,
+                        "require": {
+                            "FunctionDeclaration": false
+                        },
+                        "contexts": [
+                            "FunctionDeclaration",
+                            "TSInterfaceDeclaration",
+                            "TSTypeAliasDeclaration",
+                            "VariableDeclaration"
+                        ]
+                    }
+                ]
             }
         },
         {
