@@ -207,7 +207,7 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
 | sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
-| アクセシビリティ | 🟡 | 一部に `aria-label`。フォームの label 関連付け（`htmlFor`）や `aria-live` は未対応 |
+| アクセシビリティ | 🟡 | フォームは `htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role="status"` / `role="alert"` に対応。スキップリンクや `prefers-reduced-motion` は未対応 |
 | 自動テスト | 🔜 | ランナー未導入（[docs/08](./docs/08-test-specification.md)） |
 | データ更新 UI（CMS / 管理画面） | 🔜 | 現状は GCS / `sample.json` を直接編集 |
 

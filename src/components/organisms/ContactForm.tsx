@@ -14,6 +14,11 @@ import { TextArea } from '@/components/atoms/TextArea';
  * 検証は react-hook-form + `zodResolver(ContactFormSchema)`。`criteriaMode` は既定の
  * `firstError` のため、各フィールドで最初に失敗した制約のメッセージだけが表示される。
  *
+ * 送信結果は支援技術にも通知する。完了画面はフォームと差し替わるため `role="status"`
+ * （`aria-live="polite"` 相当）、送信エラーは利用者の対応を要するため `role="alert"`
+ * （assertive 相当）を使い分けている。各フィールドのエラーは `Input` / `TextArea` 側で
+ * `aria-describedby` / `aria-invalid` により読み上げられる。
+ *
  * **`fetch('/api/contact')` をコンポーネント内から直接呼んでいる。** `frontend.md` は
  * 「`fetch` を書いてよいのは `repositories/` だけ」「クライアントコンポーネントのロジックは
  * カスタムフックへ切り出す」と定めており、現状はいずれにも従っていない。
@@ -73,7 +78,11 @@ export function ContactForm() {
 
     if (isSubmitted) {
         return (
-            <div className="glass-card rounded-2xl p-8 text-center">
+            <div
+                role="status"
+                aria-live="polite"
+                className="glass-card rounded-2xl p-8 text-center"
+            >
                 <div className="flex justify-center mb-6">
                     <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-400 rounded-full flex items-center justify-center animate-bounce">
                         <svg
@@ -133,7 +142,7 @@ export function ContactForm() {
             />
 
             {submitError && (
-                <div className="glass-card border-red-400/30 bg-red-500/10 p-4">
+                <div role="alert" className="glass-card border-red-400/30 bg-red-500/10 p-4">
                     <p className="text-sm text-red-300">{submitError}</p>
                 </div>
             )}
