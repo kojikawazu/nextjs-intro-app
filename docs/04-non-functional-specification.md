@@ -181,7 +181,7 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 
 #### データ取得の耐障害性
 
-- 開発環境ではGCS障害時にローカルの `sample.json` にフォールバックするロジックが存在する (`src/lib/data-server.ts`)。ただし `sample.json` はリポジトリに含まれていないため、手動で配置しない限りフォールバックは成立しない
+- 開発環境ではGCS障害時にローカルの `sample.json` にフォールバックするロジックが存在する (`src/repositories/portfolio.ts`)。ただし `sample.json` はリポジトリに含まれていないため、手動で配置しない限りフォールバックは成立しない
 - 本番環境ではGCS障害時に HTTP 500 エラーレスポンスを返却
 - CDNキャッシュ (`stale-while-revalidate=86400`) により、GCS障害発生後も最大24時間はstaleデータを返却可能
 

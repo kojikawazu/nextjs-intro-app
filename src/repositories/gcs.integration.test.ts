@@ -14,7 +14,7 @@ async function loadGcs(jsonPath: string) {
     process.env.GCS_API_ENDPOINT = endpoint;
     process.env.GCS_PRIVATE_BUCKET_NAME = bucket;
     process.env.GCS_JSON_PATH = jsonPath;
-    return import('@/lib/gcs');
+    return import('@/repositories/gcs');
 }
 
 describe('gcs.getPortfolioDataFromGCS（fake-gcs-server コンテナ）', () => {

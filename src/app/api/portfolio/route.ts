@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPortfolioDataServer } from '@/lib/data-server';
+import { getPortfolioDataServer } from '@/repositories/portfolio';
 
 /**
  * ルートセグメントのレンダリング方式。動的レンダリングを強制する。

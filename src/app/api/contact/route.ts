@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendContactEmail } from '@/lib/resend';
+import { sendContactEmail } from '@/repositories/resend';
 
 /**
  * お問い合わせフォームの送信を受け付け、Resend でメールを送る。

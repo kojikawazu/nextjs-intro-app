@@ -155,7 +155,7 @@ cp .env.example .env.local
 
 ### 3.4 ローカル開発（GCSなし）
 
-`data-server.ts` にはローカルフォールバックのロジックが実装されている。`sample.json` 自体は `.gitignore` 済みでリポジトリに含まれないが、**同梱の `sample.example.json` をコピーすれば GCS 接続なしで即座に動作する**。
+`repositories/portfolio.ts` にはローカルフォールバックのロジックが実装されている。`sample.json` 自体は `.gitignore` 済みでリポジトリに含まれないが、**同梱の `sample.example.json` をコピーすれば GCS 接続なしで即座に動作する**。
 
 ```bash
 # 同梱サンプルをコピー（PortfolioData 型に準拠したデモデータ）

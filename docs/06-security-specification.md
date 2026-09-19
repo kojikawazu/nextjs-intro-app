@@ -175,10 +175,10 @@ export const ContactFormSchema = z.object({
 
 | チェック箇所 | チェック対象 | 動作 |
 |-------------|-----------|------|
-| `src/lib/resend.ts` | `RESEND_API_KEY` | 未設定時にエラースロー |
-| `src/lib/resend.ts` | `MY_MAIL_ADDRESS` | 未設定時にエラースロー |
-| `src/lib/resend.ts` | `RESEND_FROM_EMAIL` | 未設定時にエラースロー |
-| `src/lib/resend.ts` | `RESEND_API_KEY` のフォーマット | `re_` プレフィックスで始まらない場合にエラー |
+| `src/repositories/resend.ts` | `RESEND_API_KEY` | 未設定時にエラースロー |
+| `src/repositories/resend.ts` | `MY_MAIL_ADDRESS` | 未設定時にエラースロー |
+| `src/repositories/resend.ts` | `RESEND_FROM_EMAIL` | 未設定時にエラースロー |
+| `src/repositories/resend.ts` | `RESEND_API_KEY` のフォーマット | `re_` プレフィックスで始まらない場合にエラー |
 
 ---
 
@@ -359,7 +359,7 @@ export const ContactFormSchema = z.object({
 
 ### 8.1 HTMLメールテンプレート
 
-コンタクトフォームから受け取った `name`, `email`, `message` の値がHTMLメールテンプレートに直接埋め込まれる (`src/lib/resend.ts`)。
+コンタクトフォームから受け取った `name`, `email`, `message` の値がHTMLメールテンプレートに直接埋め込まれる (`src/repositories/resend.ts`)。
 
 #### 現在の実装
 

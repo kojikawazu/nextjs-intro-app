@@ -44,6 +44,44 @@ test.describe('SEO メタデータ（正常系）', () => {
     });
 });
 
+test.describe('サーバーサイドレンダリング（正常系）', () => {
+    test('初期 HTML に全セクションの本文が含まれる', async ({ request }) => {
+        // request フィクスチャは JavaScript を実行しないため、ブラウザが JS を動かす前の
+        // 生の HTML を検証できる。JS を実行しない SNS のクローラが見るものと同じ。
+        const html = await (await request.get('/')).text();
+
+        for (const keyword of [
+            'Solving Problems with Technology',
+            'About',
+            'Career',
+            'Skills',
+            'Contact',
+        ]) {
+            expect(html).toContain(keyword);
+        }
+    });
+
+    test('初期 HTML がローディング表示だけで終わっていない', async ({ request }) => {
+        const html = await (await request.get('/')).text();
+
+        // データ取得が useEffect に戻ると初期 HTML はスピナーだけになる。その退行をここで止める。
+        expect(html).not.toContain('animate-spin');
+
+        // タグを除いた本文が十分な分量あることを確認する。
+        // 閾値は E2E のシードデータ基準（現状 973 文字）であり、本番データ量とは無関係。
+        // useEffect 取得に戻ると 10 文字程度（"Loading..." のみ）まで落ちるため、
+        // 桁で区別できる 300 を境界にしている（シード変更にも耐える余裕を持たせる）。
+        const body = html.match(/<body[^>]*>([\s\S]*)<\/body>/)?.[1] ?? '';
+        const text = body
+            .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+            .replace(/<style\b[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]*>/g, '')
+            .replace(/\s+/g, '');
+
+        expect(text.length).toBeGreaterThan(300);
+    });
+});
+
 test.describe('SEO メタデータ（準正常系：設定漏れの回帰検出）', () => {
     test('メタデータにプレースホルダードメインや localhost が残っていない', async ({ page }) => {
         await page.goto('/');
