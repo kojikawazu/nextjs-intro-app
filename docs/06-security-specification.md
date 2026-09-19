@@ -95,7 +95,7 @@
 
 ### 2.2 クライアントサイドバリデーション
 
-**実装ファイル**: `src/utils/validation.ts`
+**実装ファイル**: `src/schemas/contact.ts`（クライアント・サーバー共通）
 **使用ライブラリ**: Zod + React Hook Form (`@hookform/resolvers/zod`)
 
 | フィールド | ルール | エラーメッセージ |

@@ -1,6 +1,6 @@
 # テスト仕様書
 
-> ℹ️ **テスト基盤は導入済み（Vitest + Testing Library）。現状はユーティリティ関数のユニットテストのみ実装**しています。`cn`（`src/utils/cn.test.ts`）/ `toDateString`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/utils/validation.test.ts`）の 3 ファイル・計 30 ケースが実装・PASS 済みで、CI（`.github/workflows/ci.yml`）の `pnpm test:run` で実行されます。コンポーネント / API Route / データフェッチ / E2E テスト、および MSW・Playwright は**未導入（今後の計画）**です。本書のうち未導入部分は導入時の指針であり、実在するコードではありません。
+> ℹ️ **テスト基盤は導入済み（Vitest + Testing Library + MSW + Testcontainers + Playwright）。**ユニットテスト（`pnpm test:run`）/ 統合テスト（`pnpm test:it`）/ E2E（`pnpm test:e2e`）の 3 層が実装され、CI（`.github/workflows/ci.yml` / `e2e.yml`）で実行されます。本書に記載のケースのうち未実装のものは導入時の指針であり、実在するコードではありません。
 
 ## 目次
 
@@ -26,7 +26,7 @@
         - [4.1.2 toDateString関数 (`src/lib/costom-date.ts`)](#412-todatestring関数-srclibcostom-datets)
         - [4.1.3 formatCareerPeriod関数 (`src/app/page.tsx` 内)](#413-formatcareerperiod関数-srcapppagetsx-内)
     - [4.2 バリデーションロジック](#42-バリデーションロジック)
-        - [4.2.1 ContactFormSchema (`src/utils/validation.ts`)](#421-contactformschema-srcutilsvalidationts)
+        - [4.2.1 ContactFormSchema (`src/schemas/contact.ts`)](#421-contactformschema-srcschemascontactts)
     - [4.3 Atomsコンポーネント](#43-atomsコンポーネント)
         - [4.3.1 Button (`src/components/atoms/Button.tsx`)](#431-button-srccomponentsatomsbuttontsx)
         - [4.3.2 Input (`src/components/atoms/Input.tsx`)](#432-input-srccomponentsatomsinputtsx)
@@ -384,7 +384,7 @@ e2e/
 
 ### 4.2 バリデーションロジック
 
-#### 4.2.1 ContactFormSchema (`src/utils/validation.ts`)
+#### 4.2.1 ContactFormSchema (`src/schemas/contact.ts`)
 
 **nameフィールド**
 

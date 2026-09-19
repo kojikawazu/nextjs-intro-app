@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ContactFormSchema } from './validation';
+import { ContactFormSchema } from './contact';
 
 const validInput = {
     name: '山田太郎',

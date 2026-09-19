@@ -13,12 +13,13 @@ import { z } from 'zod';
  * `criteriaMode: 'firstError'` で各フィールドの先頭 issue だけを `errors.<field>.message`
  * に載せるため、結果として空欄時には必須エラーが表示される。
  *
- * **本スキーマはクライアント側の検証にしか使われていない。** `src/app/api/contact/route.ts` は
- * 独自に必須チェック・メール形式（正規表現）・`message` の 5000 文字上限を検証しており、
- * 検証は行うが本スキーマは参照しない。結果として `name` の 2〜50 文字と `email` の 255 文字は
- * サーバー側で未検証、`message` の上限も 2000 と 5000 で食い違う。
- * `frontend.md` が求めるスキーマ共有への統一は docs/11 タスク #49 として未着手。
- * 差異の一覧は `docs/07-api-specification.md` §4.3 が正本。
+ * **クライアント（react-hook-form）とサーバー（`src/app/api/contact/route.ts`）の双方が
+ * 本スキーマを参照する。** 信頼境界が異なるため検証の重複は必要だが、ルールが二重定義に
+ * ならないよう、スキーマ自体は 1 つに保つ（`frontend.md`「BFF と同じ入力ルールなら、
+ * 同じ Zod スキーマを `schemas/` から共有する」）。
+ *
+ * クライアント側の検証は UX のためのものでありセキュリティ担保ではない。
+ * フォームを経由しない直接リクエストに対してはサーバー側の検証だけが効く。
  */
 export const ContactFormSchema = z.object({
     name: z
