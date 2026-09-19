@@ -14,7 +14,7 @@ TF_DIR      := terraform
 
 # 全ターゲットはファイルを生成しない（同名ファイルがあっても常に実行する）
 .PHONY: help setup install sample dev build start lint format format-check \
-        type-check test test-run test-coverage test-it test-e2e check \
+        type-check test test-run test-coverage test-it test-e2e check lint-actions \
         docker-build docker-run tf-init tf-plan tf-apply clean
 
 # デフォルトターゲット: ヘルプ表示
@@ -69,6 +69,10 @@ format-check:
 ## type-check: TypeScript の型チェック (tsc --noEmit)
 type-check:
 	$(PNPM) type-check
+
+## lint-actions: GitHub Actions ワークフローを検証する (actionlint / 要 Docker)
+lint-actions:
+	docker run --rm -v "$(PWD)":/repo --workdir /repo rhysd/actionlint:1.7.12 -color
 
 ## check: lint + format-check + type-check + test-run をまとめて実行する
 check: lint format-check type-check test-run

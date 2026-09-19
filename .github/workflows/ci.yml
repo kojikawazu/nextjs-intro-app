@@ -37,6 +37,18 @@ jobs:
             - name: Format check (Prettier)
               run: pnpm format:check
 
+            # ワークフロー定義そのものを検証する。式の誤り・存在しないランナーラベル・
+            # 未定義のコンテキスト参照に加え、`run:` ブロックを shellcheck に掛ける。
+            # deploy_to_googlecloud.yml は古いイメージ削除のシェルスクリプトを直接持つため、
+            # そこの構文ミスが本番デプロイまで気づかれない状態だった。
+            #
+            # バージョンを固定しているのは、ローカルで検出（exit 1）と非検出（exit 0）の
+            # 両方を実証した版と同じ挙動を CI で保証するため。
+            - name: Lint GitHub Actions workflows (actionlint)
+              run: |
+                  docker run --rm -v "$PWD":/repo --workdir /repo \
+                    rhysd/actionlint:1.7.12 -color
+
             # 依存監査は「止める基準」と「見せる基準」を分ける。
             #
             # ブロッキング: 本番依存（--prod）の critical のみ。devDependency 経由の指摘は
