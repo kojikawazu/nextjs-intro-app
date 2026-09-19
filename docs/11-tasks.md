@@ -221,6 +221,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | JSDoc 付与を継続。`src/lib/` + `src/app/api/`（8 シンボル）へ付与（issue #66 / 親 #64） | - |
 | 2026-09-19 | JSDoc 付与に着手。`src/types/` + `src/utils/`（16 シンボル）へ付与（issue #65 / 親 #64） | - |
 | 2026-09-19 | 独自ドメイン `introtechkkplus.com` へ切り替え。`metadataBase` / canonical / sitemap.xml / robots.txt を追加し、`NEXT_PUBLIC_SITE_URL` を `SITE_URL` へ整理（issue #62） | - |
 | 2026-07-08 | テスト基盤導入（UT/IT/E2E）と CI 整備、JSDoc lint・ルール拡充を完了（PR #21〜#25）。残タスク（#30/#52/#53）を追記 | - |
