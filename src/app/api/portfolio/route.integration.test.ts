@@ -38,7 +38,10 @@ describe('GET /api/portfolio（route → data-server → gcs コンテナ）', (
 
         expect(res.status).toBe(500);
         const body = await res.json();
-        expect(body.error).toBe('Failed to fetch portfolio data');
-        expect(typeof body.timestamp).toBe('string');
+        expect(body.error).toBe('ポートフォリオデータの取得に失敗しました');
+
+        // 内部エラーの詳細（旧 `details` / `timestamp`）を返さないことを固定する。
+        // 原因はサーバーログ（lib/logger.ts）にのみ残す（error-handling.md）。
+        expect(Object.keys(body)).toEqual(['error']);
     });
 });

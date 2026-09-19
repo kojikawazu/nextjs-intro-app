@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPortfolioDataServer } from '@/repositories/portfolio';
+import { logDebug, logError } from '@/lib/logger';
+import type { ApiErrorResponse } from '@/types/api-error';
 
 /**
  * ルートセグメントのレンダリング方式。動的レンダリングを強制する。
@@ -17,13 +19,13 @@ export const dynamic = 'force-dynamic';
  * レスポンスには `s-maxage=300, stale-while-revalidate=86400` を付与し、
  * 動的レンダリングでありながら CDN 層で 5 分間キャッシュさせる。
  *
- * @returns 成功時は 200 でポートフォリオデータ、取得失敗時は 500 で `error` / `details` / `timestamp`
+ * @returns 成功時は 200 でポートフォリオデータ、取得失敗時は 500 で `ApiErrorResponse`
  */
 export async function GET() {
     try {
-        console.log('API: Starting portfolio data fetch...');
+        logDebug('portfolio: データ取得を開始');
         const portfolioData = await getPortfolioDataServer();
-        console.log('API: Successfully fetched portfolio data');
+        logDebug('portfolio: データ取得に成功');
 
         return NextResponse.json(portfolioData, {
             headers: {
@@ -31,16 +33,11 @@ export async function GET() {
             },
         });
     } catch (error) {
-        console.error('API Error fetching portfolio data:', error);
-        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        logError('portfolio: データ取得に失敗', error);
 
-        return NextResponse.json(
-            {
-                error: 'Failed to fetch portfolio data',
-                details: error instanceof Error ? error.message : 'Unknown error',
-                timestamp: new Date().toISOString(),
-            },
-            { status: 500 },
-        );
+        // 原因（例外の message・スタック）はサーバーログにのみ残す。
+        // レスポンスへ載せると取得元のバケット名やパスが外部へ漏れる。
+        const body: ApiErrorResponse = { error: 'ポートフォリオデータの取得に失敗しました' };
+        return NextResponse.json(body, { status: 500 });
     }
 }

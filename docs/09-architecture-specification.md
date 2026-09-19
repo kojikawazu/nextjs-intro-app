@@ -249,9 +249,11 @@ src/
 ├── lib/                        # 純粋ユーティリティ（通信しない）
 │   ├── costom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
 │   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
+│   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
 │   └── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
 │
 ├── types/
+│   ├── api-error.ts            # ApiErrorResponse (Route Handler の統一エラーレスポンス)
 │   └── portfolio.ts            # ポートフォリオデータ型定義
 │                                 - PortfolioData (ルート型)
 │                                 - NavbarData, HeroData, AboutData

@@ -7,6 +7,7 @@ import { ContactFormSchema, type ContactFormInput } from '@/schemas/contact';
 import { Button } from '@/components/atoms/Button';
 import { Input } from '@/components/atoms/Input';
 import { TextArea } from '@/components/atoms/TextArea';
+import { logDebug } from '@/lib/logger';
 
 /**
  * お問い合わせフォーム。入力・検証・送信・完了表示までを内部で完結させる。
@@ -60,9 +61,9 @@ export function ContactForm() {
                 throw new Error(result.error || 'メール送信に失敗しました');
             }
 
-            if (process.env.NODE_ENV === 'development') {
-                console.log('Contact form submission successful:', result);
-            }
+            // result 全体ではなく messageId のみを残す。レスポンスには送信内容の
+            // 確認文言が含まれるため、開発時であってもそのまま出力しない。
+            logDebug('contact-form: 送信に成功', { messageId: result.messageId });
             setIsSubmitted(true);
             reset();
         } catch (error) {

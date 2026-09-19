@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/atoms/Button';
+import { logError } from '@/lib/logger';
 
 /** `ErrorBoundary` の props（Next.js が渡す固定の形）。 */
 interface ErrorBoundaryProps {
@@ -25,7 +26,7 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
     useEffect(() => {
         // error-handling.md「エラー時はスタックトレースを含むログを出力する」に従う。
         // digest はサーバー側ログと突き合わせるための識別子。
-        console.error('Failed to load portfolio data:', error.digest ?? error.message, error);
+        logError('page: ポートフォリオデータの読み込みに失敗', error, { digest: error.digest });
     }, [error]);
 
     return (
