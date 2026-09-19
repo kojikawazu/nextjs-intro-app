@@ -37,6 +37,22 @@ jobs:
             - name: Format check (Prettier)
               run: pnpm format:check
 
+            # 依存監査は「止める基準」と「見せる基準」を分ける。
+            #
+            # ブロッキング: 本番依存（--prod）の critical のみ。devDependency 経由の指摘は
+            # 本番コンテナに含まれず、eslint / vitest / testcontainers 等の間接依存で数が多いため、
+            # ここで止めると PR がすべてブロックされて監査そのものが形骸化する。
+            #
+            # 実測（2026-09-19 時点）: 全依存 48 件 / 本番依存のみ 11 件 / critical 0 件。
+            # 本番依存の high 6 件を解消できた段階で、この閾値を high へ引き上げる。
+            - name: Audit (blocking - production deps, critical only)
+              run: pnpm audit:ci
+
+            # 可視化のみ。critical 未満の指摘を CI ログに残すが、ここでは CI を落とさない。
+            - name: Audit (informational - production deps, all levels)
+              run: pnpm audit
+              continue-on-error: true
+
             - name: Test (Vitest)
               run: pnpm test:run
 

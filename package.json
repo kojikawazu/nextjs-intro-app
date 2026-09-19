@@ -15,7 +15,9 @@
         "test:run": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:it": "vitest run --config vitest.integration.config.ts",
-        "test:e2e": "playwright test"
+        "test:e2e": "playwright test",
+        "audit": "pnpm audit --prod",
+        "audit:ci": "pnpm audit --prod --audit-level critical"
     },
     "dependencies": {
         "@google-cloud/storage": "^7.16.0",

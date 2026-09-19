@@ -37,6 +37,7 @@
 - [7. 既知のセキュリティ考慮事項](#7-既知のセキュリティ考慮事項)
     - [7.1 現在のリスク評価](#71-現在のリスク評価)
     - [7.2 推奨セキュリティ改善](#72-推奨セキュリティ改善)
+    - [7.3 依存パッケージ監査（実装済み）](#73-依存パッケージ監査実装済み)
         - [優先度: 高](#優先度-高)
         - [優先度: 中](#優先度-中)
         - [優先度: 低](#優先度-低)
@@ -349,9 +350,45 @@ export const ContactFormSchema = z.object({
 
 | 改善項目 | 説明 | 実装方法 |
 |---------|------|---------|
-| 依存パッケージ監査 | 既知の脆弱性を含むパッケージの検出・更新 | `pnpm audit` の定期実行、Dependabot/Renovateの導入 |
 | Subresource Integrity (SRI) | 外部リソース (Google Fonts) の改ざん検知 | `next/font/google` への移行による外部リソース依存の排除 |
 | メールテンプレートのサニタイズ | HTMLメール本文に埋め込まれるユーザー入力のサニタイズ | HTMLエスケープ処理の追加 |
+
+### 7.3 依存パッケージ監査（実装済み）
+
+> 旧「優先度: 低」の改善項目だったが、issue #80 で実装済みへ移行した。
+
+#### 仕組み
+
+| 層 | 担当 | 内容 |
+|---|---|---|
+| **Dependabot** | `.github/dependabot.yml` | 更新 PR を能動的に作る（npm / github-actions、週次） |
+| **CI（ブロッキング）** | `pnpm audit:ci` | 本番依存の **critical** のみで CI を落とす |
+| **CI（可視化）** | `pnpm audit` | 本番依存の全レベルをログに出す（`continue-on-error: true`） |
+
+GitHub 側の Dependabot alerts（Settings → Code security）も有効化する必要がある。
+
+#### なぜ閾値を「本番依存の critical」に置くか
+
+**件数を 0 にすることが目的ではなく、自分の構成で発火するものを判定して潰すことが目的**である。
+
+実測（2026-09-19 時点）:
+
+| 範囲 | 件数 |
+|---|---|
+| 全依存 | 48 件（high 26 / moderate 20 / low 2 / critical 0） |
+| **本番依存のみ（`--prod`）** | **11 件**（high 6 / moderate 4 / low 1 / critical 0） |
+
+差分の 37 件は `eslint` / `vitest` / `testcontainers` / `jsdom` 等の **devDependency 経由**で、本番コンテナには含まれない。ここを含めて CI を落とすと、対処のしようがない指摘で全 PR がブロックされ、**監査そのものが形骸化する**。
+
+本番依存の 11 件はすべて `@google-cloud/storage` と `next` 経由の間接依存であり、直接の更新では解消できない（`pnpm.overrides` か上流の更新待ちになる）。
+
+#### 引き上げの段取り
+
+本番依存の high 6 件（`postcss` / `nanoid` / `fast-xml-builder` / `form-data`）を解消できた段階で、`audit:ci` の閾値を `--audit-level high` に引き上げる。**閾値は据え置くのではなく、解消に応じて締めていく**。
+
+#### 運用上の注意
+
+アドバイザリは件名ではなく `patched_versions` で区別する。同名・類似タイトルのアドバイザリが複数存在し（例: Next.js の "Denial of Service with Server Components" は 4 件あり、修正版がそれぞれ異なる）、件名だけで「対応済み」と判断すると取りこぼす。
 
 ---
 
