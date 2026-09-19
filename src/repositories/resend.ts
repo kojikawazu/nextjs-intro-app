@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/html-escape';
+import { logDebug, logError } from '@/lib/logger';
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
@@ -25,9 +26,9 @@ interface ContactEmailData {
  * 判定であって出力先の文法に合わせる処理ではないため、検証を通った値でもエスケープは必要
  * （`security.md`「XSS: ... 出力エスケープの多層防御」）。
  *
- * エラー詳細のログ出力は `NODE_ENV === 'development'` のときだけ行う。本番では送信失敗の
- * 詳細が一切ログに残らないため、`error-handling.md`「エラー時はスタックトレースを含むログを
- * 出力する」とは逆方向であり、本番で発生した送信失敗の調査は難しい。
+ * 送信失敗は `logError` で**本番でも**記録する。開発時だけの出力では、実際に問い合わせが
+ * 届かなかったときに何も手がかりが残らない（`error-handling.md`「エラー時はスタックトレースを
+ * 含むログを出力する」）。**本文・送信者名・メールアドレスはログに含めない**（個人情報のため）。
  *
  * @param data - 送信者名・返信先アドレス・本文
  * @returns 送信結果。成功時は `success: true` と `messageId`、失敗時は `success: false` と `error`
@@ -113,9 +114,10 @@ ${message}
         // Resend は HTTP エラー時に例外ではなく { data: null, error } を返す。
         // ここで検知しないと送信失敗を成功として扱ってしまう。
         if (result.error) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('Resend API returned an error:', result.error);
-            }
+            logError('resend: API がエラーを返した', undefined, {
+                name: result.error.name,
+                reason: result.error.message,
+            });
             return {
                 success: false,
                 error: result.error.message || 'Resend API error',
@@ -128,10 +130,7 @@ ${message}
             data: result.data,
         };
     } catch (error) {
-        // Log error only in development
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Failed to send contact email:', error);
-        }
+        logError('resend: メール送信に失敗', error);
 
         return {
             success: false,
@@ -164,14 +163,10 @@ export async function testResendConnection() {
             throw new Error('Invalid RESEND_API_KEY format');
         }
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log('✅ Resend configuration validated');
-        }
+        logDebug('resend: 設定を検証した');
         return true;
     } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-            console.error('❌ Resend connection test failed:', error);
-        }
+        logError('resend: 設定の検証に失敗', error);
         return false;
     }
 }

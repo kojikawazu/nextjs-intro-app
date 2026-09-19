@@ -1,5 +1,6 @@
 import { PortfolioData } from '@/types/portfolio';
 import { getPortfolioDataFromGCS } from './gcs';
+import { logWarn } from '@/lib/logger';
 
 /**
  * 開発時のローカルフォールバック用データ。`sample.json` が無ければ `null` のままになる。
@@ -11,8 +12,8 @@ let portfolioData: PortfolioData | null = null;
 if (process.env.NODE_ENV === 'development') {
     try {
         portfolioData = require('../../sample.json');
-    } catch (error) {
-        console.warn('sample.json not found, will use GCS only');
+    } catch {
+        logWarn('portfolio: sample.json が見つからないため GCS のみを使用する');
     }
 }
 
@@ -40,7 +41,11 @@ export async function getPortfolioDataServer(): Promise<PortfolioData> {
         return gcsData;
     } catch (error) {
         if (process.env.NODE_ENV === 'development' && portfolioData) {
-            console.warn('Failed to fetch from GCS, falling back to local data:', error);
+            // スタックトレース付きの記録は getPortfolioDataFromGCS() の logError が既に
+            // 済ませている。ここでは「なぜ退避したか」だけを残す。
+            logWarn('portfolio: GCS 取得に失敗したためローカルデータへ退避する', {
+                reason: error instanceof Error ? error.message : String(error),
+            });
             return portfolioData;
         }
         throw error;

@@ -1,3 +1,5 @@
+import { logWarn } from './logger';
+
 /**
  * 本番の正規オリジン。環境変数 `SITE_URL` が未設定・不正な場合のフォールバックとして使う。
  *
@@ -28,8 +30,11 @@ export function getSiteUrl(): URL {
     try {
         return new URL(raw);
     } catch {
-        console.warn(
-            `[site-url] SITE_URL を URL として解釈できないため正規オリジンにフォールバックします: ${raw}`,
+        logWarn(
+            'site-url: SITE_URL を URL として解釈できないため正規オリジンへフォールバックする',
+            {
+                raw,
+            },
         );
         return new URL(CANONICAL_SITE_URL);
     }
