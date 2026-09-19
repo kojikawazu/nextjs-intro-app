@@ -122,6 +122,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 未着手 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 未着手 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 55 | JSDoc(TSDoc) 未付与の公開シンボル 45 件を解消 | 対応中 | 中 | 親 issue #64。`jsdoc.md` は公開シンボルへの JSDoc を必須とするが、ブロックの有無を見る `require-jsdoc` が未採用のため lint をすり抜けていた。レイヤ別に 5 サブ issue へ分割（#65 types/utils・#66 lib/api・#67 components・#68 app ルート・#69 lint 強制）。型のフィールド説明は docs/05 を出典とする |
 
 ### 2.5 テスト・CI/CD 拡充（残タスク）
 
@@ -220,6 +221,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | JSDoc 付与に着手。`src/types/` + `src/utils/`（16 シンボル）へ付与（issue #65 / 親 #64） | - |
 | 2026-09-19 | 独自ドメイン `introtechkkplus.com` へ切り替え。`metadataBase` / canonical / sitemap.xml / robots.txt を追加し、`NEXT_PUBLIC_SITE_URL` を `SITE_URL` へ整理（issue #62） | - |
 | 2026-07-08 | テスト基盤導入（UT/IT/E2E）と CI 整備、JSDoc lint・ルール拡充を完了（PR #21〜#25）。残タスク（#30/#52/#53）を追記 | - |
 | 2026-03-20 | タスク管理ドキュメント初版作成 | - |
