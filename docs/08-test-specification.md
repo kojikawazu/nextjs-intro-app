@@ -48,7 +48,7 @@
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
         - [5.1.2 POST /api/contact (`src/app/api/contact/route.ts`)](#512-post-apicontact-srcappapicontactroutets)
     - [5.2 データフェッチフロー](#52-データフェッチフロー)
-        - [5.2.1 data-server (`src/repositories/portfolio.ts`)](#521-data-server-srclibdata-serverts)
+        - [5.2.1 portfolio (`src/repositories/portfolio.ts`)](#521-portfolio-srcrepositoriesportfoliots)
         - [5.2.2 GCSクライアント (`src/repositories/gcs.ts`)](#522-gcsクライアント-srclibgcsts)
         - [5.2.3 Resendクライアント (`src/repositories/resend.ts`)](#523-resendクライアント-srclibresendts)
 - [6. E2Eテスト仕様](#6-e2eテスト仕様)
@@ -318,14 +318,22 @@ src/
 │       ├── Header.test.tsx
 │       ├── ContactForm.tsx
 │       └── ContactForm.test.tsx
+├── repositories/
+│   ├── portfolio.ts
+│   ├── gcs.ts
+│   ├── gcs.integration.test.ts
+│   └── resend.ts
+├── schemas/
+│   ├── contact.ts
+│   └── contact.test.ts
 ├── lib/
 │   ├── costom-date.ts
 │   ├── costom-date.test.ts
-│   ├── data-server.ts
-│   └── data-server.test.ts
+│   ├── html-escape.ts
+│   ├── html-escape.test.ts
+│   ├── site-url.ts
+│   └── site-url.test.ts
 ├── utils/
-│   ├── validation.ts
-│   ├── validation.test.ts
 │   ├── cn.ts
 │   └── cn.test.ts
 └── app/
@@ -382,6 +390,29 @@ e2e/
 | UT-FCP-003 | 同一年の期間を整形する | `('2024年1月', '2024年6月')` | `'2024年1月 - 2024年6月'` |
 
 > 注: `formatCareerPeriod` は `page.tsx` のモジュールスコープに定義されたプライベート関数であるため、テスト容易性のために `src/lib/costom-date.ts` または `src/utils/` 配下に抽出することを推奨する。
+
+#### 4.1.4 escapeHtml関数 (`src/lib/html-escape.ts`)
+
+HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 : 準正常系+異常系14。
+
+| テストID | テストケース | 入力 | 期待出力 |
+|----------|------------|------|---------|
+| UT-ESC-001 | 特殊文字を含まない文字列はそのまま返す | `'山田太郎'` | `'山田太郎'` |
+| UT-ESC-002 | 通常の問い合わせ文はそのまま返す | `'お世話になっております。…'` | 入力と同一 |
+| UT-ESC-003 | 山括弧を実体参照へ変換する | `'<b>'` | `'&lt;b&gt;'` |
+| UT-ESC-004 | アンパサンドを実体参照へ変換する | `'A&B社'` | `'A&amp;B社'` |
+| UT-ESC-005 | ダブルクォートを実体参照へ変換する | `'株式会社"例"'` | `'株式会社&quot;例&quot;'` |
+| UT-ESC-006 | シングルクォートは数値参照へ変換する | `"it's"` | `'it&#39;s'` |
+| UT-ESC-007 | 5種類すべてが混在しても一度に変換する | `` `&<>"'` `` | `'&amp;&lt;&gt;&quot;&#39;'` |
+| UT-ESC-008 | 連続する特殊文字をすべて変換する | `'<<>>'` | `'&lt;&lt;&gt;&gt;'` |
+| UT-ESC-009 | エスケープ済み文字列は二重変換される（べき等でない） | `'&amp;'` | `'&amp;amp;'` |
+| UT-ESC-010 | scriptタグが実行され得ない文字列になる | `'<script>alert(1)</script>'` | `'&lt;script&gt;alert(1)&lt;/script&gt;'` |
+| UT-ESC-011 | 属性を伴うタグ注入を変換する | `'<img src="x" onerror="alert(1)">'` | 山括弧・クォートが実体参照 |
+| UT-ESC-012 | 属性値を抜け出すクォート単体も変換する | `'" onmouseover="alert(1)'` | `'&quot; onmouseover=&quot;alert(1)'` |
+| UT-ESC-013 | 空文字は空文字を返す | `''` | `''` |
+| UT-ESC-014 | 改行・タブは変換しない | `'1行目\n\t2行目'` | 入力と同一 |
+| UT-ESC-015 | サロゲートペア（絵文字）を壊さない | `'確認しました👍'` | 入力と同一 |
+| UT-ESC-016 | 上限2000文字の入力もすべて変換する | `'<'.repeat(2000)` | `'&lt;'.repeat(2000)` |
 
 ### 4.2 バリデーションロジック
 
@@ -637,10 +668,11 @@ e2e/
 | IT-API-CT-007 | メール送信失敗時に500エラーを返す | 正常ボディ、Resend送信失敗（モック） | 500 + `'メールの送信に失敗しました...'` |
 | IT-API-CT-008 | 不正なJSON形式で500エラーを返す | 不正なJSONボディ | 500 + `'サーバーエラーが発生しました...'` |
 | IT-API-CT-009 | 成功レスポンスにmessageIdが含まれる | 正常送信 | messageId フィールドが存在する |
+| IT-API-CT-010 | HTMLを含む入力がエスケープされて送信される | `{ name: '<b>山田</b>', message: '<img src="x" onerror="alert(1)"> …' }` | Resendへ渡る payload の `html` は実体参照化・`text` と `subject` は生値（docs/06 §8.1） |
 
 ### 5.2 データフェッチフロー
 
-#### 5.2.1 data-server (`src/repositories/portfolio.ts`)
+#### 5.2.1 portfolio (`src/repositories/portfolio.ts`)
 
 | テストID | テストケース | 前提条件 | 期待結果 |
 |----------|------------|---------|---------|
@@ -939,7 +971,7 @@ handlers.ts で定義すべきハンドラー:
 
 4. APIルートの統合テスト（portfolio, contact）
 5. Moleculesコンポーネントのユニットテスト（SkillCard, CareerCard, SocialLinks）
-6. データフェッチフローの統合テスト（data-server, gcs, resend）
+6. データフェッチフローの統合テスト（portfolio, gcs, resend）
 
 ### フェーズ3: 画面テスト（優先度: 中）
 

@@ -90,6 +90,44 @@ describe('POST /api/contact（route → resend / MSW モック）', () => {
         expect((await res.json()).error).toBe('お問い合わせ内容は10文字以上で入力してください');
     });
 
+    // --- 準正常系（HTML/スクリプトを含む入力：出力エスケープ）---
+    // escapeHtml 単体の検証は src/lib/html-escape.test.ts が持つ。ここで固定したいのは
+    // 「ハンドラ経由で Resend へ渡る payload が実際にエスケープ済みか」、つまり
+    // 呼び出し忘れ（回帰）が起きていないこと。
+    it('HTML を含む入力は html パートがエスケープされ、text パートは生値のまま送られる', async () => {
+        // MSW の `request.json()` は unknown を返すため、送信 payload の形に合わせて絞り込む。
+        // 実型は Resend の送信ボディだが、検証に使うのは以下 3 フィールドだけで足りる。
+        let sent: { subject: string; html: string; text: string } | undefined;
+        server.use(
+            http.post('https://api.resend.com/emails', async ({ request }) => {
+                sent = (await request.json()) as typeof sent;
+                return HttpResponse.json({ id: 'it-escape-id' }, { status: 200 });
+            }),
+        );
+
+        const res = await POST(
+            contactRequest({
+                name: '<b>山田</b>',
+                email: 'taro@example.com',
+                message: '<img src="x" onerror="alert(1)"> をご確認ください。',
+            }),
+        );
+        expect(res.status).toBe(200);
+
+        // html パート: 山括弧・クォートが実体参照へ変換され、生のタグは残らない。
+        expect(sent?.html).toContain('&lt;b&gt;山田&lt;/b&gt;');
+        expect(sent?.html).toContain('&lt;img src=&quot;x&quot; onerror=&quot;alert(1)&quot;&gt;');
+        expect(sent?.html).not.toContain('<img src="x"');
+        expect(sent?.html).not.toContain('<b>山田</b>');
+
+        // text パート: HTML として解釈されないため生値のまま送る。
+        expect(sent?.text).toContain('<img src="x" onerror="alert(1)"> をご確認ください。');
+        expect(sent?.text).toContain('<b>山田</b>');
+
+        // 件名はヘッダーであり HTML ではないため、実体参照へ変換しない。
+        expect(sent?.subject).toBe('ポートフォリオサイトからのお問い合わせ - <b>山田</b>様');
+    });
+
     // --- 異常系（リクエストボディ自体が壊れている）---
     it('JSON として壊れたボディは 400 を返す', async () => {
         const req = new NextRequest('http://localhost/api/contact', {

@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/html-escape';
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
@@ -19,6 +20,10 @@ interface ContactEmailData {
  * **例外を呼び出し側に投げない。** 環境変数の未設定・Resend の API エラー・想定外の例外は
  * すべて内部で捕捉し、`success: false` と `error` を持つオブジェクトとして返す。
  * 呼び出し側（`api/contact/route.ts`）は `result.success` で分岐すればよく、try/catch を要さない。
+ *
+ * 本文の HTML パートへ埋め込む値は `escapeHtml` を通す。Zod の検証は「受け付けてよい値か」の
+ * 判定であって出力先の文法に合わせる処理ではないため、検証を通った値でもエスケープは必要
+ * （`security.md`「XSS: ... 出力エスケープの多層防御」）。
  *
  * エラー詳細のログ出力は `NODE_ENV === 'development'` のときだけ行う。本番では送信失敗の
  * 詳細が一切ログに残らないため、`error-handling.md`「エラー時はスタックトレースを含むログを
@@ -46,6 +51,12 @@ export async function sendContactEmail(data: ContactEmailData) {
 
         const fromEmail = process.env.RESEND_FROM_EMAIL;
 
+        // HTML パートへ埋め込む値は実体参照へ変換しておく。件名と text パートは
+        // HTML として解釈されないため、エスケープすると実体参照がそのまま読者に見える。
+        const escapedName = escapeHtml(name);
+        const escapedEmail = escapeHtml(email);
+        const escapedMessage = escapeHtml(message);
+
         // Send email using Resend
         const result = await resend.emails.send({
             from: fromEmail,
@@ -60,13 +71,13 @@ export async function sendContactEmail(data: ContactEmailData) {
           
           <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #475569; margin-top: 0;">お客様情報</h3>
-            <p><strong>お名前:</strong> ${name}</p>
-            <p><strong>メールアドレス:</strong> ${email}</p>
+            <p><strong>お名前:</strong> ${escapedName}</p>
+            <p><strong>メールアドレス:</strong> ${escapedEmail}</p>
           </div>
           
           <div style="background-color: #ffffff; padding: 20px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
             <h3 style="color: #475569; margin-top: 0;">メッセージ内容</h3>
-            <p style="line-height: 1.6; white-space: pre-wrap;">${message}</p>
+            <p style="line-height: 1.6; white-space: pre-wrap;">${escapedMessage}</p>
           </div>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px;">
@@ -82,7 +93,9 @@ export async function sendContactEmail(data: ContactEmailData) {
           </div>
         </div>
       `,
-            // Plain text version for email clients that don't support HTML
+            // Plain text version for email clients that don't support HTML.
+            // text/plain は HTML として解釈されないため、ここは未エスケープの生値でよい。
+            // 実体参照へ変換すると `&amp;` 等がそのまま読者に見えてしまう。
             text: `
 新しいお問い合わせ
 
