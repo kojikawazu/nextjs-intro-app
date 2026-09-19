@@ -177,7 +177,8 @@ pnpm dev
 | `pnpm build` | 本番ビルド |
 | `pnpm start` | 本番ビルドのローカル実行 |
 | `pnpm lint` | ESLint によるコード静的解析 |
-| `pnpm audit` | 本番依存の脆弱性監査（全レベル表示。CI では可視化のみ） |
+| `pnpm audit` | 組み込みコマンド。dev を含む全依存を監査（CI では可視化のみ） |
+| `pnpm audit:prod` | 本番依存のみを全レベルで監査（`audit` は組み込み名と衝突するため別名） |
 | `pnpm audit:ci` | 本番依存の critical のみで失敗する監査（CI のブロッキングゲート） |
 | `pnpm format` | Prettier によるコード自動整形 |
 | `pnpm format:check` | Prettier による整形チェック（CI用） |
