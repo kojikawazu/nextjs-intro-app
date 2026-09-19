@@ -193,17 +193,15 @@ GCS からのデータ取得に失敗した場合に返却される。
 
 ```json
 {
-  "error": "Failed to fetch portfolio data",
-  "details": "File json/navbar_intro.json not found in bucket intro_k_pri_bucket",
-  "timestamp": "2025-01-15T10:30:00.000Z"
+  "error": "ポートフォリオデータの取得に失敗しました"
 }
 ```
 
 | フィールド | 型 | 説明 |
 |---|---|---|
 | `error` | `string` | 固定のエラーメッセージ |
-| `details` | `string` | 具体的なエラー原因（Error オブジェクトの message。不明な場合は `"Unknown error"`） |
-| `timestamp` | `string` | エラー発生日時（ISO 8601 形式、UTC） |
+
+原因（例外の message・スタックトレース・バケット名・オブジェクトパス）はレスポンスに含めず、サーバーログにのみ残す（§7.2）。
 
 #### データ取得の内部処理フロー
 
@@ -541,39 +539,53 @@ Resend クライアントの初期化時、`RESEND_API_KEY` が未設定の場�
 
 ### 7.1 エラーレスポンス形式
 
-#### GET /api/portfolio
+**全エンドポイントで `{ error: string }` に統一する。** 型は `src/types/api-error.ts` の `ApiErrorResponse` を単一の真実とし、各 Route Handler がこれを参照する（`error-handling.md`「統一エラーレスポンス」）。
 
-| ステータス | 形式 | 説明 |
+| エンドポイント | ステータス | 説明 |
 |---|---|---|
-| 500 | `{ error: string, details: string, timestamp: string }` | GCS からのデータ取得失敗 |
+| `GET /api/portfolio` | 500 | GCS からのデータ取得失敗 |
+| `POST /api/contact` | 400 | バリデーションエラー / リクエスト形式不正 |
+| `POST /api/contact` | 500 | メール送信失敗またはサーバーエラー |
 
-#### POST /api/contact
-
-| ステータス | 形式 | 説明 |
-|---|---|---|
-| 400 | `{ error: string }` | バリデーションエラー |
-| 500 | `{ error: string }` | メール送信失敗またはサーバーエラー |
+**内部エラーメッセージ（`Error.message`）をレスポンスに載せない。** 従来 `GET /api/portfolio` のみ `details` と `timestamp` を併せて返していたが、取得元のバケット名・オブジェクトパスが外部へ漏れるため廃止した。
 
 ### 7.2 サーバーサイドログ出力
 
-| API | ログ出力条件 | 内容 |
+出力方針は `src/lib/logger.ts` に集約する。呼び出し側は「エラーか / 警告か / デバッグ情報か」だけを選ぶ。
+
+| 関数 | 出力条件 | 用途 | 出力先 |
+|---|---|---|---|
+| `logError` | **常時**（本番含む） | 失敗の記録。スタックトレースを必ず残す | `console.error` |
+| `logWarn` | 常時 | 処理は継続できるが注意が要る事象 | `console.warn` |
+| `logDebug` | **開発環境のみ** | 進行状況の追跡 | `console.log` |
+
+主な呼び出し箇所:
+
+| 箇所 | 関数 | 内容 |
 |---|---|---|
-| `GET /api/portfolio` | 常時 | データ取得の開始・成功ログ |
-| `GET /api/portfolio` | エラー時 | エラー詳細とスタックトレース |
-| `POST /api/contact` | 開発環境のみ | メール送信失敗・サーバーエラーの詳細 |
+| `GET /api/portfolio` | `logDebug` | データ取得の開始・成功 |
+| `GET /api/portfolio` | `logError` | 取得失敗（スタックトレース付き） |
+| `POST /api/contact` | `logError` | メール送信失敗・想定外のエラー |
+| `repositories/gcs.ts` | `logError` | GCS 取得失敗（バケット名・オブジェクトパス付き） |
+| `repositories/resend.ts` | `logError` | Resend API エラー・送信失敗 |
+| `repositories/portfolio.ts` | `logWarn` | `sample.json` 不在・ローカルデータへの退避 |
 
-### 7.3 GCS エラーの詳細ログ
+`meta` に何を渡すかは呼び出し側の責任であり、logger は自動マスキングを行わない。認証情報・個人情報・トークンを渡さないこと。問い合わせ内容（`name` / `email` / `message`）はログに出力しない。
 
-GCS のデータ取得に失敗した場合、以下のデバッグ情報がサーバーログに出力される。
+### 7.3 GCS エラーのログ内容
+
+GCS のデータ取得に失敗した場合、以下をサーバーログへ出力する。
 
 ```
-{
-  bucketName: "バケット名",
-  jsonPath: "ファイルパス",
-  projectId: "プロジェクトID",
-  hasCredentials: true/false
-}
+[error] gcs: ポートフォリオ取得に失敗 { bucketName: "...", jsonPath: "...", stack: "..." }
 ```
+
+| 項目 | 出力 | 理由 |
+|---|---|---|
+| `bucketName` / `jsonPath` | する | 「設定ミス」「権限不足」「ファイル欠落」の切り分けに必要。バケットへのアクセス自体は IAM が守るため、名前の露出は攻撃面にならない |
+| `stack` | する | `error-handling.md`「エラー時はスタックトレースを含むログを出力する」 |
+| `projectId` | **しない** | 環境変数の値をそのまま撒く必要がない。バケット名があれば切り分けは足りる |
+| `hasCredentials`（認証情報の有無） | **しない** | 切り分け価値が低い一方、認証構成を推測する材料になる |
 
 ## 8. クライアント側フェッチ仕様
 

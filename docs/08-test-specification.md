@@ -331,6 +331,8 @@ src/
 │   ├── costom-date.test.ts
 │   ├── html-escape.ts
 │   ├── html-escape.test.ts
+│   ├── logger.ts
+│   ├── logger.test.ts
 │   ├── site-url.ts
 │   └── site-url.test.ts
 ├── utils/
@@ -413,6 +415,27 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | UT-ESC-014 | 改行・タブは変換しない | `'1行目\n\t2行目'` | 入力と同一 |
 | UT-ESC-015 | サロゲートペア（絵文字）を壊さない | `'確認しました👍'` | 入力と同一 |
 | UT-ESC-016 | 上限2000文字の入力もすべて変換する | `'<'.repeat(2000)` | `'&lt;'.repeat(2000)` |
+
+#### 4.1.5 logger (`src/lib/logger.ts`)
+
+ログ出力方針の集約（docs/07 §7.2）。`console` の該当メソッドをスパイして「出力されたか / 何を含むか」を検証する。正常系4 : 準正常系+異常系10。
+
+| テストID | テストケース | 前提 | 期待結果 |
+|----------|------------|------|---------|
+| UT-LOG-001 | `logError` がメッセージとスタックトレースを出力する | `Error` を渡す | `[error] <msg>` と `{ stack }` |
+| UT-LOG-002 | `logError` が meta とスタックを併記する | meta あり | `{ bucketName, jsonPath, stack }` |
+| UT-LOG-003 | `logError` は本番環境でも出力する | `NODE_ENV=production` | `console.error` が 1 回呼ばれる |
+| UT-LOG-004 | `logError` は error 省略時にメッセージのみ出力する | error なし | 第 2 引数なし |
+| UT-LOG-005 | `logError` は error 省略・meta のみでも meta を出力する | meta のみ | `{ reason }` |
+| UT-LOG-006 | `Error` 以外が throw された場合は `thrown` として残す | 文字列を渡す | `{ thrown: 'just a string' }` |
+| UT-LOG-007 | `null` が throw された場合も `thrown` として残す | `null` を渡す | `{ thrown: null }` |
+| UT-LOG-008 | stack を持たない `Error` は name と message へ退避する | `stack = undefined` | `{ stack: 'Error: boom' }` |
+| UT-LOG-009 | `logWarn` がメッセージを出力する | — | `[warn] <msg>` |
+| UT-LOG-010 | `logWarn` は本番環境でも出力する | `NODE_ENV=production` | `console.warn` が 1 回呼ばれる |
+| UT-LOG-011 | `logDebug` は開発環境で出力する | `NODE_ENV=development` | `[debug] <msg>` |
+| UT-LOG-012 | `logDebug` は本番環境で出力しない | `NODE_ENV=production` | `console.log` が呼ばれない |
+| UT-LOG-013 | `logDebug` は test 環境で出力しない | `NODE_ENV=test` | `console.log` が呼ばれない |
+| UT-LOG-014 | `logDebug` は `NODE_ENV` 未設定でも出力しない | `NODE_ENV=''` | `console.log` が呼ばれない |
 
 ### 4.2 バリデーションロジック
 
@@ -651,8 +674,8 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 |----------|------------|---------|---------|
 | IT-API-PF-001 | ポートフォリオデータを正常取得する | GCS接続成功（モック） | 200 OK + JSONデータ |
 | IT-API-PF-002 | Cache-Control ヘッダーが設定される | 正常レスポンス | `public, s-maxage=300, stale-while-revalidate=86400` |
-| IT-API-PF-003 | GCS接続エラー時に500エラーを返す | GCS接続失敗（モック） | 500 + エラーJSONオブジェクト |
-| IT-API-PF-004 | エラーレスポンスに詳細情報が含まれる | GCS接続失敗（モック） | error, details, timestamp フィールドが存在する |
+| IT-API-PF-003 | GCS接続エラー時に500エラーを返す | GCS接続失敗 | 500 + `{ error: 'ポートフォリオデータの取得に失敗しました' }` |
+| IT-API-PF-004 | エラーレスポンスが `error` のみで内部詳細を含まない | GCS接続失敗 | `Object.keys(body)` が `['error']`（旧 `details` / `timestamp` は廃止） |
 | IT-API-PF-005 | レスポンスがPortfolioData型に準拠する | 正常レスポンス | 全必須フィールドが存在する |
 
 #### 5.1.2 POST /api/contact (`src/app/api/contact/route.ts`)

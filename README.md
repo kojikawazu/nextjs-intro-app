@@ -143,7 +143,7 @@ nextjs-intro-app/
 
 ## 📊 データ管理
 
-ポートフォリオ表示データは `GET /api/portfolio` 経由で取得します。
+ポートフォリオ表示データは Server Component（`src/app/page.tsx`）が `src/repositories/portfolio.ts` を直接呼んで取得します（`GET /api/portfolio` も同じデータを返す公開エンドポイントとして維持していますが、画面表示には使っていません）。
 
 - **本番**: Google Cloud Storage 上の JSON を読み込み（`src/repositories/gcs.ts`）
 - **開発**: プロジェクトルートの `sample.json` があればフォールバックとして利用（`src/repositories/portfolio.ts`）
