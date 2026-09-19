@@ -3,9 +3,8 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    experimental: {
-        typedRoutes: true,
-    },
+    // Next.js 15 で experimental から昇格した（`experimental.typedRoutes` は非推奨警告になる）。
+    typedRoutes: true,
     webpack: (config, { isServer }) => {
         if (!isServer) {
             // Exclude Node.js modules from client-side bundle
