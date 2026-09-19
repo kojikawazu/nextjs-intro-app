@@ -372,6 +372,22 @@ export const ContactFormSchema = z.object({
 
 GitHub 側の Dependabot alerts（Settings → Code security）も有効化する必要がある。
 
+#### メジャー更新は自動 PR の対象外とする
+
+判断が必要なメジャー更新は `.github/dependabot.yml` の `ignore` で除外し、**専用の issue で扱う**。
+
+| 除外対象 | 理由 | 対応 issue |
+|---|---|---|
+| `next` | Node / ESLint の前提条件が絡む | #88 |
+| `react` / `react-dom` / `@types/react` | `forwardRef` を多用する atoms 全体に影響する | #104 |
+| `@types/node` | Node ランタイムのバージョン統一と揃える必要がある | docs/11 タスク #53 |
+
+除外する理由は 2 つ。自動 PR には**何を確認すべきかが残らない**こと、そして**毎週再作成されて競合の温床になる**ことである。
+
+実際に 2026-09-19、Dependabot の PR を続けてマージした際に `pnpm-lock.yaml` が破損し（同一マッピング内でキーが重複）、CI と Cloud Run デプロイが停止した。複数の PR が同じロックファイルを触るため、**テキストとしてはマージできるが YAML としては壊れる**という形で検知をすり抜けた。
+
+各 issue の完了時に、対応する除外を `ignore` から外す。
+
 #### なぜ閾値を「本番依存の critical」に置くか
 
 **件数を 0 にすることが目的ではなく、自分の構成で発火するものを判定して潰すことが目的**である。
