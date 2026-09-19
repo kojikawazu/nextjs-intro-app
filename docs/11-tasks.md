@@ -120,7 +120,7 @@
 | 45 | お問い合わせフォームのレート制限実装 | 未着手 | 高 | スパム対策。IP ベースまたはトークンベースのレート制限 |
 | 46 | CSRF トークン検証の導入 | 検討中 | 中 | API Route へのCSRF保護追加 |
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
-| 48 | ローディング/エラー状態のアクセシビリティ改善 | 未着手 | 中 | `aria-live`, `role="alert"` 等の追加 |
+| 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
 | 58 | `next` を 15.5.25 へ更新（メジャー更新 フェーズ1） | 完了 | 高 | issue #86。`next` のアドバイザリが 0 件に（critical 2→0 / high 8→0）。Node / ESLint / React はいずれも据え置きで対応可能だった。`experimental.typedRoutes` → `typedRoutes` の移動が必要 |
 | 57 | `next` を 14.2.35 へ更新 | 完了 | 高 | issue #81。`next@14.2.5` の既知脆弱性のうち 12 件（critical 1 / high 4 を含む）を解消。Cache Poisoning と Server Components DoS の一部が対象。15.x でのみ修正されるものは残存し、メジャー更新の判断は別途 |
@@ -224,6 +224,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | フォームのアクセシビリティを改善。`htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role` 通知に対応（issue #83） | - |
 | 2026-09-19 | actionlint を CI に導入。ワークフロー 3 本の検証と `run:` ブロックの shellcheck が入った（issue #78） | - |
 | 2026-09-19 | 依存監査を導入（Dependabot + CI の 2 段構え）。本番依存 critical をブロッキング、全レベルを可視化（issue #80） | - |
 | 2026-09-19 | `api/contact` のバリデーションを `ContactFormSchema` に統一し、`name` / `email` の長さがサーバー側で未検証だった穴を塞いだ。スキーマを `src/schemas/` へ昇格（issue #82） | - |
