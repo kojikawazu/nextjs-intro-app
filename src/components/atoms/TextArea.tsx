@@ -1,12 +1,22 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
 
+/** `TextArea` の props。ネイティブの `<textarea>` 属性をすべて受け付ける。 */
 interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    /** 入力欄の上に表示するラベル。未指定ならラベル自体を描画しない */
     label?: string;
+    /** エラーメッセージ。指定すると枠線が赤系に変わり、`hint` の代わりに表示される */
     error?: string;
+    /** 補助説明。`error` が指定されている間は表示されない */
     hint?: string;
 }
 
+/**
+ * ラベル・補助説明・エラー表示を内包した複数行入力。
+ *
+ * 高さは最小 120px で、利用者が縦方向にのみリサイズできる（`resize-y`）。
+ * `forwardRef` を使う理由と `<label>` の関連付けが無い制約は `Input` と同じ。
+ */
 const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     ({ className, label, error, hint, ...props }, ref) => {
         const hasError = !!error;

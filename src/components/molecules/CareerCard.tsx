@@ -1,18 +1,39 @@
 import { Badge } from '@/components/atoms/Badge';
 import { cn } from '@/utils/cn';
 
+/** `CareerCard` の props。 */
 interface CareerCardProps {
+    /** プロジェクト名 / 案件タイトル */
     title: string;
+    /** 表示用に整形済みの期間文字列。整形は呼び出し側（`page.tsx` の `formatCareerPeriod`）が行う */
     period: string;
+    /** チーム人数（例: `5名`） */
     teamSize: string;
+    /** 業務内容の説明 */
     description: string;
+    /** 使用技術一覧。`Badge` として並べて表示する */
     techStack: string[];
+    /** 担当フェーズ一覧。`Badge` として並べて表示する */
     phases: string[];
+    /** プロジェクトでの役割 */
     role: string;
+    /**
+     * 進行中の案件かどうか。既定は `false`。
+     * `true` のときカード右上に点滅する「現在」バッジを表示する。
+     * 呼び出し側は `career_end === 'now'` から判定している。
+     */
     isCurrent?: boolean;
+    /** 追加クラス */
     className?: string;
 }
 
+/**
+ * 経歴タイムラインに並ぶプロジェクト 1 件分のカード。
+ *
+ * 各項目のラベル（「技術スタック」「担当フェーズ」等）は**ハードコードされており**、
+ * GCS の `career_title_data`（`CareerTitleData`）は参照していない。
+ * 詳細は `docs/05-data-specification.md` §2.6。
+ */
 export function CareerCard({
     title,
     period,

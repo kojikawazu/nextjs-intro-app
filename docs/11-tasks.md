@@ -221,6 +221,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | JSDoc 付与を継続。`src/components/`（17 シンボル）へ付与。あわせて docs/04 §5.2 の `<label>` に関する記述を実態（`htmlFor` 未対応）へ修正（issue #67 / 親 #64） | - |
 | 2026-09-19 | JSDoc 付与を継続。`src/lib/` + `src/app/api/`（8 シンボル）へ付与（issue #66 / 親 #64） | - |
 | 2026-09-19 | JSDoc 付与に着手。`src/types/` + `src/utils/`（16 シンボル）へ付与（issue #65 / 親 #64） | - |
 | 2026-09-19 | 独自ドメイン `introtechkkplus.com` へ切り替え。`metadataBase` / canonical / sitemap.xml / robots.txt を追加し、`NEXT_PUBLIC_SITE_URL` を `SITE_URL` へ整理（issue #62） | - |

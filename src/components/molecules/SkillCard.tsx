@@ -1,14 +1,29 @@
 import Image from 'next/image';
 import { cn } from '@/utils/cn';
 
+/** `SkillCard` の props。 */
 interface SkillCardProps {
+    /** スキル名。カードの見出しになる */
     name: string;
+    /** スキルの説明 / 経験詳細 */
     description: string;
+    /** スキルアイコン画像の URL（GCS 上の画像を想定） */
     iconUrl: string;
+    /** 追加クラス。呼び出し側は新規表示カードにのみ `animate-fade-in-up` を渡す */
     className?: string;
+    /**
+     * インラインスタイル。段階表示で新しく現れたカードに `animationDelay` を渡し、
+     * 1 枚ずつずらしてフェードインさせるために使う（`page.tsx` の `isNew` 判定を参照）。
+     */
     style?: React.CSSProperties;
 }
 
+/**
+ * スキル 1 件を表すカード。
+ *
+ * 表示専用のため `forwardRef` は使わない
+ * （判断基準は `docs/component-design-report/03-forward-ref.md` §2.2）。
+ */
 export function SkillCard({ name, description, iconUrl, className, style }: SkillCardProps) {
     return (
         <div
