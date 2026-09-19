@@ -8,6 +8,20 @@ import { Button } from '@/components/atoms/Button';
 import { Input } from '@/components/atoms/Input';
 import { TextArea } from '@/components/atoms/TextArea';
 
+/**
+ * お問い合わせフォーム。入力・検証・送信・完了表示までを内部で完結させる。
+ *
+ * 検証は react-hook-form + `zodResolver(ContactFormSchema)`。`criteriaMode` は既定の
+ * `firstError` のため、各フィールドで最初に失敗した制約のメッセージだけが表示される。
+ *
+ * **`fetch('/api/contact')` をコンポーネント内から直接呼んでいる。** `frontend.md` は
+ * 「`fetch` を書いてよいのは `repositories/` だけ」「クライアントコンポーネントのロジックは
+ * カスタムフックへ切り出す」と定めており、現状はいずれにも従っていない。
+ * 送信処理を差し替える際は呼び出し口がここ 1 箇所であることに注意。
+ *
+ * 状態を内部で完結させ、Atoms 側へ `register()` の `ref` を渡す側であるため
+ * `forwardRef` は使わない（`docs/component-design-report/03-forward-ref.md` §2.2）。
+ */
 export function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);

@@ -3,14 +3,27 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 
+/** `Header` の props。 */
 interface HeaderProps {
+    /** ナビゲーション項目。`name` が表示ラベル、`href` が遷移先のページ内アンカー */
     navItems: Array<{
         name: string;
         href: string;
     }>;
+    /** ヘッダー左端に表示するロゴ / サイトタイトルのテキスト */
     logo: string;
 }
 
+/**
+ * 画面上部に固定表示されるヘッダー。
+ *
+ * スクロール量と モバイルメニューの開閉という 2 つの状態を内部で持つため
+ * Client Component（`'use client'`）。一定量スクロールするとガラス調の背景を出し、
+ * 狭い画面ではハンバーガーメニューに切り替わる。
+ *
+ * 状態が内部で完結しており外部から DOM を触る必要がないため `forwardRef` は使わない
+ * （判断基準は `docs/component-design-report/03-forward-ref.md` §2.2）。
+ */
 export function Header({ navItems, logo }: HeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

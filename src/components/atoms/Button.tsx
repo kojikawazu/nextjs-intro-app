@@ -1,13 +1,35 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
 
+/** `Button` の props。ネイティブの `<button>` 属性をすべて受け付ける。 */
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    /**
+     * 見た目のバリエーション。既定は `primary`。
+     * `primary` はグラデーション＋ネオン影の主要 CTA、`secondary` は半透明のガラス調、
+     * `outline` は枠線のみ、`ghost` は背景なしで hover 時だけ反応する最も控えめな表現。
+     */
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+    /** 高さと文字サイズ。既定は `md`（`sm` = 32px / `md` = 40px / `lg` = 48px） */
     size?: 'sm' | 'md' | 'lg';
+    /**
+     * 送信中などの処理待ち状態。既定は `false`。
+     * `true` の間はスピナーを先頭に表示し、`disabled` 属性も立てて二重送信を防ぐ。
+     */
     isLoading?: boolean;
+    /** ボタンのラベル。スピナー表示時もラベルは残る */
     children: React.ReactNode;
 }
 
+/**
+ * アプリ共通のボタン。
+ *
+ * `forwardRef` で `ref` を内部の `<button>` へ透過する。React Hook Form の `register()` が
+ * 返す `ref` がカスタムコンポーネントで止まるとフォーム制御が効かなくなるため
+ * （詳細は `docs/component-design-report/03-forward-ref.md` §1.2）。
+ *
+ * `disabled` は `disabled || isLoading` で評価されるので、処理中は呼び出し側が
+ * `disabled` を指定しなくても押せない状態になる。
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     (
         {
