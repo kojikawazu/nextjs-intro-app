@@ -48,8 +48,11 @@ jobs:
             - name: Audit (blocking - production deps, critical only)
               run: pnpm audit:ci
 
-            # 可視化のみ。critical 未満の指摘を CI ログに残すが、ここでは CI を落とさない。
-            - name: Audit (informational - production deps, all levels)
+            # 可視化のみ。dev 依存を含む全件をログに残すが、ここでは CI を落とさない。
+            # スクリプト名は組み込みの `pnpm audit` と衝突しないよう `audit:prod` にしている
+            # （`pnpm audit` と書くと package.json のスクリプトではなく組み込みが実行され、
+            #  `--prod` が効かない）。ここでは全依存を見たいので組み込みをそのまま使う。
+            - name: Audit (informational - all deps, all levels)
               run: pnpm audit
               continue-on-error: true
 

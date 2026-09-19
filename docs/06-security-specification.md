@@ -363,7 +363,12 @@ export const ContactFormSchema = z.object({
 |---|---|---|
 | **Dependabot** | `.github/dependabot.yml` | 更新 PR を能動的に作る（npm / github-actions、週次） |
 | **CI（ブロッキング）** | `pnpm audit:ci` | 本番依存の **critical** のみで CI を落とす |
-| **CI（可視化）** | `pnpm audit` | 本番依存の全レベルをログに出す（`continue-on-error: true`） |
+| **CI（可視化）** | `pnpm audit`（組み込み） | dev を含む全依存の全レベルをログに出す（`continue-on-error: true`） |
+| **ローカル確認** | `pnpm audit:prod` | 本番依存のみを全レベルで確認する |
+
+> **スクリプト名の注意**: `audit` は pnpm の**組み込みコマンド名**のため、`package.json` に
+> `"audit": "..."` を定義しても `pnpm audit` では組み込みが実行され、スクリプトは無視される。
+> そのため本番依存に絞るスクリプトは `audit:prod` という名前にしている。
 
 GitHub 側の Dependabot alerts（Settings → Code security）も有効化する必要がある。
 
