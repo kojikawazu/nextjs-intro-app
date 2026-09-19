@@ -2,7 +2,7 @@
 
 [![Deploy to Cloud Run](https://github.com/kojikawazu/nextjs-intro-app/actions/workflows/deploy_to_googlecloud.yml/badge.svg)](https://github.com/kojikawazu/nextjs-intro-app/actions/workflows/deploy_to_googlecloud.yml)
 
-ソフトウェアエンジニア向けの **1 ページ完結型ポートフォリオサイト**。表示内容を JSON（ローカルの `sample.json` または Google Cloud Storage 上のファイル）で差し替えられるテンプレートとして使えます。Next.js 14 (App Router) + TypeScript + Tailwind CSS 製。
+ソフトウェアエンジニア向けの **1 ページ完結型ポートフォリオサイト**。表示内容を JSON（ローカルの `sample.json` または Google Cloud Storage 上のファイル）で差し替えられるテンプレートとして使えます。Next.js 15 (App Router) + TypeScript + Tailwind CSS 製。
 
 > 📚 仕様・設計の詳細は [`docs/`](./docs/README.md)（ドキュメント索引）を参照してください。
 
@@ -38,7 +38,7 @@
 
 | 分類 | 採用技術 |
 |------|----------|
-| Framework | Next.js 14.2.35 (App Router) |
+| Framework | Next.js 15.5.25 (App Router) |
 | Language | TypeScript 5.5 |
 | Styling | Tailwind CSS 3.4 |
 | Form | React Hook Form + Zod（`@hookform/resolvers`） |

@@ -75,7 +75,7 @@
 
 | 技術 | バージョン | ドキュメント |
 |------|-----------|-------------|
-| Next.js | 14.2.35 | https://nextjs.org/docs |
+| Next.js | 15.5.25 | https://nextjs.org/docs |
 | React | 18.3.1 | https://react.dev |
 | TypeScript | 5.5.2 | https://www.typescriptlang.org/docs/ |
 | Tailwind CSS | 3.4.4 | https://tailwindcss.com/docs |
