@@ -32,8 +32,8 @@ resource "google_cloud_run_service" "nextjs_intro_ai_app_service" {
         }
 
         env {
-          name  = "NEXT_PUBLIC_SITE_URL"
-          value = var.backend_site_url
+          name  = "SITE_URL"
+          value = var.site_url
         }
         env {
           name  = "GCS_PRIVATE_BUCKET_NAME"

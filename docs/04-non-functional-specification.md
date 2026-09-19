@@ -31,7 +31,8 @@
         - [ロボット設定](#ロボット設定)
     - [4.2 セマンティックHTML](#42-セマンティックhtml)
     - [4.3 言語設定](#43-言語設定)
-    - [4.4 SEO改善の推奨事項](#44-seo改善の推奨事項)
+    - [4.4 クローラ向けファイル](#44-クローラ向けファイル)
+    - [4.5 SEO改善の推奨事項](#45-seo改善の推奨事項)
 - [5. アクセシビリティ仕様](#5-アクセシビリティ仕様)
     - [5.1 準拠基準](#51-準拠基準)
     - [5.2 現在の実装](#52-現在の実装)
@@ -213,11 +214,16 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 
 | 項目 | 設定値 |
 |------|--------|
+| metadataBase | `getSiteUrl()`（`SITE_URL` 環境変数 → 未設定時は `https://introtechkkplus.com`。`src/lib/site-url.ts`） |
 | title | `TechProfile Pro - フリーランスエンジニア` |
 | description | `フリーランスエンジニアのポートフォリオサイト` |
 | keywords | `フリーランスエンジニア`, `Java`, `TypeScript`, `Next.js`, `バックエンド開発`, `システム開発` |
 | authors | `フリーランスエンジニア` |
 | creator | `フリーランスエンジニア` |
+| alternates.canonical | `/`（`metadataBase` を基準に `https://introtechkkplus.com` へ解決） |
+
+> apex（`introtechkkplus.com`）と `www` の双方を Cloud Run にマッピングしており、同一内容が 2 つの URL で配信される。
+> リダイレクトではなく canonical で正規 URL を示すことで、検索評価の分散を防ぐ。
 
 #### Open Graph (OGP)
 
@@ -225,7 +231,7 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 |------|--------|
 | type | `website` |
 | locale | `ja_JP` |
-| url | `https://your-domain.com` |
+| url | `/`（`metadataBase` を基準に `https://introtechkkplus.com` へ解決。ドメイン文字列を複数箇所に散らさないため相対で指定） |
 | title | `TechProfile Pro - フリーランスエンジニア` |
 | description | `フリーランスエンジニアのポートフォリオサイト` |
 | siteName | `TechProfile Pro` |
@@ -268,15 +274,36 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 - `<html lang="ja">` により日本語コンテンツであることを明示
 - 検索エンジンの言語判定およびスクリーンリーダーの読み上げ言語選択に影響
 
-### 4.4 SEO改善の推奨事項
+### 4.4 クローラ向けファイル
+
+App Router の規約ルート（`src/app/sitemap.ts` / `src/app/robots.ts`）で生成する。いずれも基準オリジンに
+`src/lib/site-url.ts` の `getSiteUrl()` を使用し、ドメイン文字列を 1 箇所に集約している。
+
+| 生成物 | 生成元 | 内容 |
+|---|---|---|
+| `/sitemap.xml` | `src/app/sitemap.ts` | トップページ 1 件（`changefreq: monthly` / `priority: 1`）。各セクションはアンカーのため独立した URL を持たない |
+| `/robots.txt` | `src/app/robots.ts` | 全クローラに全ページを許可。`Host`（正規ホスト）と `Sitemap` を明示 |
+
+出力例:
+
+```
+User-Agent: *
+Allow: /
+
+Host: introtechkkplus.com
+Sitemap: https://introtechkkplus.com/sitemap.xml
+```
+
+> **静的生成である点に注意**: `sitemap.ts` / `robots.ts` はビルド時に評価され静的ファイルとして出力される
+> （`next build` のルート一覧で `○ (Static)`）。したがって Cloud Run の**実行時**環境変数 `SITE_URL` では内容が変わらない。
+> 出力を変えたい場合はビルド時に `SITE_URL` を渡す必要がある。既定では正規オリジンが焼き込まれるため、本番では追加設定が不要。
+
+### 4.5 SEO改善の推奨事項
 
 | 項目 | 推奨内容 |
 |------|----------|
-| OGP画像 | `og:image` の設定追加 |
-| canonical URL | `NEXT_PUBLIC_SITE_URL` に合わせたcanonical URLの設定 |
+| OGP画像 | `og:image` の設定追加（`metadataBase` 設定済みのため `/og.png` のような相対パスで指定できる） |
 | 構造化データ | JSON-LD による `Person` スキーマの追加 |
-| sitemap | `sitemap.xml` の自動生成 |
-| robots.txt | `robots.txt` の設置 |
 
 ---
 

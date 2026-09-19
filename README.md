@@ -199,7 +199,8 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | Hero / About / Career / Skills / Contact / Footer | ✅ | 1 ページ構成 |
 | Skills の段階表示（初期 9 件 → 6 件ずつ追加） | ✅ | `page.tsx` の `and more...` |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
-| SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter 設定。`og:image` は未設定 |
+| SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
+| sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
 | アクセシビリティ | 🟡 | 一部に `aria-label`。フォームの label 関連付け（`htmlFor`）や `aria-live` は未対応 |
 | 自動テスト | 🔜 | ランナー未導入（[docs/08](./docs/08-test-specification.md)） |
 | データ更新 UI（CMS / 管理画面） | 🔜 | 現状は GCS / `sample.json` を直接編集 |
@@ -231,6 +232,22 @@ docker build -t techprofile-pro .
 | `GCP_CLOUD_RUN_SERVICE_NAME` | Cloud Run サービス名 |
 
 > 本番では GCS（`GCS_PRIVATE_BUCKET_NAME` / `GCS_JSON_PATH`）と Resend の環境変数を Cloud Run 側に設定する必要があります。GCS 認証は Cloud Run の ADC（Application Default Credentials）を利用します。
+
+### カスタムドメイン
+
+本番は `https://introtechkkplus.com`（apex）で公開しています。DNS は Cloudflare、オリジンは Cloud Run です。
+
+| ホスト | Type | 値 | Proxy |
+|---|---|---|---|
+| `@` | A / AAAA | Google の固定 IP（計 8 件） | **DNS only** |
+| `www` | CNAME | `ghs.googlehosted.com.` | **DNS only** |
+
+apex と `www` の両方を Cloud Run にマッピングし、正規 URL は `layout.tsx` の canonical（apex）で示しています。
+Cloudflare のプロキシ（オレンジ雲）を有効にすると Cloud Run の証明書発行が完了しないため、初回は必ず DNS only にします。
+構築手順とレコードの取得方法は [docs/09 §7.4](./docs/09-architecture-specification.md) を参照してください。
+
+> サイト URL は環境変数 `SITE_URL` で上書きできます（未設定時は `src/lib/site-url.ts` の正規オリジン）。
+> `NEXT_PUBLIC_` を付けるとビルド時に値が焼き込まれ、Cloud Run の実行時環境変数では上書きできなくなるため、接頭辞は付けません。
 
 ## 🤝 コントリビューション
 

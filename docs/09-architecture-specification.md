@@ -33,6 +33,9 @@
     - [6.6 フォントファミリー](#66-フォントファミリー)
 - [7. デプロイアーキテクチャ](#7-デプロイアーキテクチャ)
     - [7.1 Cloud Run デプロイ構成](#71-cloud-run-デプロイ構成)
+    - [7.2 環境変数](#72-環境変数)
+    - [7.3 GCS 認証戦略](#73-gcs-認証戦略)
+    - [7.4 カスタムドメイン構成](#74-カスタムドメイン構成)
 
 ---
 
@@ -602,6 +605,7 @@ CI/CD パイプライン:
 | `GCS_PRIVATE_BUCKET_NAME` | 任意 | GCS バケット名（デフォルト: `intro_k_pri_bucket`） | gcs.ts |
 | `GCS_JSON_PATH` | 任意 | GCS 内の JSON ファイルパス（デフォルト: `json/navbar_intro.json`） | gcs.ts |
 | `GCS_API_ENDPOINT` | 任意（テスト用） | GCS の `apiEndpoint` 上書き。統合テストで fake-gcs-server エミュレータに接続するために使用（本番では未設定） | gcs.ts |
+| `SITE_URL` | 任意 | サイトの公開 URL。メタデータ / canonical / sitemap / robots の基準（未設定時は `site-url.ts` の正規オリジン `https://introtechkkplus.com`） | site-url.ts |
 | `RESEND_API_KEY` | 必須 | Resend API キー（`re_` プレフィックス） | resend.ts |
 | `RESEND_FROM_EMAIL` | 必須 | メール送信元アドレス | resend.ts |
 | `MY_MAIL_ADDRESS` | 必須 | お問い合わせメール受信先アドレス | resend.ts |
@@ -631,6 +635,111 @@ CI/CD パイプライン:
 │      ※ 通常運用ではデッドコード（到達しない分岐）           │
 └─────────────────────────────────────────────────────────┘
 ```
+
+---
+
+### 7.4 カスタムドメイン構成
+
+独自ドメイン `introtechkkplus.com` は **Cloudflare をレジストラ兼権威 DNS**、**Cloud Run をオリジン**とする構成で公開する。
+
+```
+                    ┌──────────────────────────────┐
+                    │  Cloudflare（権威 DNS）        │
+                    │  NS: *.ns.cloudflare.com      │
+                    └──────────────┬───────────────┘
+                                   │ DNS only（プロキシ OFF）
+          ┌────────────────────────┴────────────────────────┐
+          │                                                 │
+  introtechkkplus.com                          www.introtechkkplus.com
+  A    216.239.32/34/36/38.21                  CNAME ghs.googlehosted.com.
+  AAAA 2001:4860:4802:32/34/36/38::15
+          │                                                 │
+          └────────────────────────┬────────────────────────┘
+                                   ▼
+                    ┌──────────────────────────────┐
+                    │  Cloud Run ドメインマッピング  │
+                    │  asia-northeast1              │
+                    │  → nextjs-intro-ai-app-service│
+                    └──────────────────────────────┘
+```
+
+#### DNS レコード
+
+| ホスト | Type | 値 | Proxy |
+|---|---|---|---|
+| `@` | A | `216.239.32.21` / `216.239.34.21` / `216.239.36.21` / `216.239.38.21` | DNS only |
+| `@` | AAAA | `2001:4860:4802:32::15` / `:34::15` / `:36::15` / `:38::15` | DNS only |
+| `www` | CNAME | `ghs.googlehosted.com.` | DNS only |
+
+apex（ゾーン頂点）に CNAME を置けないという DNS の制約により、apex は Google 固定 IP への A / AAAA、
+`www` は CNAME という非対称な構成になる。レコード種別が異なるのは設定誤りではない。
+
+#### apex と www の扱い
+
+両方を Cloud Run にマッピングし、**リダイレクトは行わない**。同一内容が 2 つの URL で配信されるため、
+重複コンテンツは `layout.tsx` の `alternates.canonical`（apex）と `robots.txt` の `Host` で正規化する。
+
+#### 構築手順（runbook）
+
+1. **Cloud Run ドメインマッピングを作成**（apex / www の 2 件）
+
+   ```bash
+   gcloud beta run domain-mappings create \
+     --service=nextjs-intro-ai-app-service \
+     --domain=introtechkkplus.com \
+     --region=asia-northeast1 \
+     --project=cobalt-list-386722
+   ```
+
+   `beta` コンポーネント未導入の場合は Cloud Run Admin API を直接呼ぶ:
+
+   ```bash
+   curl -X POST \
+     -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+     -H "Content-Type: application/json" \
+     -d '{"apiVersion":"domains.cloudrun.com/v1","kind":"DomainMapping",
+          "metadata":{"name":"introtechkkplus.com","namespace":"cobalt-list-386722"},
+          "spec":{"routeName":"nextjs-intro-ai-app-service"}}' \
+     "https://asia-northeast1-run.googleapis.com/apis/domains.cloudrun.com/v1/namespaces/cobalt-list-386722/domainmappings"
+   ```
+
+2. **登録すべきレコードを取得**（`status.resourceRecords`）
+
+   ```bash
+   curl -s -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+     "https://asia-northeast1-run.googleapis.com/apis/domains.cloudrun.com/v1/namespaces/cobalt-list-386722/domainmappings/introtechkkplus.com"
+   ```
+
+3. **Cloudflare DNS に上表のレコードを登録する。必ず「DNS only（グレー雲）」にする。**
+
+4. **証明書の発行を待つ**（通常 15 分〜1 時間、最大 24 時間）。
+   `status.conditions[].CertificateProvisioned` が `True` になれば完了。
+
+   ```bash
+   dig +short introtechkkplus.com A
+   curl -sI https://introtechkkplus.com/ | head -1
+   ```
+
+#### プロキシ（オレンジ雲）を最初は OFF にする理由
+
+Cloud Run のドメインマッピングは Google が証明書を自動発行する。この検証はドメインへのアクセスが
+Google に到達することを前提とするため、Cloudflare のプロキシが間に入ると発行されず
+`Waiting for certificate provisioning` から進まない。
+
+WAF・キャッシュを有効化したい場合は、**証明書発行完了後**にオレンジ雲へ切り替え、
+SSL/TLS モードを **Full (strict)** に設定する（Flexible にすると Cloudflare〜Cloud Run 間が平文になり、
+`security.md`「全通信は HTTPS を必須とする」に反する）。
+
+#### Resend 送信元ドメインの検証
+
+お問い合わせメールの送信元（`RESEND_FROM_EMAIL=noreply@introtechkkplus.com`）を使うには、
+Resend ダッシュボードで `introtechkkplus.com` を登録し、提示される SPF / DKIM / DMARC の TXT レコードを
+Cloudflare DNS に追加する。TXT レコードはプロキシの対象外のため、上記の Cloud Run 向け設定とは干渉しない。
+
+#### 旧ドメインについて
+
+旧ドメイン `introtechkk.com`（お名前.com）は失効済みで、ネームサーバーが `*.onamae-expired.com` を指している。
+Cloud Run 側のドメインマッピングは削除済み。
 
 ---
 
@@ -826,10 +935,13 @@ ContactFormErrors (手動型定義)
 
 | メタデータ | 設定値 |
 |-----------|--------|
+| metadataBase | `getSiteUrl()`（`SITE_URL` → 未設定時は `https://introtechkkplus.com`） |
+| canonical | `/`（`metadataBase` 基準で絶対 URL に解決） |
 | title | `TechProfile Pro - フリーランスエンジニア` |
 | description | `フリーランスエンジニアのポートフォリオサイト` |
 | keywords | フリーランスエンジニア, Java, TypeScript, Next.js, バックエンド開発, システム開発 |
 | lang | `ja` |
+| OGP url | `/`（`metadataBase` 基準で絶対 URL に解決） |
 | OGP type | `website` |
 | OGP locale | `ja_JP` |
 | Twitter card | `summary_large_image` |

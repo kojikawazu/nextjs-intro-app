@@ -39,6 +39,10 @@
     - [4.5 Organismsコンポーネント](#45-organismsコンポーネント)
         - [4.5.1 Header (`src/components/organisms/Header.tsx`)](#451-header-srccomponentsorganismsheadertsx)
         - [4.5.2 ContactForm (`src/components/organisms/ContactForm.tsx`)](#452-contactform-srccomponentsorganismscontactformtsx)
+    - [4.6 サイトURL解決とクローラ向けルート](#46-サイトurl解決とクローラ向けルート)
+        - [4.6.1 getSiteUrl関数 (`src/lib/site-url.ts`)](#461-getsiteurl関数-srclibsite-urlts)
+        - [4.6.2 sitemap (`src/app/sitemap.ts`)](#462-sitemap-srcappsitemapts)
+        - [4.6.3 robots (`src/app/robots.ts`)](#463-robots-srcapprobotsts)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -54,6 +58,7 @@
     - [6.4 お問い合わせフォームテスト](#64-お問い合わせフォームテスト)
     - [6.5 レスポンシブデザインテスト](#65-レスポンシブデザインテスト)
     - [6.6 アクセシビリティテスト](#66-アクセシビリティテスト)
+    - [6.7 SEOメタデータテスト](#67-seoメタデータテスト)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -561,6 +566,47 @@ e2e/
 
 ---
 
+### 4.6 サイトURL解決とクローラ向けルート
+
+#### 4.6.1 getSiteUrl関数 (`src/lib/site-url.ts`)
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| UT-SITEURL-001 | 正常系 | `SITE_URL` 未設定 | `https://introtechkkplus.com/` |
+| UT-SITEURL-002 | 正常系 | `SITE_URL` 設定あり | 設定値を優先する |
+| UT-SITEURL-003 | 準正常系 | 末尾スラッシュの有無 | 同一オリジンに正規化される |
+| UT-SITEURL-004 | 準正常系 | 前後に空白を含む値 | トリムして解釈する |
+| UT-SITEURL-005 | 準正常系 | 空白のみの値 | 未設定扱いで正規オリジン |
+| UT-SITEURL-006 | 異常系 | スキーム欠落（`introtechkkplus.com`） | 例外を投げず正規オリジン＋`console.warn` 1 回 |
+| UT-SITEURL-007 | 異常系 | URL として解釈不能（`not a url`） | 例外を投げず正規オリジン＋`console.warn` 1 回 |
+| UT-SITEURL-008 | 異常系 | 空文字 | 正規オリジン（警告は出さない） |
+
+> メタデータ生成中の例外はページ全体を 500 にするため、不正値でも `throw` せずフォールバックする方針を固定している。
+
+#### 4.6.2 sitemap (`src/app/sitemap.ts`)
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| UT-SITEMAP-001 | 正常系 | エントリ件数 | トップページ 1 件のみ |
+| UT-SITEMAP-002 | 正常系 | エントリ属性 | `changeFrequency: monthly` / `priority: 1` / `lastModified` が `Date` |
+| UT-SITEMAP-003 | 準正常系 | `SITE_URL` 指定時 | 指定オリジンに追随する |
+| UT-SITEMAP-004 | 準正常系 | `SITE_URL` が末尾スラッシュ付き | URL が二重スラッシュにならない |
+| UT-SITEMAP-005 | 異常系 | `SITE_URL` が不正 | 例外を投げず正規オリジンで生成 |
+| UT-SITEMAP-006 | 異常系 | `SITE_URL` が空文字 | 正規オリジンで生成 |
+
+#### 4.6.3 robots (`src/app/robots.ts`)
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| UT-ROBOTS-001 | 正常系 | ルール | `{ userAgent: '*', allow: '/' }` |
+| UT-ROBOTS-002 | 正常系 | sitemap / host | `https://introtechkkplus.com/sitemap.xml` / `introtechkkplus.com` |
+| UT-ROBOTS-003 | 準正常系 | `SITE_URL` 指定時 | 指定オリジンに追随する |
+| UT-ROBOTS-004 | 準正常系 | `SITE_URL` が末尾スラッシュ付き | sitemap URL が二重スラッシュにならない |
+| UT-ROBOTS-005 | 異常系 | `SITE_URL` が不正 | 例外を投げず正規オリジンで生成 |
+| UT-ROBOTS-006 | 異常系 | `SITE_URL` が空文字 | 正規ホストを返す |
+
+---
+
 ## 5. 統合テスト仕様
 
 ### 5.1 APIルート
@@ -697,6 +743,26 @@ e2e/
 | E2E-A11Y-004 | html要素にlang='ja'が設定されている | ドキュメントの言語属性が正しい |
 | E2E-A11Y-005 | コントラスト比が十分である | 主要テキストのコントラスト比がWCAG AA基準を満たす |
 | E2E-A11Y-006 | SNSリンクにaria-labelが設定されている | 各SNSリンクに適切なaria-labelが存在する |
+
+### 6.7 SEOメタデータテスト
+
+実装: `e2e/seo.spec.ts`。期待値を開発者の `.env.local` に左右されないよう、`playwright.config.ts` の
+`webServer.env` で `SITE_URL` を正規オリジンに固定している（`next start` は本番モードでも `.env.local` を読むため）。
+
+| テストID | 分類 | テストケース | 検証内容 |
+|----------|------|------------|---------|
+| E2E-SEO-001 | 正常系 | canonical / og:url | `https://introtechkkplus.com` の絶対 URL を指す |
+| E2E-SEO-002 | 正常系 | sitemap.xml | 200 / Content-Type が XML / `<loc>` がトップ 1 件のみ |
+| E2E-SEO-003 | 正常系 | robots.txt | 200 / `User-Agent: *` `Allow: /` `Host:` `Sitemap:` を含む |
+| E2E-SEO-004 | 準正常系 | プレースホルダー残存の検出 | canonical / og:url に `localhost` `your-domain.com` `introtechkk.com` を含まない |
+| E2E-SEO-005 | 準正常系 | 誤ブロックの検出 | robots.txt が `Disallow: /` を含まない |
+| E2E-SEO-006 | 異常系 | HTTPS 担保 | sitemap.xml が `<loc>http://` を含まない（`security.md` 準拠） |
+| E2E-SEO-007 | 異常系 | 移行漏れの検出 | robots.txt / sitemap.xml に旧ドメイン `introtechkk.com`・`your-domain.com`・`localhost` を含まない |
+| E2E-SEO-008 | 異常系 | リンク切れの検出 | robots.txt の `Sitemap:` が指すパスが 200 を返す |
+
+> **E2E-SEO-001 の注意**: Next.js は `metadataBase` に対する相対パス `/` の解決時にルートの末尾スラッシュを落とすため、
+> canonical は `https://introtechkkplus.com`、sitemap の `<loc>` は `https://introtechkkplus.com/` と表記が異なる。
+> ルート URL としては同一リソースを指す。
 
 ---
 
