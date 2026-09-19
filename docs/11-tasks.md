@@ -135,7 +135,7 @@
 |---|---------|-----------|--------|------|
 | 30 | コンポーネントテスト実装 | 未着手 | 中 | （再掲）atoms / molecules / organisms の描画・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、TS 5.5 互換の JSX 変換設定の整備 or TypeScript 更新が前提 |
 | 52 | テストカバレッジ閾値の有効化 | 未着手 | 中 | 現状 `vitest.config.ts` の coverage 閾値は未設定（docs/08 目標: statements 80% 等）。テスト拡充に合わせ `test:coverage` の閾値を有効化し、CI に組み込むか判断する |
-| 53 | 実行環境の Node バージョン整合 | 未着手 | 中 | CI は Node 24（testcontainers → undici@8 が Node>=22.19 を要求）、本番 Dockerfile は `node:18-alpine`。ランタイムと CI のバージョン差を解消するか（Dockerfile を 20/22 系へ更新）、現状維持とするか方針を決める |
+| 53 | 実行環境の Node バージョン整合 | 未着手 | 中 | **`@types/node` が 26.6.1 に上がったため優先度が上がった**（型定義は Node 26 相当だが、Docker ランタイムは node:18-alpine = v18.20.8）。CI は Node 24（testcontainers → undici@8 が Node>=22.19 を要求）、本番 Dockerfile は `node:18-alpine`。ランタイムと CI のバージョン差を解消するか（Dockerfile を 20/22 系へ更新）、現状維持とするか方針を決める |
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | （再掲・§2.4）タイプミス修正（`costom` -> `custom`）。インポートパス（`page.tsx` / IT）の更新が必要 |
 
 ---
