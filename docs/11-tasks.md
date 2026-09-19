@@ -85,7 +85,7 @@
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
 | 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
-| 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/utils/validation.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
+| 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/schemas/contact.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
 | 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
 | 31 | API Route / データフェッチ統合テスト実装 | 完了 | 中 | 統合テスト（`*.integration.test.ts`）を実装。GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証、Resend は MSW で HTTP モック。`GET /api/portfolio`（`route.integration.test.ts`）/ `POST /api/contact`（同）/ `gcs`（`gcs.integration.test.ts`）を対象、計 10 ケース（正常・準正常・異常）。`vitest.integration.config.ts` + `pnpm test:it`、CI（`ci.yml`）で実行 |
 | 32 | E2E テスト導入（Playwright） | 完了 | 低 | Playwright を導入し `e2e/` にシナリオテストを実装（`home` / `contact` / `error`、計 7 ケース、正常/準正常/異常）。ポートフォリオ表示は fake-gcs-server コンテナの実データ（`next start` を `GCS_API_ENDPOINT` で向ける）、送信・失敗系は `page.route` でスタブ。`playwright.config.ts` に retries/trace（flaky 対応）。専用ワークフロー `.github/workflows/e2e.yml`（PR）で実行 |
@@ -121,7 +121,7 @@
 | 46 | CSRF トークン検証の導入 | 検討中 | 中 | API Route へのCSRF保護追加 |
 | 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 未着手 | 中 | `aria-live`, `role="alert"` 等の追加 |
-| 49 | サーバーサイドバリデーション強化（Zod統一） | 未着手 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
 | 58 | `next` を 15.5.25 へ更新（メジャー更新 フェーズ1） | 完了 | 高 | issue #86。`next` のアドバイザリが 0 件に（critical 2→0 / high 8→0）。Node / ESLint / React はいずれも据え置きで対応可能だった。`experimental.typedRoutes` → `typedRoutes` の移動が必要 |
 | 57 | `next` を 14.2.35 へ更新 | 完了 | 高 | issue #81。`next@14.2.5` の既知脆弱性のうち 12 件（critical 1 / high 4 を含む）を解消。Cache Poisoning と Server Components DoS の一部が対象。15.x でのみ修正されるものは残存し、メジャー更新の判断は別途 |
 | 56 | page.tsx の server-first 化 | 完了 | 高 | issue #76。初期 HTML の本文が 10 文字（`Loading...`）しか無く SEO 対策が空振りしていた問題を解消。`lib/` の外部 I/O を `repositories/` へ移設し、`page.tsx`（Server Component）/ `client.tsx` / `error.tsx` に分離 |
@@ -224,6 +224,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-19 | `api/contact` のバリデーションを `ContactFormSchema` に統一し、`name` / `email` の長さがサーバー側で未検証だった穴を塞いだ。スキーマを `src/schemas/` へ昇格（issue #82） | - |
 | 2026-09-19 | `next` を 15.5.25 へ更新し、next のアドバイザリを 0 件にした（issue #86 フェーズ1） | - |
 | 2026-09-19 | `next` を 14.2.35 へ更新し、既知脆弱性 12 件を解消（issue #81） | - |
 | 2026-09-19 | `page.tsx` を server-first 構成へ作り替え、初期 HTML に本文を含めた。`lib/` の外部 I/O を `repositories/` へ移設（issue #76） | - |

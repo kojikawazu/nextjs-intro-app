@@ -47,19 +47,59 @@ describe('POST /api/contact（route → resend / MSW モック）', () => {
     it('必須項目欠落は 400 を返す', async () => {
         const res = await POST(contactRequest({ name: '', email: '', message: '' }));
         expect(res.status).toBe(400);
-        expect((await res.json()).error).toBe('すべての項目を入力してください');
+        expect((await res.json()).error).toBe('お名前は必須です');
     });
 
     it('不正なメール形式は 400 を返す', async () => {
         const res = await POST(contactRequest({ ...validPayload, email: 'invalid' }));
         expect(res.status).toBe(400);
-        expect((await res.json()).error).toBe('有効なメールアドレスを入力してください');
+        expect((await res.json()).error).toBe('正しいメールアドレスを入力してください');
     });
 
-    it('5000文字超のメッセージは 400 を返す', async () => {
-        const res = await POST(contactRequest({ ...validPayload, message: 'a'.repeat(5001) }));
+    it('2000文字超のメッセージは 400 を返す', async () => {
+        const res = await POST(contactRequest({ ...validPayload, message: 'a'.repeat(2001) }));
         expect(res.status).toBe(400);
-        expect((await res.json()).error).toBe('メッセージは5000文字以内で入力してください');
+        expect((await res.json()).error).toBe('お問い合わせ内容は2000文字以内で入力してください');
+    });
+
+    // --- 準正常系（統一前はサーバー側で素通りしていた入力）---
+    // 以下 4 件は ContactFormSchema を参照する前のハンドラでは 400 にならず、
+    // 制約なしのままメール本文へ渡っていた。フォームを経由しない直接リクエストで効くことを固定する。
+    it('50文字超の名前は 400 を返す（統一前は素通りしていた）', async () => {
+        const res = await POST(contactRequest({ ...validPayload, name: 'あ'.repeat(51) }));
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toBe('お名前は50文字以内で入力してください');
+    });
+
+    it('1文字の名前は 400 を返す（統一前は素通りしていた）', async () => {
+        const res = await POST(contactRequest({ ...validPayload, name: 'あ' }));
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toBe('お名前は2文字以上で入力してください');
+    });
+
+    it('255文字超のメールアドレスは 400 を返す（統一前は素通りしていた）', async () => {
+        const longEmail = `${'a'.repeat(250)}@example.com`;
+        const res = await POST(contactRequest({ ...validPayload, email: longEmail }));
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toBe('メールアドレスは255文字以内で入力してください');
+    });
+
+    it('10文字未満のメッセージは 400 を返す（統一前は素通りしていた）', async () => {
+        const res = await POST(contactRequest({ ...validPayload, message: '短い' }));
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toBe('お問い合わせ内容は10文字以上で入力してください');
+    });
+
+    // --- 異常系（リクエストボディ自体が壊れている）---
+    it('JSON として壊れたボディは 400 を返す', async () => {
+        const req = new NextRequest('http://localhost/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{ not json',
+        });
+        const res = await POST(req);
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toBe('リクエストの形式が不正です');
     });
 
     // --- 異常系（Resend API がエラーを返す）---
