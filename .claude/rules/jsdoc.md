@@ -68,7 +68,42 @@ export async function resolveDisplayName(
 | `jsdoc/require-returns-description` | error | `@returns` に説明文を必須化 |
 | `jsdoc/check-alignment` | warn | JSDoc ブロックの体裁を整える |
 | `jsdoc/no-multi-asterisks` | warn | アスタリスクの重複を検出 |
+| `jsdoc/require-jsdoc` | error | 公開シンボルへの JSDoc ブロックの**有無**を検査（`contexts` で対象を限定） |
 
 - **`.tsx`（React コンポーネント）は `require-returns` / `require-returns-description` を off**: JSX を返す要素に「@returns …の要素」を書くのはノイズになるため。`.ts`（フック / lib / API）では `@returns` 必須のまま。
-- `require-jsdoc` は行コメント（`//`）を誤検知するため未採用。JSDoc ブロックの有無・質はレビューで確認する（＝コメント無しの既存コードは lint を壊さない）。
+- **`require-jsdoc` は `contexts` を指定して採用している。** 素の `require-jsdoc` は行コメント（`//`）を誤検知するが、対象ノードを限定し `publicOnly: true` で export 済みシンボルに絞ることで、誤検知なしに運用できる。
 - 参考: 上記方針は `youtube-my-collection`（ESLint 9 フラット config）を ESLint 8 レガシー config 向けに移植したもの。
+
+### `require-jsdoc` の設定
+
+```json
+"jsdoc/require-jsdoc": ["error", {
+    "publicOnly": true,
+    "require": { "FunctionDeclaration": false },
+    "contexts": [
+        "FunctionDeclaration",
+        "TSInterfaceDeclaration",
+        "TSTypeAliasDeclaration",
+        "VariableDeclaration"
+    ]
+}]
+```
+
+### `require-jsdoc` が検出できない形式（重要）
+
+導入時に 6 種類の export 形式で実挙動を検証した結果、**1 つだけ検出できない形式がある**。
+
+| 形式 | 検出 |
+|---|---|
+| `export function foo() {}` | ✅ |
+| `export interface Foo {}` | ✅ |
+| `export type Foo = ...` | ✅ |
+| `export const foo = ...` | ✅ |
+| `export default function foo() {}` | ✅ |
+| `const foo = ...` を書き、末尾で `export { foo }` | ❌ |
+
+最後の形式は、`publicOnly` の ESM 追跡が**別文の `export { foo }` を宣言ノードに結び付けられない**ために漏れる。
+
+**したがって、宣言と同時に export する形式（`export function` / `export const` / `export interface`）を使うこと。**
+末尾でまとめて `export { ... }` する形式は lint の網から外れるため、新規コードでは避ける。
+既存の atoms（`Button` / `Input` / `TextArea` / `Badge`）はこの形式を使っており、JSDoc は付与済みだが lint では保護されていない。
