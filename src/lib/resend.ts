@@ -3,12 +3,30 @@ import { Resend } from 'resend';
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
 
+/** お問い合わせメールの本文を組み立てるための入力値。 */
 interface ContactEmailData {
+    /** 送信者の名前。件名と本文に差し込む */
     name: string;
+    /** 送信者のメールアドレス。`replyTo` に設定され、受信者がそのまま返信できる */
     email: string;
+    /** 問い合わせメッセージ本文 */
     message: string;
 }
 
+/**
+ * お問い合わせ内容を Resend 経由で運用者宛にメール送信する。
+ *
+ * **例外を呼び出し側に投げない。** 環境変数の未設定・Resend の API エラー・想定外の例外は
+ * すべて内部で捕捉し、`success: false` と `error` を持つオブジェクトとして返す。
+ * 呼び出し側（`api/contact/route.ts`）は `result.success` で分岐すればよく、try/catch を要さない。
+ *
+ * エラー詳細のログ出力は `NODE_ENV === 'development'` のときだけ行う。本番では送信失敗の
+ * 詳細が一切ログに残らないため、`error-handling.md`「エラー時はスタックトレースを含むログを
+ * 出力する」とは逆方向であり、本番で発生した送信失敗の調査は難しい。
+ *
+ * @param data - 送信者名・返信先アドレス・本文
+ * @returns 送信結果。成功時は `success: true` と `messageId`、失敗時は `success: false` と `error`
+ */
 export async function sendContactEmail(data: ContactEmailData) {
     try {
         const { name, email, message } = data;
@@ -109,6 +127,16 @@ ${message}
     }
 }
 
+/**
+ * Resend の設定が使える状態かを確認する。
+ *
+ * **現在どこからも呼び出されていない**（手動デバッグ用に残されている）。
+ * また Resend にヘルスチェック用エンドポイントが無いため、**実際の疎通は行わず**
+ * `RESEND_API_KEY` の有無と `re_` プレフィックスの形式検証だけを行う。
+ * キーが失効していてもここでは検出できない。
+ *
+ * @returns API キーが設定され形式も正しければ `true`、そうでなければ `false`
+ */
 export async function testResendConnection() {
     try {
         if (!process.env.RESEND_API_KEY) {

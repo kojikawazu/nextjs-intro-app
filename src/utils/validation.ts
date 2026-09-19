@@ -13,10 +13,12 @@ import { z } from 'zod';
  * `criteriaMode: 'firstError'` で各フィールドの先頭 issue だけを `errors.<field>.message`
  * に載せるため、結果として空欄時には必須エラーが表示される。
  *
- * **本スキーマはクライアント側の検証にしか使われていない。** `frontend.md` は「クライアント検証は
- * UX のためのものでありセキュリティ担保ではない。Route Handler でも必ず検証する」と定めるが、
- * 現状 `src/app/api/contact/route.ts` は `!name || !email || !message` の必須チェックのみで、
- * 本スキーマを参照していない（文字数上限はサーバー側で未検証）。統一は docs/11 タスク #49 として未着手。
+ * **本スキーマはクライアント側の検証にしか使われていない。** `src/app/api/contact/route.ts` は
+ * 独自に必須チェック・メール形式（正規表現）・`message` の 5000 文字上限を検証しており、
+ * 検証は行うが本スキーマは参照しない。結果として `name` の 2〜50 文字と `email` の 255 文字は
+ * サーバー側で未検証、`message` の上限も 2000 と 5000 で食い違う。
+ * `frontend.md` が求めるスキーマ共有への統一は docs/11 タスク #49 として未着手。
+ * 差異の一覧は `docs/07-api-specification.md` §4.3 が正本。
  */
 export const ContactFormSchema = z.object({
     name: z
