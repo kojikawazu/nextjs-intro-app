@@ -1,13 +1,18 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 import { NextRequest } from 'next/server';
 import { POST } from '@/app/api/contact/route';
+import { resetRateLimitStore } from '@/lib/rate-limit';
 
 // Resend にはエミュレータが存在しないため、HTTP を MSW でモックする（testing.md: 外部 I/O のみモック）。
 const server = setupServer();
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+
+// レートリミットの履歴はモジュールスコープで共有される。消さないと先行テストの
+// 送信回数が後続テストを 429 にしてしまい、失敗の原因が分かりにくくなる。
+beforeEach(() => resetRateLimitStore());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
@@ -126,6 +131,22 @@ describe('POST /api/contact（route → resend / MSW モック）', () => {
 
         // 件名はヘッダーであり HTML ではないため、実体参照へ変換しない。
         expect(sent?.subject).toBe('ポートフォリオサイトからのお問い合わせ - <b>山田</b>様');
+    });
+
+    // --- 準正常系（レートリミット）---
+    it('同一クライアントからの 6 回目は 429 と Retry-After を返す', async () => {
+        // 上限は 10 分あたり 5 回。バリデーション前に判定するため、
+        // 不正ボディを送っても消費される（＝メール送信は一切発生しない）。
+        for (let i = 0; i < 5; i += 1) {
+            await POST(contactRequest({}));
+        }
+
+        const res = await POST(contactRequest({}));
+        expect(res.status).toBe(429);
+        expect((await res.json()).error).toBe(
+            '送信回数の上限に達しました。しばらく時間をおいてから再度お試しください。',
+        );
+        expect(Number(res.headers.get('Retry-After'))).toBeGreaterThan(0);
     });
 
     // --- 異常系（リクエストボディ自体が壊れている）---
