@@ -125,3 +125,28 @@ describe('ContactFormSchema', () => {
         expect(ContactFormSchema.safeParse({}).success).toBe(false);
     });
 });
+
+describe('ContactFormSchema — メールヘッダーの安全性', () => {
+    // resend.ts は `replyTo` に email をそのまま渡す。件名（name）と違い制御文字の
+    // 除去を挟んでいないため、「スキーマが改行を弾く」ことが唯一の防御になる。
+    // その前提が崩れていないことをここで固定する（issue #114）。
+    it('改行を含むメールアドレスを拒否する', () => {
+        const result = ContactFormSchema.safeParse({
+            name: '山田太郎',
+            email: 'taro@example.com\r\nBcc: attacker@example.com',
+            message: 'お問い合わせのテストです。',
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('前後に改行が付いたメールアドレスを拒否する', () => {
+        const result = ContactFormSchema.safeParse({
+            name: '山田太郎',
+            email: '\ntaro@example.com\n',
+            message: 'お問い合わせのテストです。',
+        });
+
+        expect(result.success).toBe(false);
+    });
+});

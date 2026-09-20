@@ -133,6 +133,33 @@ describe('POST /api/contact（route → resend / MSW モック）', () => {
         expect(sent?.subject).toBe('ポートフォリオサイトからのお問い合わせ - <b>山田</b>様');
     });
 
+    it('件名に埋め込む名前から制御文字を除去して送る', async () => {
+        // 件名の防御は HTML エスケープではなく制御文字の除去（issue #114）。
+        // ここで固定したいのは sanitizeHeaderValue の呼び出し忘れ（回帰）。
+        let sent: { subject: string } | undefined;
+        server.use(
+            http.post('https://api.resend.com/emails', async ({ request }) => {
+                sent = (await request.json()) as typeof sent;
+                return HttpResponse.json({ id: 'it-subject-id' }, { status: 200 });
+            }),
+        );
+
+        const res = await POST(
+            contactRequest({
+                name: '山田\r\nBcc: attacker@example.com',
+                email: 'taro@example.com',
+                message: 'お問い合わせのテストです。よろしくお願いします。',
+            }),
+        );
+        expect(res.status).toBe(200);
+
+        expect(sent?.subject).toBe(
+            'ポートフォリオサイトからのお問い合わせ - 山田Bcc: attacker@example.com様',
+        );
+        expect(sent?.subject).not.toContain('\r');
+        expect(sent?.subject).not.toContain('\n');
+    });
+
     // --- 準正常系（レートリミット）---
     it('同一クライアントからの 6 回目は 429 と Retry-After を返す', async () => {
         // 上限は 10 分あたり 5 回。バリデーション前に判定するため、
