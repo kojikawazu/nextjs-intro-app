@@ -198,6 +198,7 @@ pnpm dev
 | any 型の使用 | 警告（`@typescript-eslint/no-explicit-any: "warn"`） |
 | const 優先 | 必須（`prefer-const: "error"`） |
 | GitHub Actions | `actionlint` でワークフロー定義を検証（式・ランナーラベル・コンテキスト参照）。`run:` ブロックは shellcheck に掛かる。CI でブロッキング |
+| シークレット混入 | `secret-scan.yml` が `git ls-files` を鍵・`.env` 系のパスパターンと照合。PR と main への push で常時実行・ブロッキング。詳細は docs/06 §11 |
 | JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須、公開シンボルへの JSDoc ブロックを `require-jsdoc` で必須化。`.tsx` は `@returns` を除外）。末尾の `export { X }` 形式は検出できないため、宣言と同時に export する。詳細は `.claude/rules/jsdoc.md` |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
