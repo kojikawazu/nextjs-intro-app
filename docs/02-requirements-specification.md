@@ -294,7 +294,7 @@ src/
 ├── schemas/                # Zod スキーマ
 │   └── contact.ts          # お問い合わせフォームの検証スキーマ
 ├── lib/                    # 純粋ユーティリティ（通信しない）
-│   ├── costom-date.ts      # 日付フォーマットユーティリティ
+│   ├── custom-date.ts      # 日付フォーマットユーティリティ
 │   ├── html-escape.ts      # HTML 出力エスケープ
 │   └── site-url.ts         # サイト公開 URL の解決
 ├── types/

@@ -23,7 +23,7 @@
 - [4. ユニットテスト仕様](#4-ユニットテスト仕様)
     - [4.1 ユーティリティ関数](#41-ユーティリティ関数)
         - [4.1.1 cn関数 (`src/utils/cn.ts`)](#411-cn関数-srcutilscnts)
-        - [4.1.2 toDateString関数 (`src/lib/costom-date.ts`)](#412-todatestring関数-srclibcostom-datets)
+        - [4.1.2 toDateString関数 (`src/lib/custom-date.ts`)](#412-todatestring関数-srclibcustom-datets)
         - [4.1.3 formatCareerPeriod関数 (`src/app/page.tsx` 内)](#413-formatcareerperiod関数-srcapppagetsx-内)
     - [4.2 バリデーションロジック](#42-バリデーションロジック)
         - [4.2.1 ContactFormSchema (`src/schemas/contact.ts`)](#421-contactformschema-srcschemascontactts)
@@ -330,8 +330,8 @@ src/
 ├── lib/
 │   ├── client-ip.ts
 │   ├── client-ip.test.ts
-│   ├── costom-date.ts
-│   ├── costom-date.test.ts
+│   ├── custom-date.ts
+│   ├── custom-date.test.ts
 │   ├── html-escape.ts
 │   ├── html-escape.test.ts
 │   ├── mail-header.ts
@@ -379,7 +379,7 @@ e2e/
 | UT-CN-006 | 空配列を処理する | `cn()` | `''` |
 | UT-CN-007 | オブジェクト記法を処理する | `cn({ 'text-white': true, 'text-black': false })` | `'text-white'` |
 
-#### 4.1.2 toDateString関数 (`src/lib/costom-date.ts`)
+#### 4.1.2 toDateString関数 (`src/lib/custom-date.ts`)
 
 | テストID | テストケース | 入力 | 期待出力 |
 |----------|------------|------|---------|
@@ -398,7 +398,7 @@ e2e/
 | UT-FCP-002 | 現在進行中を表示する | `('2023年4月', 'now')` | `'2023年4月 - 現在'` |
 | UT-FCP-003 | 同一年の期間を整形する | `('2024年1月', '2024年6月')` | `'2024年1月 - 2024年6月'` |
 
-> 注: `formatCareerPeriod` は `page.tsx` のモジュールスコープに定義されたプライベート関数であるため、テスト容易性のために `src/lib/costom-date.ts` または `src/utils/` 配下に抽出することを推奨する。
+> 注: `formatCareerPeriod` は `page.tsx` のモジュールスコープに定義されたプライベート関数であるため、テスト容易性のために `src/lib/custom-date.ts` または `src/utils/` 配下に抽出することを推奨する。
 
 #### 4.1.4 escapeHtml関数 (`src/lib/html-escape.ts`)
 
@@ -780,8 +780,6 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | IT-GCS-002 | ファイル未存在時にエラーを投げる | ファイル未存在（モック） | `Error: File ${jsonPath} not found` |
 | IT-GCS-003 | バケット未存在時にエラーを投げる | バケット未存在（モック） | Error がスローされる |
 | IT-GCS-004 | 不正なJSON時にエラーを投げる | ファイル内容が不正JSON（モック） | Error がスローされる |
-| IT-GCS-005 | testGCSConnection が接続成功を返す | バケット存在（モック） | true |
-| IT-GCS-006 | testGCSConnection が接続失敗を返す | バケット未存在（モック） | false |
 
 #### 5.2.3 Resendクライアント (`src/repositories/resend.ts`)
 
@@ -794,8 +792,6 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | IT-RS-005 | Resend API失敗時にエラーを返す | Resend API失敗（モック） | `{ success: false, error: '...' }` |
 | IT-RS-006 | メール件名が正しいフォーマットになる | 正常送信 | `'ポートフォリオサイトからのお問い合わせ - ${name}様'` |
 | IT-RS-007 | replyToに送信者メールが設定される | 正常送信 | replyTo に data.email が設定される |
-| IT-RS-008 | testResendConnection がAPIキー形式を検証する | RESEND_API_KEY='re_xxx' | true |
-| IT-RS-009 | testResendConnection が不正形式で失敗を返す | RESEND_API_KEY='invalid' | false |
 
 ---
 

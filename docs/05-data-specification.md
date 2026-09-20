@@ -332,7 +332,7 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
 
 #### 日付変換ロジック
 
-`src/lib/costom-date.ts` の `toDateString()` 関数で年月文字列を日付文字列に変換する。
+`src/lib/custom-date.ts` の `toDateString()` 関数で年月文字列を日付文字列に変換する。
 
 - 入力: `"YYYY年MM月"` 形式の文字列
 - 出力: `"YYYY/MM/01"` 形式の文字列（日は常に01）
