@@ -27,16 +27,6 @@ updates:
           - dependency-name: next
             update-types:
               - version-update:semver-major
-          # forwardRef を多用する atoms 全体に影響する（issue #104）
-          - dependency-name: react
-            update-types:
-              - version-update:semver-major
-          - dependency-name: react-dom
-            update-types:
-              - version-update:semver-major
-          - dependency-name: '@types/react'
-            update-types:
-              - version-update:semver-major
           # Node ランタイムのバージョン統一と揃える必要がある（docs/11 タスク #53）
           - dependency-name: '@types/node'
             update-types:
