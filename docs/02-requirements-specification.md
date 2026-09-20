@@ -265,7 +265,7 @@
 
 ### 4.2 コンポーネント構成
 
-```
+```text
 src/
 ├── app/
 │   ├── layout.tsx          # RootLayout（メタデータ定義）

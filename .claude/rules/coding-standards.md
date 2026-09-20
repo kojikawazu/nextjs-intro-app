@@ -50,7 +50,7 @@ globs:
 - 外部入力（API レスポンス・`JSON.parse`・フォーム入力）は `unknown` で受け、**Zod で `parse` してから**内部で使う。
 - **検証を伴わない純粋な型は `schemas/` に置かない**（`types/` へ）。`schemas/` に置くのは「実行時に `parse` するもの」だけ。
 
-```
+```text
 src/
 ├── repositories/   # 外部 I/O（通信・ストレージアクセスはここだけ）
 ├── schemas/        # Zod スキーマ

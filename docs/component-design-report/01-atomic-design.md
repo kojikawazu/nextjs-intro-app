@@ -38,7 +38,7 @@
 
 本プロジェクトでは Brad Frost が提唱した **Atomic Design** をベースに、UIコンポーネントを3階層で構造化している。Atomic Design 本来の5階層（Atoms → Molecules → Organisms → Templates → Pages）から、Templates 層を省略し、Pages は Next.js App Router の `page.tsx` が担う構成としている。
 
-```
+```text
 src/components/
 ├── atoms/          ← 最小単位の汎用UIパーツ（4コンポーネント）
 │   ├── Badge.tsx
@@ -94,6 +94,7 @@ const variants = {
 バリアントとサイズをオブジェクトマップで管理し、`cn()` で結合するパターンは、条件分岐の複雑化を防ぎ、新しいバリアント追加も容易にする。
 
 **ローディング状態**:
+
 - `isLoading=true` 時、SVG スピナーアニメーション + `disabled` を自動適用
 - ボタンテキストの左にスピナーを配置（`animate-spin`）
 
@@ -171,7 +172,7 @@ Molecules は **Atoms や基本要素を組み合わせた複合コンポーネ�
 
 **構造**:
 
-```
+```text
 CareerCard (glass-card + floating-card)
 ├── ヘッダー部
 │   ├── タイトル（hover で neon-text）
@@ -187,6 +188,7 @@ CareerCard (glass-card + floating-card)
 ```
 
 **ホバーエフェクト**:
+
 - `floating-card` クラスによるカード全体の浮き上がり
 - 下部のグラデーションラインが `group-hover:scale-x-100` で伸びる
 - タイトルが `group-hover:neon-text` で発光テキストに変化
@@ -206,6 +208,7 @@ CareerCard (glass-card + floating-card)
 | `style` | `CSSProperties?` | インラインスタイル（animationDelay 用） |
 
 **特徴**:
+
 - `className` と `style` Props を公開し、親コンポーネント（`page.tsx`）からアニメーション制御を注入可能
 - アイコンの背景にグラデーション（`from-primary-400 to-purple-400`）をオーバーレイ
 - CareerCard と同様の `floating-card` + 下部ホバーラインパターン
@@ -232,6 +235,7 @@ const sizes = {
 ```
 
 **セキュリティ対策**:
+
 - 全外部リンクに `target="_blank"` + `rel="noopener noreferrer"` を適用
 - `aria-label` に「{SNS名}のプロフィールを開く」を設定（アクセシビリティ）
 
@@ -277,6 +281,7 @@ cn('transition-all ...', isScrolled ? 'text-white ...' : 'text-secondary-200 ...
 ```
 
 **スクロール検知**:
+
 - `useEffect` で `scroll` イベントリスナーを登録
 - 閾値 `10px` を超えた場合に `isScrolled` を `true` に設定
 - クリーンアップ関数でリスナーを解除
@@ -319,7 +324,7 @@ const { register, handleSubmit, formState: { errors }, reset } = useForm<Contact
 
 **画面遷移（3状態）**:
 
-```
+```text
 [フォーム表示] → 送信 → [送信中（ローディング）] → 成功 → [送信完了画面]
                                                   → 失敗 → [エラー表示 + フォーム]
 ```
@@ -332,7 +337,7 @@ const { register, handleSubmit, formState: { errors }, reset } = useForm<Contact
 
 ### 5.1 コンポーネント依存ツリー
 
-```
+```text
 page.tsx
 ├── Header (organism)
 │   └── [navItems, logo] ← portfolioData.navbar_data から生成
@@ -366,7 +371,7 @@ page.tsx
 
 ### 5.3 Atomic Design の階層関係
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │                    Page (page.tsx)                    │
 │    データ取得 / 状態管理 / セクションレイアウト          │

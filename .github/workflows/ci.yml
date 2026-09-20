@@ -37,6 +37,16 @@ jobs:
             - name: Format check (Prettier)
               run: pnpm format:check
 
+            # Markdown の静的検査。Prettier は .prettierignore で Markdown を対象外に
+            # しているため（*.md / docs/ / .claude/）、整形の担い手が居らず両者は競合しない。
+            #
+            # 既定ルールのままでは 3,126 件の違反が出る。件数の 93% を占める MD060
+            # （テーブルのパイプ整形）/ MD013（1行80文字）/ MD007（箇条書きインデント）は
+            # 日本語ドキュメントの書き方と正面から衝突するため無効化している。
+            # 取捨選択の根拠は .markdownlint-cli2.jsonc のコメントと docs/10 を参照。
+            - name: Lint Markdown (markdownlint-cli2)
+              run: pnpm lint:md
+
             # ワークフロー定義そのものを検証する。式の誤り・存在しないランナーラベル・
             # 未定義のコンテキスト参照に加え、`run:` ブロックを shellcheck に掛ける。
             # deploy_to_googlecloud.yml は古いイメージ削除のシェルスクリプトを直接持つため、

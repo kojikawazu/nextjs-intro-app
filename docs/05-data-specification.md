@@ -224,7 +224,7 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
 
 ### 4.1 ポートフォリオデータフロー
 
-```
+```text
 [GCS プライベートバケット]
     |
     | (1) @google-cloud/storage SDK
@@ -275,7 +275,7 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
 
 ### 4.2 お問い合わせフォームデータフロー
 
-```
+```text
 [ユーザー入力 (ContactForm)]
     |
     | (1) Zod スキーマによるクライアント側バリデーション
@@ -301,7 +301,7 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
 
 ### 4.3 開発環境 vs 本番環境データ戦略
 
-```
+```text
                     +-- [development] ---+
                     |                    |
                     |  FORCE_GCS=true?   |
@@ -368,13 +368,13 @@ GCS からの取得に失敗した場合、開発環境かつ `sample.json` が�
 
 Resend API 経由で送信されるメールに含まれる日時は、JSTタイムゾーンで以下の形式で表示される。
 
-```
+```ts
 toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
 ```
 
 HTMLメール内の日時表示は年月日時分までフォーマットする。
 
-```
+```ts
 toLocaleString('ja-JP', {
   timeZone: 'Asia/Tokyo',
   year: 'numeric',

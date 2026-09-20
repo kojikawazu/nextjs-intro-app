@@ -13,7 +13,7 @@ globs: "src/app/api/**"
 
 ## ディレクトリ構成
 
-```
+```text
 src/app/api/
 ├── health/route.ts    # ヘルスチェック
 ├── auth/              # 認証関連

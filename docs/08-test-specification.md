@@ -49,8 +49,8 @@
         - [5.1.2 POST /api/contact (`src/app/api/contact/route.ts`)](#512-post-apicontact-srcappapicontactroutets)
     - [5.2 データフェッチフロー](#52-データフェッチフロー)
         - [5.2.1 portfolio (`src/repositories/portfolio.ts`)](#521-portfolio-srcrepositoriesportfoliots)
-        - [5.2.2 GCSクライアント (`src/repositories/gcs.ts`)](#522-gcsクライアント-srclibgcsts)
-        - [5.2.3 Resendクライアント (`src/repositories/resend.ts`)](#523-resendクライアント-srclibresendts)
+        - [5.2.2 GCSクライアント (`src/repositories/gcs.ts`)](#522-gcsクライアント-srcrepositoriesgcsts)
+        - [5.2.3 Resendクライアント (`src/repositories/resend.ts`)](#523-resendクライアント-srcrepositoriesresendts)
 - [6. E2Eテスト仕様](#6-e2eテスト仕様)
     - [6.1 ホームページ表示テスト](#61-ホームページ表示テスト)
     - [6.2 ナビゲーションテスト](#62-ナビゲーションテスト)
@@ -116,7 +116,7 @@
 
 本プロジェクトでは以下の3階層でテストを構成する。
 
-```
+```text
         /  E2E テスト  \          <- 少数・高コスト
        / 統合テスト      \        <- 中程度
       / ユニットテスト     \      <- 多数・低コスト
@@ -289,7 +289,7 @@ export default defineConfig({
 
 ### 3.6 推奨ディレクトリ構成
 
-```
+```text
 src/
 ├── __tests__/
 │   ├── setup.ts                    # テストセットアップ
@@ -916,7 +916,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 
 #### Playwright の構成
 
-```
+```text
 webServer: [
   { port 3000, GCS_JSON_PATH: 'json/portfolio.json' },       ← 正常系
   { port 3001, GCS_JSON_PATH: 'json/does-not-exist.json' },  ← 異常系
@@ -993,7 +993,7 @@ projects: [
 
 テスト環境で使用するMSWハンドラーの定義方針を以下に示す。
 
-```
+```text
 handlers.ts で定義すべきハンドラー:
   - GET /api/portfolio  → モックポートフォリオデータを返却
   - POST /api/contact   → 成功レスポンスを返却
@@ -1024,7 +1024,7 @@ handlers.ts で定義すべきハンドラー:
 
 テストを CI パイプラインに統合するための推奨ワークフロー構成を以下に示す。
 
-```
+```text
 テスト実行フロー:
   1. 型チェック (tsc --noEmit)          ← 実装済み（ci.yml）
   2. リント (next lint)                 ← 実装済み（ci.yml。ESLint + JSDoc）
@@ -1068,23 +1068,23 @@ handlers.ts で定義すべきハンドラー:
 
 ### フェーズ2: コア機能テスト（優先度: 高）
 
-4. APIルートの統合テスト（portfolio, contact）
-5. Moleculesコンポーネントのユニットテスト（SkillCard, CareerCard, SocialLinks）
-6. データフェッチフローの統合テスト（portfolio, gcs, resend）
+1. APIルートの統合テスト（portfolio, contact）
+2. Moleculesコンポーネントのユニットテスト（SkillCard, CareerCard, SocialLinks）
+3. データフェッチフローの統合テスト（portfolio, gcs, resend）
 
 ### フェーズ3: 画面テスト（優先度: 中）
 
-7. Organismsコンポーネントのユニットテスト（Header, ContactForm）
-8. ページコンポーネントの統合テスト（page.tsx）
+1. Organismsコンポーネントのユニットテスト（Header, ContactForm）
+2. ページコンポーネントの統合テスト（page.tsx）
 
 ### フェーズ4: E2E・品質テスト（優先度: 中）
 
-9. Playwright セットアップと主要シナリオのE2Eテスト
-10. レスポンシブデザインテスト
-11. アクセシビリティテスト
+1. Playwright セットアップと主要シナリオのE2Eテスト
+2. レスポンシブデザインテスト
+3. アクセシビリティテスト
 
 ### フェーズ5: CI/CD統合（優先度: 低）
 
-12. GitHub Actions ワークフロー構築
-13. カバレッジレポートの自動生成
-14. パフォーマンステストの自動化
+ 1. GitHub Actions ワークフロー構築
+ 2. カバレッジレポートの自動生成
+ 3. パフォーマンステストの自動化

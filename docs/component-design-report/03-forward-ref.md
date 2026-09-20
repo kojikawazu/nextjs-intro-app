@@ -49,7 +49,7 @@
 - フォーカス制御（バリデーションエラー時のフォーカス移動）
 - DOM イベントのリスナー登録
 
-```
+```text
 React Hook Form の register()
         │
         │ { ref, onChange, onBlur, name } を返す
@@ -207,7 +207,7 @@ const { register, handleSubmit, formState: { errors }, reset } = useForm<Contact
 
 ### 4.2 データフロー図
 
-```
+```text
 ContactForm (Organism)
     │
     │ useForm({ resolver: zodResolver(ContactFormSchema) })
@@ -246,7 +246,7 @@ ContactForm (Organism)
 
 React Hook Form は `ref` を通じてバリデーションエラー時に該当フィールドへ自動フォーカスを移動する機能を持つ。
 
-```
+```text
 ユーザーが「送信」ボタンをクリック
     │
     ▼
@@ -272,7 +272,7 @@ handleSubmit が Zod スキーマでバリデーション実行
 
 ### 5.1 設計上の位置づけ
 
-```
+```text
 ┌──────────────────────────────────────────────────────┐
 │ ContactForm (Organism)                                │
 │   責務: フォームロジック、バリデーション、API通信          │
@@ -298,6 +298,7 @@ handleSubmit が Zod スキーマでバリデーション実行
 Button も `forwardRef` を使用しているが、現時点では ContactForm 内で `register()` を通じた ref 転送は行っていない（送信ボタンは `type="submit"` で、React Hook Form がフォームの `onSubmit` イベントで処理する）。
 
 Button に `forwardRef` が実装されている理由:
+
 - 将来的にプログラム的なフォーカス制御やクリックトリガーが必要になった場合に備える
 - Atom コンポーネントとしての一貫性（フォーム要素系 Atom は全て forwardRef 対応）
 - 外部からの DOM アクセスを許容する設計方針
@@ -306,7 +307,7 @@ Button に `forwardRef` が実装されている理由:
 
 ## 6. まとめ: 3つの要素の連携
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                   コンポーネント設計の3本柱                      │
 │                                                             │
