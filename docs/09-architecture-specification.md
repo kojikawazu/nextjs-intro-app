@@ -246,10 +246,14 @@ src/
 ├── schemas/                    # Zod スキーマ（クライアント / サーバーで共有）
 │   └── contact.ts              # ContactFormSchema・ContactFormInput
 │
+├── middleware.ts               # nonce ベース CSP の付与 (docs/06 §6.5)
+│
 ├── lib/                        # 純粋ユーティリティ（通信しない）
+│   ├── client-ip.ts            # クライアント IP の解決 (レートリミットのキー。docs/06 §10.2)
 │   ├── costom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
 │   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
 │   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
+│   ├── rate-limit.ts           # スライディングウィンドウのレートリミット (docs/06 §10)
 │   └── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
 │
 ├── types/
