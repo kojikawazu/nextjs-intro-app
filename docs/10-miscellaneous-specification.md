@@ -75,38 +75,38 @@
 
 | 技術 | バージョン | ドキュメント |
 |------|-----------|-------------|
-| Next.js | 15.5.25 | https://nextjs.org/docs |
-| React | 18.3.1 | https://react.dev |
-| TypeScript | 5.5.2 | https://www.typescriptlang.org/docs/ |
-| Tailwind CSS | 3.4.4 | https://tailwindcss.com/docs |
-| React Hook Form | ^7.51.4 | https://react-hook-form.com |
-| Zod | ^3.23.8 | https://zod.dev |
-| Resend | ^4.6.0 | https://resend.com/docs |
-| @google-cloud/storage | ^7.16.0 | https://cloud.google.com/storage/docs/reference/libraries |
-| clsx | ^2.1.1 | https://github.com/lukeed/clsx |
-| tailwind-merge | ^2.3.0 | https://github.com/dcastil/tailwind-merge |
+| Next.js | 15.5.25 | <https://nextjs.org/docs> |
+| React | 18.3.1 | <https://react.dev> |
+| TypeScript | 5.5.2 | <https://www.typescriptlang.org/docs/> |
+| Tailwind CSS | 3.4.4 | <https://tailwindcss.com/docs> |
+| React Hook Form | ^7.51.4 | <https://react-hook-form.com> |
+| Zod | ^3.23.8 | <https://zod.dev> |
+| Resend | ^4.6.0 | <https://resend.com/docs> |
+| @google-cloud/storage | ^7.16.0 | <https://cloud.google.com/storage/docs/reference/libraries> |
+| clsx | ^2.1.1 | <https://github.com/lukeed/clsx> |
+| tailwind-merge | ^2.3.0 | <https://github.com/dcastil/tailwind-merge> |
 
 ### 2.2 開発ツール
 
 | ツール | バージョン | ドキュメント |
 |--------|-----------|-------------|
-| ESLint | 8.57.0 | https://eslint.org/docs/latest/ |
-| Prettier | ^3.3.2 | https://prettier.io/docs/en/ |
-| @typescript-eslint | ^7.18.0 | https://typescript-eslint.io/ |
-| PostCSS | 8.4.38 | https://postcss.org/ |
-| Autoprefixer | 10.4.19 | https://github.com/postcss/autoprefixer |
+| ESLint | 8.57.0 | <https://eslint.org/docs/latest/> |
+| Prettier | ^3.3.2 | <https://prettier.io/docs/en/> |
+| @typescript-eslint | ^7.18.0 | <https://typescript-eslint.io/> |
+| PostCSS | 8.4.38 | <https://postcss.org/> |
+| Autoprefixer | 10.4.19 | <https://github.com/postcss/autoprefixer> |
 
 ### 2.3 インフラ・サービス
 
 | サービス | 用途 | ドキュメント |
 |----------|------|-------------|
-| Cloud Run | 本番デプロイ先 | https://cloud.google.com/run/docs |
-| Google Cloud Storage | ポートフォリオデータ格納 | https://cloud.google.com/storage/docs |
-| Google Cloud Run | コンテナデプロイ（GitHub Actions経由） | https://cloud.google.com/run/docs |
-| Google Artifact Registry | Docker イメージ管理 | https://cloud.google.com/artifact-registry/docs |
-| Resend | メール送信 | https://resend.com/docs |
-| GitHub Actions | CI/CD | https://docs.github.com/en/actions |
-| Cloudflare | ドメインレジストラ / 権威 DNS（`introtechkkplus.com`） | https://developers.cloudflare.com/dns/ |
+| Cloud Run | 本番デプロイ先 | <https://cloud.google.com/run/docs> |
+| Google Cloud Storage | ポートフォリオデータ格納 | <https://cloud.google.com/storage/docs> |
+| Google Cloud Run | コンテナデプロイ（GitHub Actions経由） | <https://cloud.google.com/run/docs> |
+| Google Artifact Registry | Docker イメージ管理 | <https://cloud.google.com/artifact-registry/docs> |
+| Resend | メール送信 | <https://resend.com/docs> |
+| GitHub Actions | CI/CD | <https://docs.github.com/en/actions> |
+| Cloudflare | ドメインレジストラ / 権威 DNS（`introtechkkplus.com`） | <https://developers.cloudflare.com/dns/> |
 
 ---
 
@@ -178,6 +178,8 @@ pnpm dev
 | `pnpm start` | 本番ビルドのローカル実行 |
 | `pnpm lint` | ESLint によるコード静的解析 |
 | `make lint-actions` | GitHub Actions ワークフローを actionlint で検証（要 Docker） |
+| `make lint-md` | Markdown を markdownlint で検証 |
+| `make lint-md-fix` | Markdown の自動修正可能な違反を直す |
 | `pnpm audit` | 組み込みコマンド。dev を含む全依存を監査（CI では可視化のみ） |
 | `pnpm audit:prod` | 本番依存のみを全レベルで監査（`audit` は組み込み名と衝突するため別名） |
 | `pnpm audit:ci` | 本番依存の critical のみで失敗する監査（CI のブロッキングゲート） |
@@ -199,6 +201,30 @@ pnpm dev
 | const 優先 | 必須（`prefer-const: "error"`） |
 | GitHub Actions | `actionlint` でワークフロー定義を検証（式・ランナーラベル・コンテキスト参照）。`run:` ブロックは shellcheck に掛かる。CI でブロッキング |
 | シークレット混入 | `secret-scan.yml` が `git ls-files` を鍵・`.env` 系のパスパターンと照合。PR と main への push で常時実行・ブロッキング。詳細は docs/06 §11 |
+| Markdown | `markdownlint-cli2` で 30 本の `.md` を検証（`.markdownlint-cli2.jsonc`）。CI でブロッキング |
+
+#### markdownlint のルール取捨選択
+
+既定ルールのままでは **3,126 件**の違反が出るため、無効化を 4 件行っている。**件数が多いことだけを理由に無効化しない**（それでは lint が形骸化する）。無効化の基準は「本プロジェクトの書き方と正面から衝突し、機械的に従うと可読性が落ちるか」。
+
+| ルール | 件数 | 無効化の理由 |
+|---|---:|---|
+| `MD060/table-column-style` | 1,966 | 日本語の横長テーブルが多く突出する。Prettier は Markdown を対象外（`.prettierignore`）のため整形の担い手も居らず、手作業で揃える価値がない |
+| `MD013/line-length` | 508 | 1 行 80 文字制限。日本語の説明文では実質的に守れない |
+| `MD007/ul-indent` | 442 | 既存文書は 4 スペースで統一済み。既定の 2 スペースへ揃える利得が無い |
+| `MD036/no-emphasis-as-heading` | 13 | `**レスポンスヘッダー**` のように「目次に出したくないラベル」として意図的に使用。見出しへ昇格すると目次が肥大し、かえってアンカー不整合（MD051）を誘発する |
+
+`MD024/no-duplicate-heading` は無効化せず `siblings_only: true` に設定した。「#### 実装」「#### 検証」が別セクションに現れるのは正常なため、同一階層の兄弟間でだけ重複を禁じる。
+
+**Prettier とは競合しない。** `.prettierignore` が `*.md` / `docs/` / `.claude/` / `.github/` を除外しており、Markdown の整形は Prettier の担当外。
+
+#### 導入時に検出した不具合
+
+| 種別 | 内容 |
+|---|---|
+| ドキュメント破損 | `docs/09` に余分なコードフェンスが 1 つあり、対応関係がずれて **7 領域**（`## 9. セキュリティアーキテクチャ` / `## 10. 型定義アーキテクチャ` を含む）がコードブロックに飲み込まれていた |
+| リンク切れ | 目次のアンカー **12 件**（見出し改名・ディレクトリ移設・削除済みセクションへの参照） |
+| 手順の誤り | `docs/09` のドメイン構築 runbook の番号が 1, 1, 2, 3 になっていた |
 | JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須、公開シンボルへの JSDoc ブロックを `require-jsdoc` で必須化。`.tsx` は `@returns` を除外）。末尾の `export { X }` 形式は検出できないため、宣言と同時に export する。詳細は `.claude/rules/jsdoc.md` |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
@@ -227,7 +253,7 @@ pnpm dev
 
 ### 4.4 ファイル構成規則
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API Routes
@@ -287,7 +313,7 @@ src/
 
 本プロジェクトでは、GitHub Flow をベースとしたシンプルなブランチ戦略を採用する。
 
-```
+```text
 main（本番）
   ├── feature/YYYYMMDD-dev    # 機能開発ブランチ
   └── fix/[issue-description] # バグ修正ブランチ

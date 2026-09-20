@@ -45,7 +45,7 @@ export function cn(...inputs: ClassValue[]) {
 
 ### 1.2 処理の流れ
 
-```
+```text
 入力: cn('px-4 text-white', isError && 'text-red-400', className)
         │
         ▼
@@ -111,7 +111,8 @@ cn(baseStyles, variants[variant], sizes[size], isLoading && '...', className)
 ```
 
 **構造**:
-```
+
+```text
 cn(
     固定ベーススタイル,      // 'rounded-xl font-semibold ...'
     バリアントマップ[値],     // variants['primary'] → 'glass-card bg-gradient-to-r ...'
@@ -226,6 +227,7 @@ cn(内部スタイル, ..., className)  // className は最後に渡す
 ```
 
 **`className` を最後に渡す理由**:
+
 - `tailwind-merge` は後に記述されたクラスを優先する
 - 外部から渡されたクラスが内部のデフォルトスタイルを確実に上書きできる
 

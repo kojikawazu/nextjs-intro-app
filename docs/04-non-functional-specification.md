@@ -98,7 +98,7 @@
 
 #### APIキャッシュ戦略
 
-```
+```text
 Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 ```
 
@@ -288,7 +288,7 @@ App Router の規約ルート（`src/app/sitemap.ts` / `src/app/robots.ts`）で
 
 出力例:
 
-```
+```text
 User-Agent: *
 Allow: /
 

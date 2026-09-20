@@ -214,7 +214,7 @@ export const ContactFormSchema = z.object({
 
 #### データフロー
 
-```
+```text
 クライアント → Next.js API Route (/api/portfolio) → GCS (プライベートバケット)
 ```
 
@@ -238,7 +238,7 @@ export const ContactFormSchema = z.object({
 
 #### データフロー
 
-```
+```text
 クライアント → Next.js API Route (/api/contact) → Resend API → メール受信
 ```
 
@@ -519,7 +519,7 @@ Zod (`ContactFormSchema`) による検証は「受け付けてよい値か」の
 
 メールヘッダーは CRLF で区切られる。件名に生の改行が混ざると、そこから先が別のヘッダーとして解釈され得る。
 
-```
+```text
 subject: "問い合わせ - 山田\r\nBcc: attacker@example.com"
                            ^^^^ ここから別ヘッダー扱いになり得る
 ```

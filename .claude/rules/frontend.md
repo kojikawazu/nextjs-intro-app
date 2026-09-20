@@ -45,7 +45,7 @@ globs: "src/components/**,src/app/**,src/hooks/**,src/lib/**,src/repositories/**
 
 ### ディレクトリ構成
 
-```
+```text
 src/
 ├── app/                    # ルーティング（App Router）
 │   └── {route}/

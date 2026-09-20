@@ -112,7 +112,7 @@
 
 本アプリケーションはシングルページアプリケーション (SPA) として構成され、全セクションが `src/app/page.tsx` 内に配置されたクライアントコンポーネント (`'use client'`) である。
 
-```
+```text
 page.tsx (クライアントコンポーネント)
   +-- Header (固定ヘッダー)
   +-- Hero Section
@@ -125,7 +125,7 @@ page.tsx (クライアントコンポーネント)
 
 ### 2.2 データフロー
 
-```
+```text
 [Google Cloud Storage] -- JSON --> [page.tsx (Server Component)] --> [client.tsx] --> 本文入り HTML
 [ContactForm] -- POST /api/contact --> [Resend API] --> メール送信
 ```
@@ -143,6 +143,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.1 Header / ナビゲーション
 
 #### 機能概要
+
 ページ上部に固定表示されるナビゲーションヘッダー。スクロール状態に応じて外観が変化する。
 
 #### 仕様詳細
@@ -157,11 +158,13 @@ page.tsx (クライアントコンポーネント)
 | トランジション | `transition-all duration-300` |
 
 #### デスクトップナビゲーション (md以上)
+
 - ナビ項目: About, Career, Skills, Contact (データ駆動)
 - クリック時: 対応セクションへスムーズスクロール (`scrollIntoView({ behavior: 'smooth' })`)
 - ホバー効果: `hover:scale-105`、テキスト色変化
 
 #### モバイルナビゲーション (md未満)
+
 - ハンバーガーメニューボタン (SVGアイコン、開閉で形状変化)
 - `aria-label="メニューを開く"` によるアクセシビリティ対応
 - 開閉状態: `isMobileMenuOpen` state で管理
@@ -173,6 +176,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.2 Hero Section
 
 #### 機能概要
+
 フルスクリーンのファーストビュー。ビジュアルインパクトを重視した演出でサイトの第一印象を形成する。
 
 #### 仕様詳細
@@ -195,6 +199,7 @@ page.tsx (クライアントコンポーネント)
    - CTA ボタン: "お問い合わせ" (`animate-float`、クリックで Contact セクションへスクロール)
 
 #### アニメーション
+
 - コンテンツ全体: `animate-fade-in-up` (0.8秒、40px上方向から)
 - タイトル: `animate-glow` (2秒周期、box-shadow 明滅)
 - CTA ボタン: `animate-float` (6秒周期、20px上下浮遊)
@@ -204,6 +209,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.3 About Section
 
 #### 機能概要
+
 プロフィール情報とSNSリンクを表示する自己紹介セクション。
 
 #### 仕様詳細
@@ -215,6 +221,7 @@ page.tsx (クライアントコンポーネント)
 | レイアウト | 2カラム (`grid-cols-1 lg:grid-cols-2`)、`gap-12`、垂直中央揃え |
 
 #### 左カラム (プロフィール画像 + SNS)
+
 - **プロフィール画像**:
   - サイズ: `w-48 h-48` (192px x 192px)
   - 円形 (`rounded-full`)
@@ -230,6 +237,7 @@ page.tsx (クライアントコンポーネント)
   - `aria-label` によるアクセシビリティ対応
 
 #### 右カラム (テキスト)
+
 - セクションタイトル: "About" (`neon-text`)
 - 複数パラグラフの紹介文 (`about_contents` 配列をループ)
 - テキスト色: `secondary-200`
@@ -239,6 +247,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.4 Career Section
 
 #### 機能概要
+
 経歴をタイムライン形式で表示するセクション。
 
 #### 仕様詳細
@@ -249,6 +258,7 @@ page.tsx (クライアントコンポーネント)
 | レイアウト | タイムライン (縦方向)、カード間隔 `space-y-12` |
 
 #### タイムライン表示
+
 - **タイムラインライン** (md以上のみ表示):
   - 位置: `absolute left-4`
   - スタイル: `w-0.5 bg-gradient-to-b from-primary-400 to-purple-400`
@@ -275,7 +285,7 @@ page.tsx (クライアントコンポーネント)
 
 #### 日付フォーマットロジック (`formatCareerPeriod`)
 
-```
+```text
 入力: career_start = "YYYY年M月", career_end = "YYYY年M月" | "now"
 処理:
   1. toDateString() で "YYYY年M月" -> "YYYY/MM/01" に変換
@@ -289,6 +299,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.5 Skills Section
 
 #### 機能概要
+
 技術スキルをカードグリッドで表示するセクション。段階的にカードを表示する「もっと見る」機能を搭載。
 
 #### 仕様詳細
@@ -306,11 +317,13 @@ page.tsx (クライアントコンポーネント)
 | `SKILLS_INCREMENT` | 6 | 追加表示枚数 |
 
 **表示ロジック:**
+
 1. 初期状態: 先頭9枚のスキルカードを表示
 2. "and more..." ボタンクリック: 6枚ずつ追加表示
 3. 全カード表示後: ボタン非表示、`skills_more` テキストを表示
 
 **アニメーション最適化:**
+
 - `prevVisibleCountRef` (useRef) で前回表示数を追跡
 - 新しく追加されたカードのみ `animate-fade-in-up` を適用
 - 既存カードにはアニメーションを適用しない
@@ -331,6 +344,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.6 Contact Section
 
 #### 機能概要
+
 お問い合わせフォーム。Zod バリデーション + React Hook Form による入力制御。
 
 #### 仕様詳細
@@ -346,7 +360,7 @@ page.tsx (クライアントコンポーネント)
 | フィールド | ラベル | タイプ | プレースホルダー | バリデーション |
 |-----------|--------|--------|-----------------|---------------|
 | name | お名前 | text | "山田 太郎" | 必須、2~50文字 |
-| email | メールアドレス | email | "example@email.com" | 必須、有効なメール形式、最大255文字 |
+| email | メールアドレス | email | "<example@email.com>" | 必須、有効なメール形式、最大255文字 |
 | message | お問い合わせ内容 | textarea (6行) | "お問い合わせ内容をご記入ください..." | 必須、10~2000文字 |
 
 #### バリデーションルール (Zod スキーマ)
@@ -375,7 +389,7 @@ page.tsx (クライアントコンポーネント)
 
 #### 送信フロー
 
-```
+```text
 [送信ボタン押下]
   -> React Hook Form バリデーション (Zod)
   -> バリデーション失敗: フィールド下部にエラーメッセージ表示
@@ -387,12 +401,14 @@ page.tsx (クライアントコンポーネント)
 ```
 
 #### 送信完了画面
+
 - チェックマークアイコン (`animate-bounce`)
 - タイトル: "送信完了" (`neon-text`)
 - メッセージ: "お問い合わせありがとうございます。確認次第、ご連絡させていただきます。"
 - "新しいお問い合わせ" ボタン (variant: `outline`): フォーム状態をリセット
 
 #### メール送信仕様
+
 - 送信先: `process.env.MY_MAIL_ADDRESS`
 - From: `process.env.RESEND_FROM_EMAIL`
 - Reply-To: フォーム入力のメールアドレス
@@ -405,6 +421,7 @@ page.tsx (クライアントコンポーネント)
 ### 3.7 Footer
 
 #### 機能概要
+
 ページ最下部のコピーライト表示。
 
 #### 仕様詳細
@@ -421,7 +438,7 @@ page.tsx (クライアントコンポーネント)
 
 ### 4.1 ページ読み込みフロー
 
-```
+```text
 1. ユーザーがページにアクセス
 2. サーバー側で page.tsx がポートフォリオデータを取得
 3a. 成功: client.tsx に渡して描画 -> 全セクションを含む HTML を返す
@@ -439,7 +456,7 @@ page.tsx (クライアントコンポーネント)
 
 ### 4.2 ナビゲーションフロー
 
-```
+```text
 [デスクトップ]
 1. ヘッダーのナビ項目をクリック
 2. scrollIntoView({ behavior: 'smooth' }) で対象セクションへ移動
@@ -454,7 +471,7 @@ page.tsx (クライアントコンポーネント)
 
 ### 4.3 スキル展開フロー
 
-```
+```text
 1. 初期表示: 9枚のスキルカード
 2. "and more..." ボタンクリック
 3. prevVisibleCountRef に現在の表示数を保存
@@ -470,7 +487,7 @@ page.tsx (クライアントコンポーネント)
 
 ### 4.4 お問い合わせ送信フロー
 
-```
+```text
 1. フォームに入力
 2. "上記内容で送信する" ボタンクリック
 3. クライアントサイドバリデーション (Zod + React Hook Form)
@@ -578,7 +595,7 @@ Tailwind CSS デフォルトブレークポイントを使用。
 
 ### 6.1 Atomic Design 構成
 
-```
+```text
 src/components/
   +-- atoms/          ... 最小単位のUIパーツ
   |   +-- Button.tsx
@@ -606,11 +623,13 @@ src/components/
 | `children` | `ReactNode` | - | ボタンテキスト |
 
 **サイズ:**
+
 - `sm`: h-8, px-3, text-sm
 - `md`: h-10, px-4, text-base
 - `lg`: h-12, px-6, text-lg
 
 **バリアント外観:**
+
 - `primary`: グラデーション背景 (primary->purple)、ネオンシャドウホバー
 - `secondary`: glass-effect、白テキスト
 - `outline`: glass-effect + primary ボーダー、ネオンシャドウホバー
@@ -640,6 +659,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 | `size` | `'sm' \| 'md'` | `'md'` | サイズ |
 
 **サイズ:**
+
 - `sm`: px-2, py-0.5, text-xs
 - `md`: px-2.5, py-0.5, text-sm
 
@@ -671,6 +691,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 | `isCurrent` | `boolean?` | 現在進行中フラグ |
 
 **カード内セクション構成:**
+
 1. タイトル + 期間 + チーム規模
 2. 区切り線 (グラデーション)
 3. 説明文
@@ -686,6 +707,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | アイコンサイズ |
 
 **サイズ:**
+
 - `sm`: 24px x 24px
 - `md`: 32px x 32px
 - `lg`: 40px x 40px
@@ -693,9 +715,11 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 ### 6.4 Organisms
 
 #### Header
+
 ナビゲーション + モバイルメニューの複合コンポーネント (詳細は 3.1 節参照)。
 
 #### ContactForm
+
 フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.6 節参照)。
 
 ---
@@ -704,7 +728,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 ### 7.1 日付変換 (`toDateString`)
 
-```
+```text
 入力: "YYYY年M月" または "YYYY年MM月"
 正規表現: /(\d{4})年(\d{1,2})月/
 出力: "YYYY/MM/01"
@@ -714,7 +738,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 ### 7.2 経歴期間フォーマット (`formatCareerPeriod`)
 
-```
+```text
 入力: start = "YYYY年M月", end = "YYYY年M月" | "now"
 処理:
   1. toDateString() で日付文字列に変換
@@ -727,7 +751,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 ### 7.3 スキルページネーション
 
-```
+```text
 状態:
   - visibleSkillsCount: number (初期値: 9)
   - prevVisibleCountRef: useRef<number> (初期値: 0)
@@ -746,19 +770,21 @@ showMoreSkills():
 ### 7.4 フォームバリデーション
 
 **クライアントサイド (Zod + React Hook Form):**
+
 - `zodResolver(ContactFormSchema)` による送信時バリデーション
 - `useForm` は `mode` 未指定のため、デフォルトの `onSubmit` モードで動作
 - 初回送信時に全フィールドバリデーション実行。初回送信後はフィールド変更時に再検証（React Hook Form のデフォルト挙動）
 - `handleSubmit` 内で Zod スキーマによる検証が通った場合のみ送信処理を実行
 
 **サーバーサイド (API Route):**
+
 - 必須フィールドチェック
 - メールアドレス正規表現チェック
 - メッセージ長上限チェック (5000文字 -- クライアントの2000文字より緩い)
 
 ### 7.5 データ取得戦略
 
-```
+```text
 本番環境:
   GCS バケット -> JSON パース -> レスポンス返却
 

@@ -72,13 +72,13 @@ cp sample.example.json sample.json
 pnpm dev
 ```
 
-ブラウザで http://localhost:3000 を開くと、サンプルデータで表示されます。
+ブラウザで <http://localhost:3000> を開くと、サンプルデータで表示されます。
 
 > **仕組み**: 開発環境（`NODE_ENV=development`）では、プロジェクトルートに `sample.json` があればそれを優先的に読み込みます（`src/repositories/portfolio.ts`）。`sample.json` は `.gitignore` 済みなので、自分のデータで自由に上書きできます。GCS 認証情報は不要です。
 >
 > ⚠️ **お問い合わせフォームの送信**には Resend の環境変数が別途必要です（下記「セットアップ詳細」参照）。未設定でも画面表示・他セクションの動作には影響しません。
 
-## 🛠️ セットアップ詳細
+## 🛠 セットアップ詳細
 
 環境変数は `.env.example` をコピーして設定します。各変数の必須/任意は `.env.example` 内のコメントを参照してください。
 
@@ -97,7 +97,7 @@ cp .env.example .env.local
 
 ## 📁 プロジェクト構成
 
-```
+```text
 nextjs-intro-app/
 ├── src/
 │   ├── app/                 # Next.js App Router
@@ -168,6 +168,8 @@ pnpm dev           # 開発サーバー起動
 pnpm build         # プロダクションビルド
 pnpm start         # プロダクションサーバー起動
 pnpm lint          # ESLint 実行（JSDoc ルール含む）
+pnpm lint:md       # markdownlint 実行（Markdown の静的検査）
+pnpm lint:md:fix   # markdownlint の自動修正
 pnpm format        # Prettier で整形
 pnpm format:check  # Prettier 整形チェック（差分のみ）
 pnpm type-check    # TypeScript 型チェック（tsc --noEmit）
@@ -186,8 +188,9 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 > make check   # lint + format:check + type-check + test:run をまとめて実行
 > make test-it # 統合テスト（要 Docker）
 > ```
-
+>
 > ℹ️ テストは **Vitest + Testing Library**（UT/IT）と **Playwright**（E2E）を使用。
+>
 > - **ユニットテスト**: ユーティリティ関数（`cn` / `toDateString` / `ContactFormSchema`）を実装済み。
 > - **統合テスト（`pnpm test:it`、要 Docker）**: GCS は [fake-gcs-server](https://github.com/fsouza/fake-gcs-server) コンテナ（Testcontainers）で実データ経路を検証、Resend は [MSW](https://mswjs.io/) で HTTP をモック。`GET /api/portfolio`・`POST /api/contact`・`gcs` を対象。
 > - **E2E（`pnpm test:e2e`、要 Docker + 事前 `pnpm build`）**: [Playwright](https://playwright.dev/) で実ブラウザからシナリオ検証。ポートフォリオ表示は fake-gcs-server コンテナの実データ、お問い合わせ送信・失敗系はブラウザで API をスタブ（Resend はエミュレータ無し）。正常/準正常/異常のシナリオを網羅。
