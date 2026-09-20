@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/html-escape';
 import { sanitizeHeaderValue } from '@/lib/mail-header';
-import { logDebug, logError } from '@/lib/logger';
+import { logError } from '@/lib/logger';
 
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build');
@@ -144,37 +144,5 @@ ${message}
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
         };
-    }
-}
-
-/**
- * Resend の設定が使える状態かを確認する。
- *
- * **現在どこからも呼び出されていない**（手動デバッグ用に残されている）。
- * また Resend にヘルスチェック用エンドポイントが無いため、**実際の疎通は行わず**
- * `RESEND_API_KEY` の有無と `re_` プレフィックスの形式検証だけを行う。
- * キーが失効していてもここでは検出できない。
- *
- * @returns API キーが設定され形式も正しければ `true`、そうでなければ `false`
- */
-export async function testResendConnection() {
-    try {
-        if (!process.env.RESEND_API_KEY) {
-            throw new Error('RESEND_API_KEY is not configured');
-        }
-
-        // Test connection by trying to get API key info
-        // Note: Resend doesn't have a direct health check endpoint
-        // so we'll validate the API key format
-        const apiKey = process.env.RESEND_API_KEY;
-        if (!apiKey.startsWith('re_')) {
-            throw new Error('Invalid RESEND_API_KEY format');
-        }
-
-        logDebug('resend: 設定を検証した');
-        return true;
-    } catch (error) {
-        logError('resend: 設定の検証に失敗', error);
-        return false;
     }
 }

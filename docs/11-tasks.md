@@ -62,7 +62,7 @@
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
 | 21 | Skills セクション「and more...」アニメーション遅延バグ修正 | 完了 | 高 | PR #12。累積的な animationDelay が増加し続ける問題を修正。`prevVisibleCountRef` を導入し、新規追加分のみにアニメーション適用 |
-| 22 | 日付表示バグ修正 | 完了 | 高 | Career セクションの期間表示に関する不具合修正。`costom-date.ts` の `toDateString()` 関数追加 |
+| 22 | 日付表示バグ修正 | 完了 | 高 | Career セクションの期間表示に関する不具合修正。`custom-date.ts` の `toDateString()` 関数追加 |
 | 23 | GitHub Actions デプロイバグ修正（複数回） | 完了 | 高 | PR #2 - #6。CI/CD パイプラインの設定修正を複数回実施 |
 | 50 | お問い合わせ送信の Resend API エラーが成功扱いになる不具合修正 | 完了 | 高 | `resend.ts` が `emails.send()` の `result.error` を検査しておらず、Resend が HTTP エラー（非2xx）を返しても `success: true` を返していた。統合テストで検出し、`result.error` 検知時に `success: false` を返すよう修正（`/api/contact` が仕様どおり 500 を返すようになった） |
 
@@ -85,7 +85,7 @@
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
 | 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
-| 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/costom-date.test.ts`）/ `ContactFormSchema`（`src/schemas/contact.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
+| 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/custom-date.test.ts`）/ `ContactFormSchema`（`src/schemas/contact.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
 | 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
 | 31 | API Route / データフェッチ統合テスト実装 | 完了 | 中 | 統合テスト（`*.integration.test.ts`）を実装。GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証、Resend は MSW で HTTP モック。`GET /api/portfolio`（`route.integration.test.ts`）/ `POST /api/contact`（同）/ `gcs`（`gcs.integration.test.ts`）を対象、計 10 ケース（正常・準正常・異常）。`vitest.integration.config.ts` + `pnpm test:it`、CI（`ci.yml`）で実行 |
 | 32 | E2E テスト導入（Playwright） | 完了 | 低 | Playwright を導入し `e2e/` にシナリオテストを実装（`home` / `contact` / `error`、計 7 ケース、正常/準正常/異常）。ポートフォリオ表示は fake-gcs-server コンテナの実データ（`next start` を `GCS_API_ENDPOINT` で向ける）、送信・失敗系は `page.route` でスタブ。`playwright.config.ts` に retries/trace（flaky 対応）。専用ワークフロー `.github/workflows/e2e.yml`（PR）で実行 |
@@ -119,9 +119,10 @@
 | 44 | React Error Boundary 実装 | 未着手 | 高 | コンポーネントエラー時のフォールバックUI表示 |
 | 45 | お問い合わせフォームのレート制限実装 | 完了 | 高 | issue #60 で対応。クライアント IP 単位で 10分/5回。バリデーション前に判定し 429 + `Retry-After` を返す。プロセス内メモリのためインスタンスごとの制限になる限界は docs/06 §10.3 に明記 |
 | 46 | CSRF トークン検証の導入 | 検討中 | 中 | API Route へのCSRF保護追加 |
-| 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | タイプミス修正（`costom` -> `custom`）。インポートパスの更新が必要 |
+| 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | issue #84 で対応。`git mv` で `src/lib/custom-date.ts` へリネームし、`client.tsx` とテストの import を更新。docs 6 ファイルの記述も追随 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 64 | デッドコードと命名の不備の整理 | 完了 | 低 | issue #84。未参照の `testGCSConnection` / `testResendConnection` を削除（export されており lint の未使用検出をすり抜けていた）。特に後者は名前が「疎通確認」を期待させるのに実際は API キーの形式検証のみで、キーが失効していても `true` を返す誤誘導だった。あわせて docs/07 の接続テスト節と docs/08 の未実装 IT 仕様 4 件を削除し、docs/10 の既知課題表から解決済み 3 件を除外 |
 | 63 | `lib/` 配下への定数・型の配置に関するルール解釈の確定 | 完了 | 低 | issue #115（#55 のセルフレビューで検出）。「`lib/` の下に型・定数を置かない」が、同じ節の「1 ファイルに閉じるなら定義ファイル内に置く」「最初から集約しない」と字面上衝突していた。**集約先としての禁止**（`lib/constants.ts` 等を作るな）と確定し、参照が閉じる非 export の定数・型は同居可と明文化。`coding-standards.md` と `frontend.md` の両方を同期。あわせて「公開関数のシグネチャに現れる型は export してよい」例外を追記（`RateLimitResult`）。コード変更なし |
 | 62 | 問い合わせメール件名のヘッダーインジェクション対策 | 完了 | 中 | issue #114（#55 の派生）。件名は HTML でないため `escapeHtml` が使えず未対策のままだった。`src/lib/mail-header.ts` の `sanitizeHeaderValue()` で C0 制御文字と DEL を除去する。Resend は件名の制御文字の扱いを公開しておらず実地検証には実メール送信が必要なため、多層防御として実装（判断理由は docs/06 §8.3）。`replyTo` は `ContactFormSchema` の `.email()` が唯一の防御である点をテストで固定 |
 | 61 | CORS・レートリミット・CSP の方針決定と実装 | 完了 | 中 | issue #60（親 #53）。CORS は**見送り**（同一オリジン専用 API にヘッダーを足すのは緩和にしかならないため、`.claude/rules/security.md` に適用範囲を追記）。`POST /api/contact` に 10分/5回 のレートリミット（`src/lib/rate-limit.ts` + `src/lib/client-ip.ts`）、`src/middleware.ts` に nonce + strict-dynamic の CSP、`next.config.js` に固定セキュリティヘッダー 5 種を追加。タスク #45（レート制限）も本対応で解消 |
@@ -141,7 +142,7 @@
 | 30 | コンポーネントテスト実装 | 未着手 | 中 | （再掲）atoms / molecules / organisms の描画・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、TS 5.5 互換の JSX 変換設定の整備 or TypeScript 更新が前提 |
 | 52 | テストカバレッジ閾値の有効化 | 未着手 | 中 | 現状 `vitest.config.ts` の coverage 閾値は未設定（docs/08 目標: statements 80% 等）。テスト拡充に合わせ `test:coverage` の閾値を有効化し、CI に組み込むか判断する |
 | 53 | 実行環境の Node バージョン整合 | 未着手 | 中 | **`@types/node` が 26.6.1 に上がったため優先度が上がった**（型定義は Node 26 相当だが、Docker ランタイムは node:18-alpine = v18.20.8）。CI は Node 24（testcontainers → undici@8 が Node>=22.19 を要求）、本番 Dockerfile は `node:18-alpine`。ランタイムと CI のバージョン差を解消するか（Dockerfile を 20/22 系へ更新）、現状維持とするか方針を決める |
-| 47 | `costom-date.ts` のファイル名修正 | 未着手 | 低 | （再掲・§2.4）タイプミス修正（`costom` -> `custom`）。インポートパス（`page.tsx` / IT）の更新が必要 |
+| 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | （再掲・§2.4）issue #84 で対応 |
 
 ---
 
@@ -209,19 +210,19 @@
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 46 |
-| 未着手 | 13 |
+| 完了 | 48 |
+| 未着手 | 11 |
 | 検討中 | 4 |
-| **合計** | **63** |
+| **合計** | **64** |
 
 | 優先度 | 件数 |
 |--------|------|
 | 最高 | 5 |
 | 高 | 25 |
 | 中 | 24 |
-| 低 | 9 |
+| 低 | 10 |
 
-> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#52（カバレッジ閾値）、#53（Node バージョン整合）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#52（カバレッジ閾値）、#53（Node バージョン整合）。
 >
 > 件数は 2026-09-20 に実テーブルから再集計した（従来値 完了 33 / 合計 53 は追随漏れ）。再掲行（#30 / #47）は 1 件として数える。
 
@@ -231,6 +232,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-20 | デッドコード 2 件を削除し、`costom-date.ts` を `custom-date.ts` へリネーム。docs/07・08 の該当記述と docs/10 の解決済み既知課題も整理（issue #84 / タスク #47） | - |
 | 2026-09-20 | `lib/` 配下への定数・型の配置ルールの解釈を確定（集約先としての禁止）。`coding-standards.md` / `frontend.md` を同期し、公開関数の戻り値型の export 例外も明文化（issue #115） | - |
 | 2026-09-20 | 問い合わせメール件名のヘッダーインジェクション対策を実装。`sanitizeHeaderValue()` で制御文字を除去し、`replyTo` はスキーマが唯一の防御である前提をテストで固定（issue #114 / #55 の派生） | - |
 | 2026-09-20 | CORS・レートリミット・CSP の方針を決定し実装。CORS は同一オリジン専用のため見送り（ルールへ適用範囲を追記）、`POST /api/contact` に 10分/5回 のレートリミット、nonce ベース CSP と固定セキュリティヘッダーを追加（issue #60 / 親 #53） | - |

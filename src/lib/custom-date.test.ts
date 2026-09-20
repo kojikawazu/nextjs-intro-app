@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toDateString } from './costom-date';
+import { toDateString } from './custom-date';
 
 describe('toDateString', () => {
     // --- 正常系 ---
