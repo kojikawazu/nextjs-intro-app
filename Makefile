@@ -14,7 +14,7 @@ TF_DIR      := terraform
 
 # 全ターゲットはファイルを生成しない（同名ファイルがあっても常に実行する）
 .PHONY: help setup install sample dev build start lint format format-check \
-        type-check test test-run test-coverage test-it test-e2e check lint-actions \
+        type-check test test-run test-coverage test-it test-e2e check lint-actions lint-md lint-md-fix \
         docker-build docker-run tf-init tf-plan tf-apply clean
 
 # デフォルトターゲット: ヘルプ表示
@@ -58,6 +58,14 @@ start:
 lint:
 	$(PNPM) lint
 
+## lint-md: Markdown を markdownlint で検証する
+lint-md:
+	$(PNPM) lint:md
+
+## lint-md-fix: Markdown の自動修正可能な違反を直す
+lint-md-fix:
+	$(PNPM) lint:md:fix
+
 ## format: Prettier で整形する
 format:
 	$(PNPM) format
@@ -74,8 +82,8 @@ type-check:
 lint-actions:
 	docker run --rm -v "$(PWD)":/repo --workdir /repo rhysd/actionlint:1.7.12 -color
 
-## check: lint + format-check + type-check + test-run をまとめて実行する
-check: lint format-check type-check test-run
+## check: lint + lint-md + format-check + type-check + test-run をまとめて実行する
+check: lint lint-md format-check type-check test-run
 
 # ---- テスト ------------------------------------------------------------
 ## test: ユニットテストを watch モードで実行する (vitest)
