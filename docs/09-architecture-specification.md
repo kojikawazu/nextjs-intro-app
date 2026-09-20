@@ -120,8 +120,8 @@
 | パッケージ | バージョン | 用途 |
 |-----------|-----------|------|
 | next | 14.2.5 | React フレームワーク (App Router) |
-| react | 18.3.1 | UI ライブラリ |
-| react-dom | 18.3.1 | React DOM レンダラー |
+| react | 19.3.0 | UI ライブラリ |
+| react-dom | 19.3.0 | React DOM レンダラー |
 | @google-cloud/storage | ^7.16.0 | Google Cloud Storage クライアント |
 | resend | ^4.6.0 | メール送信サービスクライアント |
 | react-hook-form | ^7.51.4 | フォーム状態管理 |
@@ -136,8 +136,8 @@
 |-----------|-----------|------|
 | typescript | 5.5.2 | 型安全な JavaScript |
 | @types/node | 20.14.8 | Node.js 型定義 |
-| @types/react | 18.3.3 | React 型定義 |
-| @types/react-dom | 18.3.0 | React DOM 型定義 |
+| @types/react | 19.3.0 | React 型定義 |
+| @types/react-dom | 19.3.0 | React DOM 型定義 |
 | tailwindcss | 3.4.4 | ユーティリティファースト CSS フレームワーク |
 | postcss | 8.4.38 | CSS 変換ツール |
 | autoprefixer | 10.4.19 | ベンダープレフィックス自動付与 |
