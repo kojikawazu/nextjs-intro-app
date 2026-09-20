@@ -12,6 +12,9 @@
 # playwright
 /test-results/
 /playwright-report/
+# Playwright MCP がブラウザ検証時に出力するスナップショット。
+# 取得したページ本文（本番データを含む）が入るため、コミットしない。
+/.playwright-mcp/
 /blob-report/
 /playwright/.cache/
 

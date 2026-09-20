@@ -61,7 +61,8 @@
     - [6.7 SEOメタデータテスト](#67-seoメタデータテスト)
     - [6.8 サーバーサイドレンダリングテスト](#68-サーバーサイドレンダリングテスト)
     - [6.9 データ取得失敗テスト](#69-データ取得失敗テスト)
-    - [6.10 フォームアクセシビリティテスト](#610-フォームアクセシビリティテスト)
+    - [6.10 セキュリティヘッダー・CSP テスト](#610-セキュリティヘッダーcsp-テスト)
+    - [6.11 フォームアクセシビリティテスト](#611-フォームアクセシビリティテスト)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -327,12 +328,16 @@ src/
 │   ├── contact.ts
 │   └── contact.test.ts
 ├── lib/
+│   ├── client-ip.ts
+│   ├── client-ip.test.ts
 │   ├── costom-date.ts
 │   ├── costom-date.test.ts
 │   ├── html-escape.ts
 │   ├── html-escape.test.ts
 │   ├── logger.ts
 │   ├── logger.test.ts
+│   ├── rate-limit.ts
+│   ├── rate-limit.test.ts
 │   ├── site-url.ts
 │   └── site-url.test.ts
 ├── utils/
@@ -436,6 +441,42 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | UT-LOG-012 | `logDebug` は本番環境で出力しない | `NODE_ENV=production` | `console.log` が呼ばれない |
 | UT-LOG-013 | `logDebug` は test 環境で出力しない | `NODE_ENV=test` | `console.log` が呼ばれない |
 | UT-LOG-014 | `logDebug` は `NODE_ENV` 未設定でも出力しない | `NODE_ENV=''` | `console.log` が呼ばれない |
+
+#### 4.1.6 client-ip (`src/lib/client-ip.ts`)
+
+レートリミットのキーに使うクライアント IP の解決（docs/06 §10.2）。正常系2 : 準正常系+異常系8。
+
+| テストID | テストケース | 入力 | 期待出力 |
+|----------|------------|------|---------|
+| UT-IP-001 | `CF-Connecting-IP` があればそれを返す | `cf-connecting-ip: 203.0.113.5` | `'203.0.113.5'` |
+| UT-IP-002 | `X-Forwarded-For` が 1 件ならその値を返す | `x-forwarded-for: 203.0.113.5` | `'203.0.113.5'` |
+| UT-IP-003 | `CF-Connecting-IP` を優先する | 両方あり | `CF-Connecting-IP` の値 |
+| UT-IP-004 | 複数の `X-Forwarded-For` は右端を返す | `a, b, c` | `c` |
+| UT-IP-005 | 詐称された左端の値を採用しない | `1.2.3.4, 203.0.113.5` | `'203.0.113.5'` |
+| UT-IP-006 | 前後の空白を取り除く | ` a , b ` | `b` |
+| UT-IP-007 | `CF-Connecting-IP` が空白のみなら XFF へ退避 | 空白 + XFF | XFF の値 |
+| UT-IP-008 | どちらのヘッダーも無ければ null | `{}` | `null` |
+| UT-IP-009 | `X-Forwarded-For` が空文字なら null | `''` | `null` |
+| UT-IP-010 | `X-Forwarded-For` がカンマのみなら null | `' , , '` | `null` |
+
+#### 4.1.7 rate-limit (`src/lib/rate-limit.ts`)
+
+スライディングウィンドウのレートリミット（docs/06 §10）。時刻は `now` を明示的に渡して制御する。正常系3 : 準正常系+異常系9。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-RL-001 | 上限（5回）までは許可する | すべて `allowed: true` |
+| UT-RL-002 | 許可時は `retryAfterSeconds` が 0 | `{ allowed: true, retryAfterSeconds: 0 }` |
+| UT-RL-003 | 上限を 1 件超えたら拒否する | `allowed: false` |
+| UT-RL-004 | 拒否時は再試行までの秒数を返す | 最古の記録がウィンドウから外れるまでの秒数 |
+| UT-RL-005 | ウィンドウを過ぎれば再び許可する | `allowed: true` |
+| UT-RL-006 | 古い記録だけが期限切れになる | 1 枠だけ空く（スライディング） |
+| UT-RL-007 | キーが異なれば互いに影響しない | 別キーは `allowed: true` |
+| UT-RL-008 | 拒否したリクエストは記録しない | 連打しても解除時刻が動かない |
+| UT-RL-009 | `retryAfterSeconds` は最低 1 秒 | `1` |
+| UT-RL-010 | ウィンドウ境界ちょうどの記録は期限切れ | `WINDOW_MS - 1` は拒否、`WINDOW_MS` は許可 |
+| UT-RL-011 | 空文字のキーでも独立して数える | 他キーに影響しない |
+| UT-RL-012 | `resetRateLimitStore` が履歴を消す | 再び `allowed: true` |
 
 ### 4.2 バリデーションロジック
 
@@ -691,6 +732,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | IT-API-CT-007 | メール送信失敗時に500エラーを返す | 正常ボディ、Resend送信失敗（モック） | 500 + `'メールの送信に失敗しました...'` |
 | IT-API-CT-008 | 不正なJSON形式で500エラーを返す | 不正なJSONボディ | 500 + `'サーバーエラーが発生しました...'` |
 | IT-API-CT-009 | 成功レスポンスにmessageIdが含まれる | 正常送信 | messageId フィールドが存在する |
+| IT-API-CT-011 | 同一クライアントからの6回目は429を返す | 不正ボディを5回送信後に6回目 | 429 + `Retry-After` > 0（バリデーション前に判定するためメール送信は発生しない） |
 | IT-API-CT-010 | HTMLを含む入力がエスケープされて送信される | `{ name: '<b>山田</b>', message: '<img src="x" onerror="alert(1)"> …' }` | Resendへ渡る payload の `html` は実体参照化・`text` と `subject` は生値（docs/06 §8.1） |
 
 ### 5.2 データフェッチフロー
@@ -868,7 +910,20 @@ projects: [
 > サーバー側で GCS を叩くため、`globalSetup`（エミュレータ起動）より先に走る
 > ヘルスチェックでは必ず失敗する。
 
-### 6.10 フォームアクセシビリティテスト
+### 6.10 セキュリティヘッダー・CSP テスト
+
+`e2e/security.spec.ts`。CSP は「ヘッダーが付いているか」だけでなく「ブラウザが違反を報告しないか」まで見ないと、実質無効な設定を通してしまう。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| E2E-SEC-001 | 固定のセキュリティヘッダーが付与される | `X-Content-Type-Options` / `X-Frame-Options` / `Referrer-Policy` / `Strict-Transport-Security` |
+| E2E-SEC-002 | CSP に nonce と `strict-dynamic` が含まれる | `script-src` に nonce、`'unsafe-eval'` を含まない（本番緩和漏れの検出） |
+| E2E-SEC-003 | nonce はリクエストごとに変わる | 2 回取得した nonce が一致しない |
+| E2E-SEC-004 | 静的プリレンダーされる 404 ページには CSP を付けない | `content-security-policy` が無く、`X-Frame-Options` は付く |
+| E2E-SEC-005 | 404 ページのスクリプトがブロックされない | CSP 違反のコンソール出力が 0 件 |
+| E2E-SEC-006 | CSP 違反なしでハイドレーションが完了する | 全 script に nonce、「and more...」クリックで表示件数が増える、違反 0 件 |
+
+### 6.11 フォームアクセシビリティテスト
 
 実装: `e2e/contact.spec.ts`。**属性の有無ではなく実際に機能するか**で検証する。`<label>` を
 描画していても `htmlFor` / `id` が無ければフォーカスは移らないため、クリックの結果で確かめる。

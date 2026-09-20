@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendContactEmail } from '@/repositories/resend';
 import { ContactFormSchema } from '@/schemas/contact';
-import { logError } from '@/lib/logger';
+import { logError, logWarn } from '@/lib/logger';
+import { resolveClientIp } from '@/lib/client-ip';
+import { consumeRateLimit } from '@/lib/rate-limit';
 import type { ApiErrorResponse } from '@/types/api-error';
 
 /**
@@ -12,14 +14,37 @@ import type { ApiErrorResponse } from '@/types/api-error';
  * 効く。信頼境界が異なるためクライアント側と検証が重複するが、これは `frontend.md` が
  * 求める必要な重複であり、スキーマを共有することでルール自体の二重定義は避けている。
  *
+ * 先頭でクライアント IP 単位のレートリミットを適用する。本エンドポイントは認証を持たず、
+ * 1 回の成功がメール送信（Resend の送信枠消費・受信箱への配信）に直結するため、
+ * 検証やパースより前に弾く（`security.md`「レートリミットを導入する」）。
+ *
  * エラーメッセージは Zod の先頭 issue を返す。`criteriaMode` 相当の分岐は持たず、
  * レスポンス形は `ApiErrorResponse` で統一する（`error-handling.md`「統一エラーレスポンス」）。
  *
  * @param request - お問い合わせ内容（`name` / `email` / `message`）を JSON ボディに持つリクエスト
- * @returns 成功時は 200 で `success` と `messageId`、入力不正・JSON 不正は 400、送信失敗・想定外エラーは 500
+ * @returns 成功時は 200 で `success` と `messageId`、入力不正・JSON 不正は 400、上限超過は 429、送信失敗・想定外エラーは 500
  */
 export async function POST(request: NextRequest) {
     try {
+        // IP を特定できない場合も共有のキーで数える。ヘッダーを落とせば無制限になる、
+        // という抜け道を作らないため。
+        const rateLimitKey = resolveClientIp(request.headers) ?? 'unknown';
+        const rateLimit = consumeRateLimit(rateLimitKey);
+
+        if (!rateLimit.allowed) {
+            // IP はログに残さない。切り分けには発生した事実で足り、IP は個人データに
+            // あたり得るため（docs/06 §9 データプライバシー）。
+            logWarn('contact: レートリミットにより拒否');
+
+            const body: ApiErrorResponse = {
+                error: '送信回数の上限に達しました。しばらく時間をおいてから再度お試しください。',
+            };
+            return NextResponse.json(body, {
+                status: 429,
+                headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) },
+            });
+        }
+
         // 外部入力は unknown として受け、Zod で parse してから使う
         // （coding-standards.md「外部入力は unknown で受け、Zod で parse してから内部で使う」）。
         let body: unknown;
