@@ -9,7 +9,7 @@ import { SkillCard } from '@/components/molecules/SkillCard';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { Button } from '@/components/atoms/Button';
 import { PortfolioData } from '@/types/portfolio';
-import { toDateString } from '@/lib/costom-date';
+import { toDateString } from '@/lib/custom-date';
 
 /**
  * 経歴の開始・終了年月を表示用の期間文字列に整形する。
