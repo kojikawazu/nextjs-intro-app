@@ -27,7 +27,13 @@ const MAX_TRACKED_KEYS = 10_000;
 /** キーごとの許可時刻（ミリ秒）の履歴。 */
 const requestHistory = new Map<string, number[]>();
 
-/** レートリミットの判定結果。 */
+/**
+ * レートリミットの判定結果。
+ *
+ * 参照は本ファイルに閉じているが `export` する。`consumeRateLimit` の戻り値型であり、
+ * 非公開だと呼び出し側が型注釈を書けなくなるため
+ * （`coding-standards.md`「公開関数のシグネチャに現れる型は `export` してよい」）。
+ */
 export interface RateLimitResult {
     /** 許可する場合は `true`、上限に達している場合は `false` */
     allowed: boolean;

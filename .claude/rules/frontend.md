@@ -36,10 +36,11 @@ globs: "src/components/**,src/app/**,src/hooks/**,src/lib/**,src/repositories/**
 | `constants/` | 全環境で不変な値 | 環境変数・型を導出する定数（`types/` 側へ） |
 | `schemas/` | Zod スキーマ（フォーム・API レスポンスの検証） | 検証を伴わない型定義（`types/` へ） |
 | `repositories/` | **外部 I/O**（`fetch` / API クライアント / ストレージ・メール等の外部サービス呼び出し） | UI・画面都合の整形・業務判断 |
-| `lib/` | **通信を持たない純粋ユーティリティ**（日付整形・計算等） | 外部 I/O（`repositories/` へ）・定数・型 |
+| `lib/` | **通信を持たない純粋ユーティリティ**（日付整形・計算等）。参照がそのファイルに閉じる非 `export` の定数・型は実装詳細として同居可 | 外部 I/O（`repositories/` へ）・**複数の関心をまとめた集約ファイル**（`lib/constants.ts` 等） |
 
 - **`fetch` や外部サービスクライアントを書いてよいのは `repositories/` だけ**。コンポーネント・hooks・`lib/` から直接叩かない。呼び出し口を 1 箇所に閉じることで、認証情報の扱い・エラー処理・リトライが散らばらない。
 - ディレクトリ名は**複数形で統一**する（`types` / `constants` / `schemas` / `repositories`）。
+- 上表の「置かないもの」が禁じるのは**集約**であって同居ではない。判断軸の詳細は `coding-standards.md`「ディレクトリを切る」を参照する。
 - **サーバー専用モジュール（シークレットを読む処理・外部サービスクライアント）を Client Component から import しない。**
 
 ### ディレクトリ構成
