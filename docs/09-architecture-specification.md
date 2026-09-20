@@ -591,6 +591,15 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 
 本番環境は GitHub Actions (`deploy_to_googlecloud.yml`) により Cloud Run にデプロイされる。
 
+ワークフローは 4 本。
+
+| ワークフロー | 契機 | 内容 |
+|---|---|---|
+| `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / 依存監査 / UT / IT |
+| `e2e.yml` | PR（main 宛） | Playwright（fake-gcs-server コンテナ） |
+| `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env` 系ファイルの追跡検出（docs/06 §11） |
+| `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                Google Cloud Run (Docker)                  │
