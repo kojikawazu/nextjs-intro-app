@@ -93,28 +93,3 @@ export async function getPortfolioDataFromGCS() {
         );
     }
 }
-
-/**
- * GCS バケットへの疎通を確認する。
- *
- * **現在どこからも呼び出されていない**（手動デバッグ用に残されている）。
- * 疎通不可を例外ではなく `false` で表現するため、呼び出し側で分岐しやすい。
- *
- * @returns バケットにアクセスできれば `true`、できなければ `false`
- */
-export async function testGCSConnection() {
-    try {
-        const bucket = storage.bucket(bucketName);
-        const [exists] = await bucket.exists();
-
-        if (!exists) {
-            throw new Error(`Bucket ${bucketName} does not exist or is not accessible`);
-        }
-
-        logDebug('gcs: バケットへの疎通を確認', { bucketName });
-        return true;
-    } catch (error) {
-        logError('gcs: バケットへの疎通確認に失敗', error, { bucketName });
-        return false;
-    }
-}
