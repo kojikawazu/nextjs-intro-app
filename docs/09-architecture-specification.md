@@ -55,7 +55,7 @@
 
 ### 1.1 全体構成図
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        クライアント（ブラウザ）                      │
 │                                                                 │
@@ -172,7 +172,7 @@
 
 ### 3.1 プロジェクトルート
 
-```
+```text
 nextjs-intro-app/
 ├── .next/                      # Next.js ビルド出力（git 管理外）
 ├── docs/                       # プロジェクトドキュメント
@@ -197,7 +197,7 @@ nextjs-intro-app/
 
 ### 3.2 src ディレクトリ詳細
 
-```
+```text
 src/
 ├── app/                        # Next.js App Router ディレクトリ
 │   ├── globals.css             # グローバルスタイル定義
@@ -277,7 +277,7 @@ src/
 
 ### 4.1 Atomic Design 階層
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      Page (page.tsx)                        │
 │                                                             │
@@ -315,7 +315,7 @@ src/
 
 ### 4.2 コンポーネント依存関係
 
-```
+```text
 page.tsx
 ├── Header (organism)
 │   └── cn (util)
@@ -358,7 +358,7 @@ page.tsx
 `page.tsx` は Server Component であり、データ取得はサーバー側で完結する。ブラウザは
 完成した HTML を受け取るため、初期 HTML に全セクションの本文が含まれる。
 
-```
+```text
 ブラウザ                  Cloud Run                  外部サービス
   │                         │                          │
   │  1. ページ読み込み        │                          │
@@ -404,7 +404,7 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 
 ### 5.2 お問い合わせ送信フロー
 
-```
+```text
 ブラウザ                  Cloud Run                  外部サービス
   │                         │                          │
   │  1. フォーム入力          │                          │
@@ -442,7 +442,7 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 
 ### 5.3 データソース戦略
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │         repositories/portfolio.ts               │
 │                                                 │
@@ -488,7 +488,7 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 
 ### 6.1 スタイリング技術構成
 
-```
+```text
 ┌────────────────────────────────────────────────────┐
 │                 スタイリングレイヤー                    │
 │                                                    │
@@ -600,7 +600,7 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 | `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env` 系ファイルの追跡検出（docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                Google Cloud Run (Docker)                  │
 │                                                         │
@@ -628,7 +628,6 @@ CI/CD パイプライン:
   GitHub main push → GitHub Actions → Docker Build
   → Artifact Registry push → Cloud Run deploy
 ```
-```
 
 ### 7.2 環境変数
 
@@ -652,7 +651,8 @@ CI/CD パイプライン:
 
 環境に応じて異なる認証方式を採用している。
 
-```
+```text
+
 ┌─────────────────────────────────────────────────────────┐
 │                   GCS 認証フロー                          │
 │                                                         │
@@ -670,6 +670,7 @@ CI/CD パイプライン:
 │  └── GOOGLE_CLOUD_PRIVATE_KEY によるJSON キー認証          │
 │      ※ 通常運用ではデッドコード（到達しない分岐）           │
 └─────────────────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -678,7 +679,8 @@ CI/CD パイプライン:
 
 独自ドメイン `introtechkkplus.com` は **Cloudflare をレジストラ兼権威 DNS**、**Cloud Run をオリジン**とする構成で公開する。
 
-```
+```text
+
                     ┌──────────────────────────────┐
                     │  Cloudflare（権威 DNS）        │
                     │  NS: *.ns.cloudflare.com      │
@@ -686,7 +688,7 @@ CI/CD パイプライン:
                                    │ DNS only（プロキシ OFF）
           ┌────────────────────────┴────────────────────────┐
           │                                                 │
-  introtechkkplus.com                          www.introtechkkplus.com
+  introtechkkplus.com                          <www.introtechkkplus.com>
   A    216.239.32/34/36/38.21                  CNAME ghs.googlehosted.com.
   AAAA 2001:4860:4802:32/34/36/38::15
           │                                                 │
@@ -697,6 +699,7 @@ CI/CD パイプライン:
                     │  asia-northeast1              │
                     │  → nextjs-intro-ai-app-service│
                     └──────────────────────────────┘
+
 ```
 
 #### DNS レコード
@@ -819,7 +822,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 
 ### 8.4 ビルドパイプライン
 
-```
+```text
 ソースコード
   │
   ├── 1. TypeScript 型チェック (tsc --noEmit)
@@ -862,7 +865,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 
 ### 9.2 入力バリデーション層
 
-```
+```text
 ユーザー入力
   │
   ├── 第1層: クライアントサイドバリデーション
@@ -886,7 +889,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 
 ### 10.1 PortfolioData 型階層
 
-```
+```text
 PortfolioData
 ├── navbar_data: NavbarData
 │   ├── link_title: string
@@ -945,7 +948,7 @@ PortfolioData
 
 ### 10.2 フォーム関連型
 
-```
+```text
 ContactFormSchema (Zod スキーマ)
 └── infer → ContactFormInput
     ├── name: string
