@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/html-escape';
+import { sanitizeHeaderValue } from '@/lib/mail-header';
 import { logDebug, logError } from '@/lib/logger';
 
 // Initialize Resend client
@@ -25,6 +26,10 @@ interface ContactEmailData {
  * 本文の HTML パートへ埋め込む値は `escapeHtml` を通す。Zod の検証は「受け付けてよい値か」の
  * 判定であって出力先の文法に合わせる処理ではないため、検証を通った値でもエスケープは必要
  * （`security.md`「XSS: ... 出力エスケープの多層防御」）。
+ *
+ * 件名へ差し込む送信者名は `sanitizeHeaderValue` を通す。メールヘッダーは CRLF 区切りのため、
+ * 生の改行が混ざるとヘッダーインジェクションに繋がり得る。HTML エスケープは件名には不適切
+ * （実体参照がそのまま読者に見える）なので、別の処理として分けている（docs/06 §8.3）。
  *
  * 送信失敗は `logError` で**本番でも**記録する。開発時だけの出力では、実際に問い合わせが
  * 届かなかったときに何も手がかりが残らない（`error-handling.md`「エラー時はスタックトレースを
@@ -58,12 +63,15 @@ export async function sendContactEmail(data: ContactEmailData) {
         const escapedEmail = escapeHtml(email);
         const escapedMessage = escapeHtml(message);
 
+        // 件名はヘッダーであり HTML ではない。エスケープではなく制御文字の除去を行う。
+        const subjectName = sanitizeHeaderValue(name);
+
         // Send email using Resend
         const result = await resend.emails.send({
             from: fromEmail,
             replyTo: data.email,
             to: [process.env.MY_MAIL_ADDRESS],
-            subject: `ポートフォリオサイトからのお問い合わせ - ${name}様`,
+            subject: `ポートフォリオサイトからのお問い合わせ - ${subjectName}様`,
             html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #333; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px;">

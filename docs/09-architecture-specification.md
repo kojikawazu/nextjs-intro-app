@@ -253,6 +253,7 @@ src/
 │   ├── costom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
 │   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
 │   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
+│   ├── mail-header.ts          # メールヘッダー値の無害化 (ヘッダーインジェクション対策。docs/06 §8.3)
 │   ├── rate-limit.ts           # スライディングウィンドウのレートリミット (docs/06 §10)
 │   └── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
 │
