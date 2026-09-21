@@ -55,8 +55,9 @@
 | SPA | Single Page Application | 単一ページで動作するWebアプリケーション。ページ遷移なしに動的なコンテンツ切り替えを実現する。本プロジェクトはSPA形式のポートフォリオサイト。 |
 | App Router | Next.js App Router | Next.js 13以降で導入されたファイルベースのルーティングシステム。`app/` ディレクトリにページやレイアウトを配置する。 |
 | Atomic Design | Atomic Design | Brad Frost が提唱したUI設計手法。atoms（最小単位）、molecules（組み合わせ）、organisms（複合体）の階層でコンポーネントを分類する。 |
-| Glassmorphism | Glassmorphism | すりガラス効果を用いたUIデザイントレンド。`backdrop-blur` と半透明背景の組み合わせで実現。本プロジェクトでは `glass-effect` / `glass-card` クラスとして実装。 |
-| Neon Effect | Neon Effect | CSSグラデーションと `text-shadow` / `box-shadow` を用いた発光テキスト・要素効果。`neon-text` / `shadow-neon` クラスとして実装。 |
+| デザイントークン | Design Token | 配色・余白などの設計値に名前を付けて 1 箇所で管理する仕組み。本プロジェクトでは `globals.css` の CSS カスタムプロパティ（`--paper`, `--ink` 等 11 種）として定義し、`tailwind.config.js` から参照する。 |
+| FOUC | Flash of Unstyled Content | ページ読み込み直後に意図しないスタイルが一瞬見える現象。テーマ切替では「ライト表示 -> ダークへ切り替わる」ちらつきとして現れる。本プロジェクトは Cookie をサーバー側で読んで初期 HTML に反映することで回避している。 |
+| `prefers-color-scheme` | - | OS のライト/ダーク設定を CSS から参照するメディア特性。テーマ未選択時の既定値として使用する。 |
 | OGP | Open Graph Protocol | Webページのメタデータ規格。SNS等でURLをシェアした際のタイトル・画像・説明を制御する。 |
 | Zod | Zod | TypeScript ファーストのスキーマバリデーションライブラリ。お問い合わせフォームのバリデーションに使用。 |
 | React Hook Form | React Hook Form | React向けの高パフォーマンスフォームライブラリ。非制御コンポーネントベースで不要な再レンダリングを抑制する。 |
@@ -292,7 +293,7 @@ src/
 | パターン | 適用対象 | 方法 |
 |----------|---------|------|
 | `React.forwardRef` | フォーム要素（Input, TextArea, Button） | ref 転送で外部からのDOM操作を可能にする |
-| Named export | すべてのコンポーネント | `export function Component()` または `export { Component }` |
+| Named export | すべてのコンポーネント | **宣言と同時に export する**（`export function Component()` / `export const Component = ...`）。末尾でまとめる `export { Component }` は `jsdoc/require-jsdoc` が検出できないため使わない（`.claude/rules/jsdoc.md`） |
 | 型のエクスポート | Props 型 | コンポーネントと共に `export type { ComponentProps }` |
 | `'use client'` ディレクティブ | クライアントサイド操作を含むコンポーネント | ファイル先頭に `'use client'` を記述 |
 | `cn()` ユーティリティ | クラス名の結合 | `cn(baseClass, conditionalClass, className)` パターン |
@@ -302,11 +303,16 @@ src/
 | 項目 | ルール |
 |------|--------|
 | スタイリング手法 | Tailwind CSS ユーティリティクラスを使用 |
-| カスタムクラス | `globals.css` に定義（`glass-effect`, `glass-card`, `neon-text` 等） |
-| レスポンシブ | Tailwind のブレークポイント（`md:`, `lg:`, `xl:`）を使用 |
-| カラーパレット | `tailwind.config.js` のカスタムカラー（`primary`, `secondary`, `accent`, `purple`） |
-| フォント | Inter（欧文）、Noto Sans JP（和文）、JetBrains Mono / Fira Code（等幅） |
-| アニメーション | Tailwind config で定義されたカスタムアニメーション（`fade-in-up`, `float`, `glow` 等） |
+| カスタムクラス | `globals.css` に定義（`.container`, `.section-padding`, `.section-heading`, `.quote-panel`, `.theme-toggle-light` / `.theme-toggle-dark`） |
+| レスポンシブ | Tailwind のブレークポイント（`md:`, `lg:`）を使用 |
+| カラーパレット | **色を直書きしない。** `globals.css` の CSS カスタムプロパティ 11 種（`--paper`, `--ink`, `--body`, `--lead`, `--mute`, `--rule`, `--field`, `--panel`, `--acc`, `--acc-on`, `--warn`）を `tailwind.config.js` が `var()` で参照し、`text-ink` / `bg-panel` のように使う |
+| フォント | Zen Old Mincho（見出し `font-serif`）、Zen Kaku Gothic New（本文 `font-sans`）、システム等幅（`font-mono`） |
+| アニメーション | `fade-in-up` のみ（Hero の初回表示 1 回）。常時動く装飾は持たない |
+
+**トークンを経由する理由**: ライト/ダークの 2 配色を同じマークアップで賄うため。
+Tailwind のクラス名を出し分けるのではなく、`globals.css` の 4 ブロック
+（`:root` / `@media (prefers-color-scheme: dark)` / `[data-theme='light']` / `[data-theme='dark']`）が
+同じトークン名に別の値を割り当てる。詳細は `docs/09-architecture-specification.md` §6.2。
 
 ---
 
@@ -393,12 +399,10 @@ UT/IT より重い（ブラウザ + build + Docker）ため CI とは別ワー�
 | # | 分類 | 内容 | 影響度 | 備考 |
 |---|------|------|--------|------|
 | 1 | パフォーマンス | `next.config.js` で `images.unoptimized: true` が設定されており、Next.js の画像最適化（WebP変換、リサイズ等）が無効 | 中 | 外部URLからの画像取得のため無効化されている可能性が高い。代替としてCDNレベルの最適化を検討 |
-| 2 | パフォーマンス | Google Fonts（Inter, Noto Sans JP, JetBrains Mono）が CSS `@import` で読み込まれている | 低 | `next/font` を使用することでフォントの自動最適化・プリロードが可能 |
-| 3 | エラーハンドリング | React Error Boundary が未実装 | 中 | コンポーネントレベルのエラーでページ全体がクラッシュする可能性がある |
-| 4 | UX | ローディング表示がスピナーのみ（スケルトンスクリーン未実装） | 低 | 体感パフォーマンスの改善余地あり |
-| 5 | Webpack設定 | クライアントバンドルからNode.jsモジュールを除外するため、多数の `fallback: false` 設定が必要 | 低 | GCSクライアントのサーバーサイド限定使用に起因 |
+| 2 | パフォーマンス | Google Fonts（Zen Old Mincho, Zen Kaku Gothic New）が `globals.css` の `@import` で読み込まれており、CSS の解決が 1 往復増える | 低 | `next/font` は日本語のサブセット指定ができず全字形を取得するため採用していない（`docs/03-functional-specification.md` §5.8）。`<link rel="preconnect">` で往復のコストは緩和済み |
+| 3 | Webpack設定 | クライアントバンドルからNode.jsモジュールを除外するため、多数の `fallback: false` 設定が必要 | 低 | GCSクライアントのサーバーサイド限定使用に起因 |
 
-> 解決済みのため本表から除外した項目: レート制限の未実装（issue #60 で導入）、ローディング/エラー状態の aria 属性不足（issue #83 で対応）、`costom-date.ts` のタイプミス（issue #84 でリネーム）。
+> 解決済みのため本表から除外した項目: レート制限の未実装（issue #60 で導入）、ローディング/エラー状態の aria 属性不足（issue #83 で対応）、`costom-date.ts` のタイプミス（issue #84 でリネーム）、React Error Boundary の未実装（`src/app/error.tsx` で実装済み）、ローディング表示がスピナーのみ（Server Component 化によりページ単位のローディング表示自体が無くなった）。
 
 ### 6.2 機能的な制限事項
 
@@ -407,10 +411,10 @@ UT/IT より重い（ブラウザ + build + Docker）ため CI とは別ワー�
 | 1 | 言語サポート | 日本語のみ対応。i18n（国際化）は未実装 |
 | 2 | アナリティクス | Google Analytics 等のトラッキングツール未導入 |
 | 3 | データ更新 | ポートフォリオデータの更新はGCSのJSONファイルを直接編集する必要がある。管理画面（CMS）は未実装 |
-| 4 | テスト | テストフレームワーク未導入。ユニットテスト・E2Eテストなし |
+| 4 | テスト | （解決済み）Vitest + Testing Library によるユニットテスト、Playwright による E2E / スモークテストを導入済み。方針は `docs/08-test-specification.md` |
 | 5 | キャッシュ戦略 | API Route で `Cache-Control: public, s-maxage=300, stale-while-revalidate=86400` を設定しているが、ISR は未使用 |
 | 6 | メール送信 | 送信確認メール（ユーザーへの自動返信）は未実装。サイトオーナーへの通知のみ |
-| 7 | ダークモード | ダークテーマのみ対応。ライトモード/テーマ切替は未実装 |
+| 7 | テーマ | ライト / ダークの 2 配色に対応し、ヘッダーのトグルで切り替えられる（issue #138）。選択は Cookie に保存する。ハイコントラストモード等の追加テーマは未対応 |
 | 8 | SEO | OGP画像が未設定（`og:image` なし） |
 
 ### 6.3 ブラウザサポート
@@ -423,7 +427,7 @@ UT/IT より重い（ブラウザ + build + Docker）ため CI とは別ワー�
 | Edge（最新） | 対応 |
 | IE11 | 非対応 |
 
-※ `backdrop-filter` (Glassmorphism) は主要モダンブラウザで対応済み。
+※ 配色に使用する CSS カスタムプロパティ・`color-scheme`・`oklch()` はいずれも主要モダンブラウザで対応済み。
 
 ---
 

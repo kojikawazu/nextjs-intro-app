@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test';
 // クライアントで適用すると「一度ライトで描画してからダークへ切り替わる」ちらつきが出るため、
 // ここでは JS を一切実行しない request 経由で HTML を取り、属性が入っていることを確かめる。
 //
-// なお issue #136 時点では、この属性を参照する CSS はまだどのコンポーネントにも
-// 適用されていない（配色トークンの定義のみ）。表示は変わらないが、機構は動いている。
+// 属性の出力先は issue #138 で `client.tsx` のラッパー要素から `<html>`（`layout.tsx`）へ移した。
+// `<html>` でないと `color-scheme` がブラウザ既定の部品（スクロールバー・入力欄）へ効かないため。
 
 /**
  * Cookie を付けてトップページの HTML を取得する。
@@ -89,5 +89,57 @@ test.describe('配色テーマの解決（異常系）', () => {
         ).toBeVisible();
 
         await expect(page.locator('[data-theme]')).toHaveAttribute('data-theme', 'dark');
+    });
+});
+
+test.describe('配色テーマの切り替え（正常系）', () => {
+    test('トグルで切り替え、リロード後も選択が保持される', async ({ page }) => {
+        await page.route(/placehold\.co/, (route) => route.abort());
+        await page.goto('/');
+
+        // 切り替え前は Cookie が無いため OS 設定に委ねる（属性なし）。
+        await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.*/);
+
+        await page.getByRole('button', { name: 'ダークテーマに切り替える' }).click();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+        // リロードしてもサーバーが Cookie を読んで初期 HTML に載せ直す。
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+        await page.getByRole('button', { name: 'ライトテーマに切り替える' }).click();
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    });
+
+    test('テーマに応じて配色トークンの実効値が変わる', async ({ page }) => {
+        await page.route(/placehold\.co/, (route) => route.abort());
+        await page.goto('/');
+
+        await page.getByRole('button', { name: 'ダークテーマに切り替える' }).click();
+        const dark = await page.evaluate(() =>
+            getComputedStyle(document.documentElement).getPropertyValue('--paper').trim(),
+        );
+
+        await page.getByRole('button', { name: 'ライトテーマに切り替える' }).click();
+        const light = await page.evaluate(() =>
+            getComputedStyle(document.documentElement).getPropertyValue('--paper').trim(),
+        );
+
+        // トークンが実際に入れ替わっていること（クラス名だけ変わって色が同じ、を防ぐ）。
+        expect(dark).toBe('#14130f');
+        expect(light).toBe('#faf8f3');
+    });
+
+    test('スクロールバーと入力部品の配色も追従する', async ({ page }) => {
+        await page.route(/placehold\.co/, (route) => route.abort());
+        await page.goto('/');
+
+        await page.getByRole('button', { name: 'ダークテーマに切り替える' }).click();
+
+        // color-scheme は <html> に無いとブラウザ既定の部品へ効かない。
+        await expect
+            .poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme))
+            .toBe('dark');
     });
 });

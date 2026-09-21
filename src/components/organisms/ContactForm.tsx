@@ -79,35 +79,14 @@ export function ContactForm() {
 
     if (isSubmitted) {
         return (
-            <div
-                role="status"
-                aria-live="polite"
-                className="glass-card rounded-2xl p-8 text-center"
-            >
-                <div className="flex justify-center mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-400 rounded-full flex items-center justify-center animate-bounce">
-                        <svg
-                            className="w-8 h-8 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                            />
-                        </svg>
-                    </div>
-                </div>
-                <h3 className="text-xl font-semibold neon-text mb-4">送信完了</h3>
-                <p className="text-secondary-200 mb-6">
+            <div role="status" aria-live="polite" className="quote-panel">
+                <h3 className="mb-3 font-serif text-base font-bold text-ink">送信完了</h3>
+                <p className="mb-5 text-[13px] leading-loose text-body">
                     お問い合わせありがとうございます。
                     <br />
                     確認次第、ご連絡させていただきます。
                 </p>
-                <Button variant="outline" className="mt-4" onClick={() => setIsSubmitted(false)}>
+                <Button variant="outline" size="sm" onClick={() => setIsSubmitted(false)}>
                     新しいお問い合わせ
                 </Button>
             </div>
@@ -115,7 +94,7 @@ export function ContactForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
                 label="お名前"
                 placeholder="山田 太郎"
@@ -143,12 +122,12 @@ export function ContactForm() {
             />
 
             {submitError && (
-                <div role="alert" className="glass-card border-red-400/30 bg-red-500/10 p-4">
-                    <p className="text-sm text-red-300">{submitError}</p>
+                <div role="alert" className="border-l-2 border-warn bg-panel px-4 py-3">
+                    <p className="text-xs text-warn">{submitError}</p>
                 </div>
             )}
 
-            <Button type="submit" isLoading={isSubmitting} className="w-full" size="lg">
+            <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full" size="md">
                 {isSubmitting ? '送信中...' : '上記内容で送信する'}
             </Button>
         </form>

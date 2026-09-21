@@ -1,51 +1,45 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
 
-/** `Badge` の props。ネイティブの `<div>` 属性をすべて受け付ける。 */
-interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+/** `Badge` の props。ネイティブの `<span>` 属性をすべて受け付ける。 */
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
     /**
-     * 配色のバリエーション。既定は `default`。
-     * `default` / `secondary` / `accent` はテーマカラー別のガラス調、
-     * `outline` は白の半透明枠線で、特定の色味を持たせたくない場合に使う。
+     * 配色のバリエーション。既定は `accent`。
+     * `accent` はアクセント色で塗った強い印（進行中の案件など）、
+     * `outline` は枠線のみで、地の流れを乱したくない補助的な印に使う。
      */
-    variant?: 'default' | 'secondary' | 'accent' | 'outline';
-    /** 余白と文字サイズ。既定は `md` */
-    size?: 'sm' | 'md';
+    variant?: 'accent' | 'outline';
 }
 
+/** バリエーション別のクラス。 */
+const VARIANT_CLASSES: Record<NonNullable<BadgeProps['variant']>, string> = {
+    accent: 'bg-acc text-acc-on',
+    outline: 'border border-rule text-mute',
+};
+
 /**
- * 技術スタックやフェーズを示すピル型のラベル。
+ * 状態を示す小さな印。
  *
- * 表示専用で外部から DOM を触る必要がないため、`forwardRef` を使わない
+ * 旧デザインでは技術スタックの羅列にも使っていたが、分類集約（issue #137）へ
+ * 置き換えたため、現在の用途は「現在」のような**状態表示**に限られる。
+ *
+ * `<div>` ではなく `<span>` を使う。見出しやタイトルの行内に置くため、
+ * ブロック要素だと文章の途中に挟めない。
+ *
+ * 表示専用で外部から DOM を触る必要がないため `forwardRef` を使わない
  * （判断基準は `docs/component-design-report/03-forward-ref.md` §2.2）。
  */
-function Badge({ className, variant = 'default', size = 'md', children, ...props }: BadgeProps) {
-    const variants = {
-        default: 'glass-effect border-primary-400/30 text-primary-300',
-        secondary: 'glass-effect border-secondary-400/30 text-secondary-300',
-        accent: 'glass-effect border-accent-400/30 text-accent-300',
-        outline: 'glass-effect border border-white/20 text-white/80',
-    };
-
-    const sizes = {
-        sm: 'px-2 py-0.5 text-xs',
-        md: 'px-2.5 py-0.5 text-sm',
-    };
-
+export function Badge({ className, variant = 'accent', children, ...props }: BadgeProps) {
     return (
-        <div
+        <span
             className={cn(
-                'inline-flex items-center rounded-full font-medium transition-all duration-300 hover:scale-105',
-                variants[variant],
-                sizes[size],
+                'inline-flex items-center rounded-sm px-2 py-0.5 font-mono text-[10px] font-bold tracking-widest',
+                VARIANT_CLASSES[variant],
                 className,
             )}
             {...props}
         >
             {children}
-        </div>
+        </span>
     );
 }
-
-export { Badge };
-export type { BadgeProps };

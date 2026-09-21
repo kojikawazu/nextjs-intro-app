@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { THEME_COOKIE_NAME } from '@/constants/theme';
+import { parseTheme } from '@/lib/theme';
 import { getSiteUrl } from '@/lib/site-url';
 import './globals.css';
 
@@ -63,11 +66,34 @@ export const metadata: Metadata = {
  * 全ページ共通のルートレイアウト。
  *
  * `<html lang="ja">` を宣言して検索エンジンの言語判定とスクリーンリーダーの
- * 読み上げ言語選択を正しくする。データ取得や状態は持たず、Server Component のまま保つ。
+ * 読み上げ言語選択を正しくする。
+ *
+ * 配色テーマを Cookie から読み、`<html>` の `data-theme` として**初期 HTML に載せる**。
+ * クライアントで適用すると一度ライトで描画してからダークへ切り替わるちらつきが出るため、
+ * サーバー側で解決する。インラインスクリプトを使わないので、nonce + `strict-dynamic` の
+ * CSP とも衝突しない（詳細は `docs/09-architecture-specification.md` §6.7）。
+ *
+ * **`<html>` に載せる必要がある。** ラッパー要素に載せると、`<body>` の背景・
+ * スクロールバー・入力部品の配色（`color-scheme`）がテーマに追従せず、
+ * OS がダークで利用者がライトを選んだ場合などにオーバースクロール部分だけ色が食い違う。
+ *
+ * その代償として、レイアウトを共有する 404 ページ（`_not-found`）も動的レンダリングになる。
+ * 404 に CSP が付かないこと自体は変わらない（middleware のマッチャは `/` のみ）。
+ *
+ * @param props - Next.js が渡すレイアウトの props
+ * @param props.children - 配下のページ
  */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const cookieStore = await cookies();
+    const theme = parseTheme(cookieStore.get(THEME_COOKIE_NAME)?.value);
+
     return (
-        <html lang="ja">
+        <html lang="ja" data-theme={theme ?? undefined}>
+            <head>
+                {/* 本文の書体を待たせないよう、フォント配信元への接続を先に開く。 */}
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            </head>
             <body className="antialiased">{children}</body>
         </html>
     );

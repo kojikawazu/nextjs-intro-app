@@ -12,10 +12,14 @@
         - [仕様詳細](#仕様詳細)
         - [デスクトップナビゲーション (md以上)](#デスクトップナビゲーション-md以上)
         - [モバイルナビゲーション (md未満)](#モバイルナビゲーション-md未満)
+        - [テーマトグル](#テーマトグル)
     - [3.2 Hero Section](#32-hero-section)
         - [機能概要](#機能概要-1)
         - [仕様詳細](#仕様詳細-1)
-        - [レイヤー構成 (背面から前面)](#レイヤー構成-背面から前面)
+        - [構成](#構成)
+        - [何ができる人かを示す](#何ができる人かを示す)
+        - [Hero から削除したもの](#hero-から削除したもの)
+        - [数値帯の罫線](#数値帯の罫線)
         - [アニメーション](#アニメーション)
     - [3.3 About Section](#33-about-section)
         - [機能概要](#機能概要-2)
@@ -25,8 +29,9 @@
     - [3.4 Career Section](#34-career-section)
         - [機能概要](#機能概要-3)
         - [仕様詳細](#仕様詳細-3)
-        - [タイムライン表示](#タイムライン表示)
+        - [進行中と過去の重み付け](#進行中と過去の重み付け)
         - [CareerCard コンポーネント仕様](#careercard-コンポーネント仕様)
+        - [技術スタックの表示](#技術スタックの表示)
         - [日付フォーマットロジック (`formatCareerPeriod`)](#日付フォーマットロジック-formatcareerperiod)
     - [3.5 Contact Section](#35-contact-section)
         - [機能概要](#機能概要-4)
@@ -44,12 +49,13 @@
     - [4.1 ページ読み込みフロー](#41-ページ読み込みフロー)
     - [4.2 ナビゲーションフロー](#42-ナビゲーションフロー)
     - [4.3 お問い合わせ送信フロー](#43-お問い合わせ送信フロー)
+    - [4.4 テーマ切り替えフロー](#44-テーマ切り替えフロー)
 - [5. UI/UX仕様](#5-uiux仕様)
     - [5.1 レスポンシブブレークポイント](#51-レスポンシブブレークポイント)
     - [5.2 コンテナ仕様](#52-コンテナ仕様)
     - [5.3 セクションパディング](#53-セクションパディング)
     - [5.4 カラーシステム](#54-カラーシステム)
-    - [5.5 グラスモーフィズムデザイン](#55-グラスモーフィズムデザイン)
+    - [5.5 ライト / ダークテーマ](#55-ライト--ダークテーマ)
     - [5.6 アニメーション一覧](#56-アニメーション一覧)
     - [5.7 インタラクション効果](#57-インタラクション効果)
     - [5.8 フォント](#58-フォント)
@@ -60,6 +66,7 @@
         - [Input](#input)
         - [TextArea](#textarea)
         - [Badge](#badge)
+        - [ThemeToggle](#themetoggle)
     - [6.3 Molecules](#63-molecules)
         - [CareerCard](#careercard)
         - [SocialLinks](#sociallinks)
@@ -69,8 +76,10 @@
 - [7. ビジネスロジック](#7-ビジネスロジック)
     - [7.1 日付変換 (`toDateString`)](#71-日付変換-todatestring)
     - [7.2 経歴期間フォーマット (`formatCareerPeriod`)](#72-経歴期間フォーマット-formatcareerperiod)
-    - [7.3 フォームバリデーション](#73-フォームバリデーション)
-    - [7.4 データ取得戦略](#74-データ取得戦略)
+    - [7.3 技術スタックの分類 (`groupTechStack`)](#73-技術スタックの分類-grouptechstack)
+    - [7.4 経歴サマリの集計 (`summarizeCareers`)](#74-経歴サマリの集計-summarizecareers)
+    - [7.5 フォームバリデーション](#75-フォームバリデーション)
+    - [7.6 データ取得戦略](#76-データ取得戦略)
 - [8. 型定義](#8-型定義)
     - [8.1 ポートフォリオデータ型](#81-ポートフォリオデータ型)
     - [8.2 SNSItem](#82-snsitem)
@@ -135,32 +144,35 @@ page.tsx (クライアントコンポーネント)
 
 #### 機能概要
 
-ページ上部に固定表示されるナビゲーションヘッダー。スクロール状態に応じて外観が変化する。
+ページ上部のヘッダー。**スクロール追従をやめ、地の流れに置いた**（issue #138）。書類として読ませる設計では本文に被る要素が邪魔になるため。併せてスクロール量の監視も不要になった。
 
 #### 仕様詳細
 
 | 項目 | 仕様 |
 |------|------|
-| 配置 | `fixed`, `top-0`, `z-50` |
-| 高さ | デスクトップ: `h-20` (80px), モバイル: `h-16` (64px) |
-| スクロール閾値 | 10px (`SCROLL_THRESHOLD = 10`) |
-| 未スクロール時 | 背景透明、ロゴはネオンテキスト、ナビリンクは `secondary-200` |
-| スクロール後 | グラスエフェクト (`glass-effect`) + `shadow-glass`、ロゴは `primary-400`、ナビリンクは白 |
-| トランジション | `transition-all duration-300` |
+| 配置 | 通常フロー（`fixed` ではない） |
+| 高さ | `h-16` (64px) |
+| 区切り | 下罫 (`border-b border-rule`) |
+| 構成 | ロゴ（明朝）/ ナビ / テーマトグル / ハンバーガー |
 
 #### デスクトップナビゲーション (md以上)
 
-- ナビ項目: About, Career, Contact (データ駆動)
-- クリック時: 対応セクションへスムーズスクロール (`scrollIntoView({ behavior: 'smooth' })`)
-- ホバー効果: `hover:scale-105`、テキスト色変化
+- ナビ項目: About, Career, Contact（`navbar_data` から取得）
+- **`<button>` を維持する。** `e2e/home.spec.ts` と `e2e/security.spec.ts` が `getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、`<a>` に変えると JS を実行しなくても遷移してしまい確認の意味が失われる（issue #131 で一度壊した箇所）
+- クリック時: 対応セクションへスムーズスクロール（`prefers-reduced-motion` 時は即時）
+- ホバー: 文字色を `--mute` から `--ink` へ
+- 項目が 6 件（#127〜#129 の追加後）に増えても収まる幅で組む
 
 #### モバイルナビゲーション (md未満)
 
-- ハンバーガーメニューボタン (SVGアイコン、開閉で形状変化)
-- `aria-label="メニューを開く"` によるアクセシビリティ対応
+- ハンバーガーメニューボタン（開閉で形状変化）
+- `aria-label="メニューを開く"` / `aria-expanded` によるアクセシビリティ対応
 - 開閉状態: `isMobileMenuOpen` state で管理
-- メニュー展開時: `glass-effect` 背景、ボーダー上部に `border-white/20`
-- ナビ項目クリック時: セクションへスクロール後、メニュー自動閉閉
+- ナビ項目クリック時: セクションへスクロール後、メニュー自動閉じ
+
+#### テーマトグル
+
+ヘッダー右端。詳細は §5.5。
 
 ---
 
@@ -168,32 +180,46 @@ page.tsx (クライアントコンポーネント)
 
 #### 機能概要
 
-フルスクリーンのファーストビュー。ビジュアルインパクトを重視した演出でサイトの第一印象を形成する。
+**見出し → 具体 → 数値帯**の 3 段のみ。フルスクリーンの演出をやめ、書類の冒頭として組んだ。
 
 #### 仕様詳細
 
 | 項目 | 仕様 |
 |------|------|
-| 高さ | `min-h-screen` (ビューポート全体) |
-| レイアウト | 中央寄せ (`flex items-center justify-center`) |
-| オーバーフロー | `overflow-hidden` |
+| 高さ | 内容に応じる（`min-h-screen` は使わない） |
+| レイアウト | 左揃え 1 カラム |
+| 背景 | 地の色（`--paper`）のみ。画像・グラデーション・パーティクルはすべて廃止 |
 
-#### レイヤー構成 (背面から前面)
+#### 構成
 
-1. **アニメーショングラデーション背景** (`animated-bg`): 4色グラデーション、15秒周期で位置シフト
-2. **背景画像** (Unsplash): `opacity-5` で極薄表示、`object-cover`、`priority` 読み込み
-3. **メッシュ背景** (`mesh-background`): `opacity-30`
-4. **パーティクル背景** (`particle-bg`): `animated-bg` クラスに含まれる
-5. **コンテンツ** (`z-10`):
-   - タイトル: "Solving Problems with Technology" (`neon-text animate-glow`)
-   - サブタイトル: "テクノロジーを使って、お客様の課題解決を実現します"
-   - CTA ボタン: "お問い合わせ" (`animate-float`、クリックで Contact セクションへスクロール)
+| 段 | 内容 | 出どころ |
+|---|------|---------|
+| 見出し | `Solving Problems with Technology` | コードの固定文字列（**変更なし**） |
+| 具体 | 「専門はバックエンド開発。…要件定義(検討)から設計、実装、テスト設計、レビューまでの一連の流れを経験しております。」 | `about_data.about_contents[1]` を **About から移動** |
+| 数値帯 | プロジェクト数 / 使用技術数 / 経歴開始年 | `career_data` から算出（`summarizeCareers`） |
+
+**見出しは `<br />` で折らない。** テキストノードが分かれると見出しのアクセシブル名が `Solving Problemswith Technology` になりうる。折り返しは `max-w-[17ch]` で作る。
+
+#### 何ができる人かを示す
+
+現行の見出しは「何ができる人か」を述べておらず、書体と余白では解けない。`about_contents[1]` がすでにその答えを書いていたため、**新規コピーを書かず既存データの再配置**で解いた（issue #135）。
+
+#### Hero から削除したもの
+
+| 削除 | 理由 |
+|------|------|
+| 「テクノロジーを使って、お客様の課題解決を実現します」 | 直下に置いた `about_contents[1]` と同じことを抽象的に言っているだけで、具体の直前に置くと弱める |
+| 「お問い合わせ」ボタン | 書類として読ませる設計に CTA が馴染まない。Contact へはヘッダーと末尾から到達できる |
+
+#### 数値帯の罫線
+
+**縦罫は引かない。** 等分した列（本文幅 896px / 3 = 約 277px）に対し中身は数十 px しかなく、縦罫が中身から 200px 離れて「何を区切っているのか」が読めない線になる。上下の罫線と余白だけで 3 つの数値は分かれて読める。
+
+セル内側の余白も持たせない。持たせると先頭の数値が本文マージンから内側へずれ、見出し・引用・下のセクション見出しと左端の縦ラインが通らなくなる。
 
 #### アニメーション
 
-- コンテンツ全体: `animate-fade-in-up` (0.8秒、40px上方向から)
-- タイトル: `animate-glow` (2秒周期、box-shadow 明滅)
-- CTA ボタン: `animate-float` (6秒周期、20px上下浮遊)
+コンテンツ全体に `animate-fade-in-up`（0.5 秒、12px 上方向から）。**初回表示の 1 回のみ**で、常時動くものは無い。
 
 ---
 
@@ -201,37 +227,27 @@ page.tsx (クライアントコンポーネント)
 
 #### 機能概要
 
-プロフィール情報とSNSリンクを表示する自己紹介セクション。
+プロフィール画像・SNS リンク・自己紹介文。
 
 #### 仕様詳細
 
 | 項目 | 仕様 |
 |------|------|
-| 背景 | `bg-gradient-to-br from-secondary-900 to-secondary-800` + `mesh-background opacity-20` |
-| パディング | `section-padding` (py-20 / lg:py-32) |
-| レイアウト | 2カラム (`grid-cols-1 lg:grid-cols-2`)、`gap-12`、垂直中央揃え |
+| 背景 | 地の色のみ |
+| パディング | `section-padding` (py-14 / lg:py-20) |
+| レイアウト | `sm` 以上で 2 カラム（`sm:grid-cols-[8rem_1fr]`）、未満は 1 カラム |
+| 区切り | **見出し横の罫線のみ。** `<section>` に上罫を足すと横罫が 2 本並び、どちらが区切りか読めなくなる |
 
 #### 左カラム (プロフィール画像 + SNS)
 
-- **プロフィール画像**:
-  - サイズ: `w-48 h-48` (192px x 192px)
-  - 円形 (`rounded-full`)
-  - グロー効果: 背景に `bg-gradient-to-br from-yellow-200 via-yellow-100 to-amber-50` + `shadow-neon animate-pulse`
-  - 画像加工: `brightness-200 contrast-75 saturate-150`
-  - ボーダー: `border-4 border-yellow-300/60`
-  - 配置: デスクトップ左寄せ、モバイル中央
-- **SNSリンク** (`SocialLinks` コンポーネント):
-  - 対応SNS: X, GitHub, Zenn, Qiita (データ駆動)
-  - アイコンサイズ: `lg` (40px x 40px)
-  - ホバー: `hover:scale-110`、白オーバーレイ
-  - 外部リンク: `target="_blank"`, `rel="noopener noreferrer"`
-  - `aria-label` によるアクセシビリティ対応
+- **プロフィール画像**: 128px 角、角丸 2px、`border border-rule`。円形・グロー・画像加工（`brightness` / `contrast` / `saturate`）はすべて廃止
+- **氏名ラベルは表示しない。** 写真の直下に名前を再掲する必要がない。`about_name` は画像の `alt` として残るため情報は失われない
+- **SNS リンク**（`SocialLinks`）: **アイコン画像ではなく `sns_name` のテキストチップ**。`sns_img` が指す SVG は白一色で、紙のような明るい地の上では見えなくなるため（データは変更しない方針）。結果として `sns_img` は画面から参照されなくなる
 
 #### 右カラム (テキスト)
 
-- セクションタイトル: "About" (`neon-text`)
-- 複数パラグラフの紹介文 (`about_contents` 配列をループ)
-- テキスト色: `secondary-200`
+- セクションタイトル: `navbar_data.about_name`
+- 本文: `about_contents` のうち **`[1]` を除く全段落**（`[1]` は Hero へ移動済み）
 
 ---
 
@@ -239,40 +255,47 @@ page.tsx (クライアントコンポーネント)
 
 #### 機能概要
 
-経歴をタイムライン形式で表示するセクション。
+経歴を縦に並べる。**タイムラインの縦線・ドットは廃止**し、案件ごとの左罫で区切る。
 
 #### 仕様詳細
 
 | 項目 | 仕様 |
 |------|------|
-| 背景 | `bg-gradient-to-br from-secondary-800 to-secondary-900` + `particle-bg opacity-20` |
-| レイアウト | タイムライン (縦方向)、カード間隔 `space-y-12` |
+| 背景 | 地の色のみ |
+| レイアウト | 縦 1 列、カード間隔 `gap-10` |
+| 見出し右 | 件数（`career_data.length`）を等幅で表示 |
 
-#### タイムライン表示
+#### 進行中と過去の重み付け
 
-- **タイムラインライン** (md以上のみ表示):
-  - 位置: `absolute left-4`
-  - スタイル: `w-0.5 bg-gradient-to-b from-primary-400 to-purple-400`
-  - モバイルでは非表示 (`hidden md:block`)
-- **タイムラインドット** (md以上のみ表示):
-  - 位置: `absolute left-2 top-8`
-  - サイズ: `w-4 h-4`
-  - スタイル: `bg-gradient-to-br from-primary-400 to-purple-400 rounded-full`
-  - アニメーション: `animate-pulse`
-- **キャリアカード**: `md:ml-12` で左マージン
+全 7 件が等価に並ぶと、直近の案件と 2015 年の業務が同じ重さで読まれる（issue #135 の弱点(4)）。
+
+| 状態 | 左罫 | 「現在」バッジ |
+|------|------|--------------|
+| 進行中 (`career_end === 'now'`) | `--acc`（アクセント色） | あり |
+| 過去 | `--rule`（地の罫線色） | なし |
 
 #### CareerCard コンポーネント仕様
 
 | 表示項目 | データソース | 表示形式 |
 |----------|-------------|----------|
-| プロジェクトタイトル | `career_title` | `text-xl font-semibold`、ホバーで `neon-text` |
-| 期間 | `career_start`, `career_end` | `formatCareerPeriod()` で整形 (後述) |
-| チーム規模 | `career_member` | アイコン付きテキスト |
-| 説明 | `career_contents` | `text-sm text-secondary-200` |
-| 技術スタック | `career_skill_stack[]` | `Badge` (variant: `secondary`, size: `sm`) |
-| 担当フェーズ | `career_skill_phase[]` | `Badge` (variant: `outline`, size: `sm`) |
-| 役割 | `career_role` | テキスト表示 |
-| 現在バッジ | `career_end === 'now'` | 右上に "現在" Badge (`variant: accent`、`animate-pulse`) |
+| プロジェクトタイトル | `career_title` | `text-base font-bold` |
+| 期間・チーム規模 | `career_start`, `career_end`, `career_member` | 等幅 1 行（`formatCareerPeriod()` で整形） |
+| 説明 | `career_contents` | 本文 |
+| 技術スタック | `career_skill_stack[]` | **分類ごとにまとめ、技術は 1 件ずつチップ**（後述） |
+| 担当フェーズ | `career_skill_phase[]` | 中黒区切りの 1 行 |
+| 役割 | `career_role` | 本文 |
+| 現在バッジ | `career_end === 'now'` | タイトル横に `Badge`（アクセント色） |
+
+#### 技術スタックの表示
+
+1 案件あたり最大 30 件がフラットに並ぶと、読み手が信号（言語・フレームワーク・テスト）とノイズ（協働ツール）を自力で分離しなければならない。最新案件の 29 件のうち 10 件は協働ツールだった。
+
+- **分類ごとにまとめる**（`groupTechStack`、issue #137）。分類の定義は `docs/05-data-specification.md` §5.4
+- **中身のある分類だけを出す。** 案件ごとに登場する分類が違う（最新案件には `OS・ミドルウェア` が 1 件しかなく、PC 基盤の案件には `テスト` と `設計` が 1 件も無い）
+- **技術は 1 件ずつチップにする。** 読点で連ねると「文章」として読まれ、個々の技術を拾い読みできない
+- チップは等幅にしない。`C言語` `グラフィックMW` のように日本語を含む技術名があり、等幅フォントにグリフが無いと字形が混ざる
+- チップは枠線ではなく地色（`--panel`）で塗る。30 個並んだときに枠線だと線が主張しすぎる。背景は装飾でありコントラスト要件の対象外（文字は `--body` on `--panel` で 11.3:1 以上）
+- 対応表に無い技術は **「その他」として画面に出す**。黙って隠すとデータ追加時の取りこぼしに永久に気づけない
 
 #### 日付フォーマットロジック (`formatCareerPeriod`)
 
@@ -297,9 +320,13 @@ page.tsx (クライアントコンポーネント)
 
 | 項目 | 仕様 |
 |------|------|
-| 背景 | `bg-gradient-to-br from-secondary-800 to-secondary-900` + `particle-bg opacity-20` |
-| フォーム幅 | `max-w-2xl` (672px) |
-| フォームカード | `glass-card rounded-2xl p-8` |
+| 背景 | `--paper`（他セクションと共通。Contact だけ地色を変えない） |
+| 見出し | `.section-heading`（`h2` + `hr`）+ リード文「お気軽にお問い合わせください」 |
+| フォーム幅 | `.container`（`max-w-4xl` = 896px）に従う。フォーム自体に幅指定は持たない |
+| フォーム | カード化しない。`space-y-4` で項目を縦に積むだけの素の `<form>` |
+
+> 旧デザインはグラデーション背景の上に `glass-card` を浮かべていたが、**書類として読ませる設計では
+> Contact だけ別レイヤーに浮くと流れが切れる**ため、地の紙面にそのまま置く形へ変更した（issue #138）。
 
 #### フォームフィールド
 
@@ -323,6 +350,13 @@ page.tsx (クライアントコンポーネント)
 | message | `.min(10)` | "お問い合わせ内容は10文字以上で入力してください" |
 | message | `.max(2000)` | "お問い合わせ内容は2000文字以内で入力してください" |
 
+> **`必須` と `メール形式` のメッセージはクライアントでは表示されない。** 各項目に `required` /
+> `type="email"` を付けているため、空欄と不正なメール形式は**ブラウザのネイティブ検証が
+> submit 自体を止め**、react-hook-form の `handleSubmit` まで到達しない。上表のうち
+> クライアントで実際に見えるのは `min(2)` / `min(10)` / `max(...)` のメッセージで、
+> `min(1)` と `.email()` が効くのはサーバー側（下記）である。
+> 検証は `src/components/organisms/ContactForm.test.tsx` と `e2e/contact.spec.ts`。
+
 #### サーバーサイドバリデーション (`POST /api/contact`)
 
 | チェック | 条件 | ステータス | エラーメッセージ |
@@ -343,15 +377,19 @@ page.tsx (クライアントコンポーネント)
     -> ボタン: ローディング状態 ("送信中..." + スピナー)
     -> POST /api/contact
     -> 成功: 送信完了画面 (チェックマークアイコン + メッセージ + "新しいお問い合わせ" ボタン)
-    -> 失敗: エラーメッセージ表示 (glass-card, 赤ボーダー)
+    -> 失敗: エラーメッセージ表示 (`border-l-2 border-warn bg-panel`, 文字色 `--warn`)
 ```
 
 #### 送信完了画面
 
-- チェックマークアイコン (`animate-bounce`)
-- タイトル: "送信完了" (`neon-text`)
+- パネル: `.quote-panel`（Hero の引用パネルと同じ体裁）
+- タイトル: "送信完了"（`font-serif`）
 - メッセージ: "お問い合わせありがとうございます。確認次第、ご連絡させていただきます。"
-- "新しいお問い合わせ" ボタン (variant: `outline`): フォーム状態をリセット
+- "新しいお問い合わせ" ボタン (variant: `outline`, size: `sm`): フォーム状態をリセット
+
+> アイコンと `animate-bounce` は廃止した。**完了は文言で足りており**、装飾のための
+> 独自アニメーションは `prefers-reduced-motion` の考慮対象を増やすだけだった（issue #138）。
+> `role="status"` / `aria-live="polite"` は維持している。
 
 #### メール送信仕様
 
@@ -391,7 +429,7 @@ page.tsx (クライアントコンポーネント)
     - ブラウザはローディング表示を経ずに本文を表示する
     - ハイドレーション後に Header のモバイルメニューやフォーム入力などの対話が有効になる
 3b. 失敗: error.tsx のエラーバウンダリを描画
-    - テキスト: "Failed to load portfolio data" (赤)
+    - テキスト: "Failed to load portfolio data" (`--warn`)
     - "Try Again" ボタン -> reset()（セグメントの再レンダリング）
     - "Reload Page" ボタン -> window.location.reload()
 ```
@@ -428,13 +466,37 @@ page.tsx (クライアントコンポーネント)
 6. サーバーサイドバリデーション
 7. Resend API でメール送信
 8a. 成功: 送信完了画面を表示
-8b. 失敗: エラーメッセージを表示 (glass-card, 赤枠)
+8b. 失敗: エラーメッセージを表示 (左罫 `--warn` + `--panel` の地)
 9. "新しいお問い合わせ" ボタンでフォームをリセット
 ```
+
+### 4.4 テーマ切り替えフロー
+
+```text
+[初回訪問（Cookie なし）]
+1. layout.tsx が theme Cookie を読む -> 無いので data-theme を出さない
+2. ブラウザが prefers-color-scheme に従って配色を決める（globals.css の @media ブロック）
+
+[切り替え]
+1. ヘッダーのテーマトグルで「ライト」/「ダーク」を押す
+2. <html> の data-theme を書き換える -> 再描画なしで即座に配色が変わる
+3. 同じ値を theme Cookie（Max-Age 1年, SameSite=Lax）へ保存
+
+[再訪問（Cookie あり）]
+1. layout.tsx が Cookie を読み、<html data-theme="..."> を付けて HTML を返す
+2. 初期 HTML の時点で配色が確定しているため、ちらつき（FOUC）が起きない
+```
+
+> **インラインスクリプトを使わない理由**: テーマ復元の定番は `<head>` に同期スクリプトを
+> 置く方法だが、本サイトの CSP は `script-src` を nonce + `strict-dynamic` で絞っており、
+> インラインスクリプトと相性が悪い。Cookie をサーバーで読む方式なら JS を 1 行も足さずに
+> 同じ結果が得られる（`docs/09-architecture-specification.md` §6.7）。
 
 ---
 
 ## 5. UI/UX仕様
+
+> デザイン刷新（issue #135 / #138）で全面的に入れ替わった。旧デザイン（グラスモーフィズム + ネオン）の記述は残していない。
 
 ### 5.1 レスポンシブブレークポイント
 
@@ -443,81 +505,95 @@ Tailwind CSS デフォルトブレークポイントを使用。
 | ブレークポイント | 幅 | 主な適用箇所 |
 |----------------|-----|-------------|
 | デフォルト (モバイル) | < 640px | 1カラムレイアウト、ハンバーガーメニュー |
-| `sm` | >= 640px | コンテナパディング変更 (`px-6`) |
-| `md` | >= 768px | デスクトップナビ表示、2カラムグリッド、タイムライン表示 |
-| `lg` | >= 1024px | 2カラムAboutレイアウト、3カラムスキルグリッド、ヘッダー高さ拡大 |
-| `xl` | >= 1280px | 4カラムスキルグリッド |
+| `sm` | >= 640px | コンテナパディング変更 (`px-8`)、About の 2 カラム化、Hero 見出しの拡大 |
+| `md` | >= 768px | デスクトップナビ表示 |
+| `lg` | >= 1024px | セクションパディング拡大 |
 
 ### 5.2 コンテナ仕様
 
 ```css
 .container {
-  max-width: 80rem; /* 1280px (max-w-7xl) */
+  max-width: 56rem; /* 896px (max-w-4xl) */
   margin: 0 auto;
-  padding: 0 1rem;      /* デフォルト: 16px */
-  /* sm: padding: 0 1.5rem; */ /* 24px */
-  /* lg: padding: 0 2rem; */   /* 32px */
+  padding: 0 1.25rem;      /* デフォルト: 20px */
+  /* sm: padding: 0 2rem; */ /* 32px */
 }
 ```
+
+**旧デザインの `max-w-7xl`（1280px）から狭めた。** 書類として読ませる設計では 1 行が長すぎると視線が行末から次の行頭へ戻れない。
 
 ### 5.3 セクションパディング
 
 ```css
 .section-padding {
-  padding-top: 5rem;    /* 80px */
-  padding-bottom: 5rem; /* 80px */
-  /* lg: 8rem (128px) */
+  padding-top: 3.5rem;    /* 56px */
+  padding-bottom: 3.5rem; /* 56px */
+  /* lg: 5rem (80px) */
 }
 ```
 
 ### 5.4 カラーシステム
 
-| カテゴリ | 用途 | 基調色 |
-|---------|------|--------|
-| `primary` | メインアクセント、リンク、CTA | スカイブルー系 (#0ea5e9 / #38bdf8) |
-| `secondary` | 背景、テキスト、ニュートラル | スレートグレー系 (#0f172a ~ #f8fafc) |
-| `accent` | 成功状態、ハイライト | グリーン系 (#22c55e / #4ade80) |
-| `purple` | セカンダリアクセント、グラデーション | パープル系 (#a855f7 / #c084fc) |
+**固定色のパレットを廃止し、CSS 変数のトークンに置き換えた。** `tailwind.config.js` の色はすべて `var(--*)` を指す。定義と実測コントラスト比は `src/app/globals.css` と `docs/04-non-functional-specification.md` §5.2 を参照。
 
-### 5.5 グラスモーフィズムデザイン
+| トークン | 用途 |
+|---------|------|
+| `--paper` | 地 |
+| `--ink` | 見出し・強調 |
+| `--body` | 本文 |
+| `--lead` | リード文 |
+| `--mute` | 補助・ラベル |
+| `--rule` | 装飾的な区切り線（コントラスト要件なし） |
+| `--field` | 入力欄・トグルなど**操作できる部品の境界**（3:1 以上） |
+| `--panel` | 面（引用・入力欄の背景） |
+| `--acc` | アクセント |
+| `--acc-on` | アクセント上の文字 |
+| `--warn` | 注意表示・入力エラー |
 
-| クラス | 定義 | 用途 |
-|--------|------|------|
-| `glass-effect` | `bg-white/10 backdrop-blur-md border border-white/20` | ヘッダー、入力フィールド、Badge |
-| `glass-card` | `bg-white/5 backdrop-blur-xl border border-white/10 shadow-glass` | カード、フォームコンテナ |
+**透過度の修飾子（`text-ink/50` 等）は使えない。** Tailwind が `rgb(var(--x) / <alpha-value>)` の形を要求するのに対し、トークンは hex / oklch の完成した色だからである。濃淡が要る箇所は専用トークンを足す。
+
+### 5.5 ライト / ダークテーマ
+
+利用者が選べる。既定は OS の `prefers-color-scheme` に従い、明示的に選んだ場合は Cookie に保存してサーバー側の初期 HTML へ反映する（ちらつきなし）。機構の詳細は `docs/09-architecture-specification.md` §6.7。
+
+| 操作 | 位置 | 実装 |
+|------|------|------|
+| テーマトグル | ヘッダー右端 | `src/components/atoms/ThemeToggle.tsx` |
+
+**選択中かどうかの表示は JS ではなく CSS が決める。** Cookie 未設定時はサーバーが `data-theme` を出さないため、React の state で持つと初期描画時点では正解が分からず、ハイドレーション不一致か一瞬のちらつきのどちらかが必ず起きる。
+
+**トグル 1 個ではなくボタン 2 個**にしている。1 個にすると「いまどちらか」を `aria-pressed` で伝える必要があり、同じ理由で初期値を決められない。
 
 ### 5.6 アニメーション一覧
 
-| アニメーション名 | 動作 | 時間 | イージング |
-|----------------|------|------|----------|
-| `fade-in-up` | opacity 0->1, translateY 40px->0 | 0.8s | ease-out, both |
-| `fade-in-down` | opacity 0->1, translateY -40px->0 | 0.8s | ease-out, both |
-| `fade-in` | opacity 0->1 | 0.6s | ease-out, both |
-| `slide-in-left` | opacity 0->1, translateX -50px->0 | 0.8s | ease-out, both |
-| `slide-in-right` | opacity 0->1, translateX 50px->0 | 0.8s | ease-out, both |
-| `float` | translateY 0 -> -20px -> 0 | 6s | ease-in-out, infinite |
-| `glow` | box-shadow 明滅 (blue) | 2s | ease-in-out, infinite alternate |
-| `gradientShift` | background-position 0%->100%->0% | 15s | ease, infinite |
-| `bounce-slow` | Tailwind bounce | 3s | infinite |
-| `pulse-slow` | Tailwind pulse | 3s | infinite |
+**装飾のための常時アニメーションを全廃した。** 書類として読ませる設計に、動き続ける要素は馴染まない。
+
+| アニメーション名 | 動作 | 時間 | 適用箇所 |
+|----------------|------|------|---------|
+| `fade-in-up` | opacity 0->1, translateY 12px->0 | 0.5s | Hero（初回表示の 1 回のみ） |
+
+`prefers-reduced-motion: reduce` の環境では、アニメーション・トランジション・スムーススクロールをすべて無効化する（`globals.css`）。
 
 ### 5.7 インタラクション効果
 
-| 効果 | クラス | 動作 |
-|------|--------|------|
-| フローティングカード | `floating-card` | hover: scale(1.02), shadow増加, translateY(-4px) |
-| ネオンテキスト | `neon-text` | グラデーションテキスト + text-shadow |
-| グローオンホバー | `glow-on-hover` | hover: neon shadow + scale(1.05) |
-| ホバーリフト | `hover-lift` | hover: translateY(-8px) + shadow-2xl |
-| 下部ラインアニメーション | カード内 | hover: scaleX(0) -> scaleX(1) グラデーションライン |
+| 効果 | 動作 |
+|------|------|
+| ナビ / リンクのホバー | 文字色を `--mute` から `--ink` へ |
+| ボタン（primary）のホバー | 不透明度 90% |
+| ボタン（outline）のホバー | 背景を `--panel` へ |
+| フォーカス | `--acc` の 2px リング。primary ボタンは地と同化しないよう `ring-offset` を挟む |
+
+拡大・浮き上がり・影の増減といった効果は使わない。
 
 ### 5.8 フォント
 
 | フォント | 用途 | ウェイト |
 |---------|------|---------|
-| Inter | 英文テキスト (プライマリ) | 300~900 |
-| Noto Sans JP | 日本語テキスト | 300~900 |
-| JetBrains Mono / Fira Code | モノスペース (設定のみ) | - |
+| Zen Old Mincho | 見出し（`font-serif`）。英語見出しも明朝で組む | 400 / 600 / 700 |
+| Zen Kaku Gothic New | 本文（`font-sans`） | 400 / 500 / 700 |
+| ui-monospace ほかシステム等幅 | 期間・件数・SNS 名など（`font-mono`） | - |
+
+日本語フォントは Google Fonts の unicode-range 分割に載せる。**`next/font` は使わない**（日本語のサブセット指定ができず全字形を取得するため）。CSP は `style-src` / `font-src` で両ドメインを許可済み。
 
 ---
 
@@ -546,35 +622,34 @@ src/components/
 
 | Props | 型 | デフォルト | 説明 |
 |-------|-----|----------|------|
-| `variant` | `'primary' \| 'secondary' \| 'outline' \| 'ghost'` | `'primary'` | 外観バリアント |
+| `variant` | `'primary' \| 'outline' \| 'ghost'` | `'primary'` | 外観バリアント |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | サイズ |
 | `isLoading` | `boolean` | `false` | ローディング状態 (スピナー表示 + disabled) |
 | `children` | `ReactNode` | - | ボタンテキスト |
 
-**サイズ:**
-
-- `sm`: h-8, px-3, text-sm
-- `md`: h-10, px-4, text-base
-- `lg`: h-12, px-6, text-lg
+**サイズ:** `sm` = h-8/px-3/text-xs、`md` = h-10/px-5/text-sm、`lg` = h-12/px-7/text-sm
 
 **バリアント外観:**
 
-- `primary`: グラデーション背景 (primary->purple)、ネオンシャドウホバー
-- `secondary`: glass-effect、白テキスト
-- `outline`: glass-effect + primary ボーダー、ネオンシャドウホバー
-- `ghost`: 透明背景、ホバーで白/10背景
+- `primary`: `--acc` で塗り、文字は `--acc-on`。ホバーで不透明度 90%
+- `outline`: `--field` の枠線のみ。ホバーで背景 `--panel`
+- `ghost`: 背景も枠も持たない。ホバーで文字色を `--ink` へ
 
-**共通:** `rounded-xl`, `font-semibold`, `focus-visible:ring-2`, `disabled:opacity-50`, `hover:scale-105`
+**共通:** `rounded-sm`（角丸 2px）、`font-bold`、`focus-visible:ring-2 ring-acc`、`disabled:opacity-50`
+
+`primary` は地の色で塗られるためフォーカスリングが同化する。`ring-offset-2 ring-offset-paper` で地との間に隙間を挟む。拡大（`hover:scale`）は使わない。
 
 #### Input
 
 | Props | 型 | 説明 |
 |-------|-----|------|
-| `label` | `string?` | ラベルテキスト (required時に赤アスタリスク表示) |
-| `error` | `string?` | エラーメッセージ (赤テキスト、エラー時ボーダー赤) |
+| `label` | `string?` | ラベルテキスト (required 時にアクセント色のアスタリスク表示) |
+| `error` | `string?` | エラーメッセージ (`--warn`、エラー時は枠線も `--warn`) |
 | `hint` | `string?` | ヒントテキスト (エラー非表示時のみ表示) |
 
-**スタイル:** `glass-effect`, `rounded-xl`, `px-4 py-3`, `text-sm`, エラー時: 赤ボーダー + 赤フォーカスリング
+**スタイル:** `bg-panel`, `rounded-sm`, `px-3 py-2.5`, `text-sm`
+
+枠線に `--rule`（装飾罫線）ではなく **`--field` を使う**。WCAG 1.4.11 は操作できる部品の境界に 3:1 を要求しており、装飾用の細い罫線ではこれを満たせない（`docs/04` §5.2）。
 
 #### TextArea
 
@@ -584,15 +659,26 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 | Props | 型 | デフォルト | 説明 |
 |-------|-----|----------|------|
-| `variant` | `'default' \| 'secondary' \| 'accent' \| 'outline'` | `'default'` | 外観バリアント |
-| `size` | `'sm' \| 'md'` | `'md'` | サイズ |
+| `variant` | `'accent' \| 'outline'` | `'accent'` | 外観バリアント |
 
-**サイズ:**
+**現在の用途は「現在」のような状態表示に限られる。** 旧デザインでは技術スタックの羅列にも使っていたが、分類集約（issue #137）とチップ表示へ置き換えたため。
 
-- `sm`: px-2, py-0.5, text-xs
-- `md`: px-2.5, py-0.5, text-sm
+`<div>` ではなく **`<span>`**。見出しやタイトルの行内に置くため、ブロック要素だと文章の途中に挟めない。
 
-**共通:** `rounded-full`, `font-medium`, `hover:scale-105`
+**共通:** `rounded-sm`、等幅 10px、`tracking-widest`
+
+#### ThemeToggle
+
+配色テーマを切り替える。props は持たない。
+
+**トグル 1 個ではなくボタン 2 個**。選択中かどうかの表示は JS ではなく CSS が決める。理由は §5.5 を参照。
+
+| 要素 | アクセシビリティ |
+|------|----------------|
+| 外枠 | `role="group"` / `aria-label="配色テーマ"` |
+| ライトボタン | `aria-label="ライトテーマに切り替える"` |
+| ダークボタン | `aria-label="ダークテーマに切り替える"` |
+| 記号 (○ / ●) | `aria-hidden="true"`（読み上げを汚さない） |
 
 ### 6.3 Molecules
 
@@ -604,32 +690,34 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 | `period` | `string` | 期間テキスト (フォーマット済み) |
 | `teamSize` | `string` | チーム規模 |
 | `description` | `string` | 説明 |
-| `techStack` | `string[]` | 技術スタック (Badge表示) |
-| `phases` | `string[]` | 担当フェーズ (Badge表示) |
+| `techStack` | `string[]` | 技術スタック（分類ごとにまとめてチップ表示） |
+| `phases` | `string[]` | 担当フェーズ（中黒区切りの 1 行） |
 | `role` | `string` | 役割 |
-| `isCurrent` | `boolean?` | 現在進行中フラグ |
+| `isCurrent` | `boolean?` | 現在進行中フラグ（左罫の色と「現在」バッジを切り替える） |
 
 **カード内セクション構成:**
 
-1. タイトル + 期間 + チーム規模
-2. 区切り線 (グラデーション)
+1. タイトル（+ 進行中なら「現在」バッジ）
+2. 期間・チーム規模（等幅 1 行）
 3. 説明文
-4. 技術スタック (Badge群)
-5. 担当フェーズ (Badge群)
+4. 技術スタック（分類ごとのチップ。中身のある分類のみ）
+5. 担当フェーズ（中黒区切り。空なら見出しごと描画しない）
 6. 役割
+
+ルート要素は `<div>` ではなく **`<article>`**。経歴 1 件は独立して意味を持つ内容のため。
 
 #### SocialLinks
 
-| Props | 型 | デフォルト | 説明 |
-|-------|-----|----------|------|
-| `links` | `SNSItem[]` | - | SNSリンクデータ配列 |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | アイコンサイズ |
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `links` | `SNSItem[]` | SNSリンクデータ配列 |
+| `className` | `string?` | 追加クラス |
 
-**サイズ:**
+**アイコン画像ではなく `sns_name` のテキストチップで表示する。** `sns_img` が指す GCS 上の SVG は白一色（`github_original_white.svg` 等）で、紙のような明るい地の上では見えなくなる。データは変更しない方針（issue #135）のため、明るい地でも読める表現へ置き換えた。CSS フィルタで反転させる手もあるが、将来データ側が色付きアイコンに差し替わると破綻する。
 
-- `sm`: 24px x 24px
-- `md`: 32px x 32px
-- `lg`: 40px x 40px
+その結果 **`sns_img` は画面から参照されなくなる**（`career_title_data` / `contact_data` と同じ状態）。
+
+表示は `sns_name` をそのまま使う。データ上は小文字（`github` / `zenn`）だが、等幅で組むと表記として成立するため大文字化などの加工はしない。`size` prop は廃止した。
 
 ### 6.4 Organisms
 
@@ -668,7 +756,54 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
   - それ以外: "YYYY年M月 - YYYY年M月"
 ```
 
-### 7.3 フォームバリデーション
+### 7.3 技術スタックの分類 (`groupTechStack`)
+
+`src/lib/group-tech-stack.ts`（issue #137）。経歴 1 件の `career_skill_stack`（最大 30 件）を
+9 区分へ束ねる。
+
+```text
+入力: string[]（GCS 由来のため型は保証されない）
+処理:
+  1. 文字列以外・空文字・空白のみを捨てる
+  2. 前後の空白を落とす
+  3. 大文字小文字を無視して重複を除く（先に現れた表記を残す）
+  4. TECH_CATEGORY_BY_NAME で区分を引く。未登録は other（黙って捨てない）
+出力: TechGroup[]（中身のある区分だけを TECH_CATEGORIES の定義順で返す）
+```
+
+| 区分 | ラベル |
+|------|-------|
+| `language` | 言語 |
+| `framework` | フレームワーク |
+| `platform` | OS・ミドルウェア |
+| `testing` | テスト |
+| `infrastructure` | 基盤・CI |
+| `ai` | AI 活用 |
+| `design` | 設計 |
+| `collaboration` | 協働ツール |
+| `other` | その他 |
+
+> **並べ替えではなく分類にした理由**: 最新案件の 29 件のうち 10 件が協働ツールで、
+> フラットに並べると読み手が信号（言語・フレームワーク・テスト）とノイズを
+> 自力で分離するほかなかった。件数を減らさずに読める形にするのが目的（issue #135）。
+
+### 7.4 経歴サマリの集計 (`summarizeCareers`)
+
+`src/lib/career-summary.ts`（issue #138）。Hero の実績バンドに出す 3 つの数値を作る。
+
+```text
+入力: CareerData[]
+出力:
+  - projectCount:   件数（そのまま）
+  - technologyCount: 全案件の技術をユニーク化した件数（大小文字・前後空白を無視）
+  - startYear:      career_start から取れる最も古い年。1 件も取れなければ null
+不正な career_start: その 1 件を開始年の算出から外すだけで、例外は投げない
+```
+
+> `toDateString` が不正入力で例外を投げるのに対し、こちらは**投げない**。
+> 表記ゆれ 1 件でページ全体が error.tsx に落ちるのは割に合わないため。
+
+### 7.5 フォームバリデーション
 
 **クライアントサイド (Zod + React Hook Form):**
 
@@ -683,7 +818,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 - メールアドレス正規表現チェック
 - メッセージ長上限チェック (5000文字 -- クライアントの2000文字より緩い)
 
-### 7.4 データ取得戦略
+### 7.6 データ取得戦略
 
 ```text
 本番環境:

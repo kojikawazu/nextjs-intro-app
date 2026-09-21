@@ -119,9 +119,11 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 
 #### フォント読み込み
 
-- Google Fonts (`Inter`, `Noto Sans JP`) を CSS `@import` で読み込み
-- `@import` による読み込みはレンダリングブロッキングが発生する可能性がある
+- Google Fonts (`Zen Old Mincho`, `Zen Kaku Gothic New`) を CSS `@import` で読み込み
+- `@import` による読み込みはレンダリングブロッキングが発生する可能性がある。`layout.tsx` の `<head>` に `preconnect` を置き、接続確立を前倒ししている
 - `display=swap` パラメータにより、フォント読み込み完了までシステムフォントでフォールバック表示
+- **`next/font` は使わない。** 日本語のサブセット指定ができず全字形を取りに行くため、日本語サイトではかえって重くなる。Google Fonts の CSS は unicode-range で字形を分割配信するので、実際に使う範囲だけが落ちてくる
+- 等幅（期間・件数・SNS 名）はシステムフォントを使い、追加のダウンロードを発生させない
 
 #### バンドル最適化
 

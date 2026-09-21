@@ -2,13 +2,13 @@ import React from 'react';
 import { cn } from '@/utils/cn';
 
 /** `Button` の props。ネイティブの `<button>` 属性をすべて受け付ける。 */
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     /**
      * 見た目のバリエーション。既定は `primary`。
-     * `primary` はグラデーション＋ネオン影の主要 CTA、`secondary` は半透明のガラス調、
-     * `outline` は枠線のみ、`ghost` は背景なしで hover 時だけ反応する最も控えめな表現。
+     * `primary` はアクセント色で塗った主要動線、`outline` は枠線のみ、
+     * `ghost` は背景も枠も持たない最も控えめな表現。
      */
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'outline' | 'ghost';
     /** 高さと文字サイズ。既定は `md`（`sm` = 32px / `md` = 40px / `lg` = 48px） */
     size?: 'sm' | 'md' | 'lg';
     /**
@@ -20,6 +20,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     children: React.ReactNode;
 }
 
+/** バリエーション別のクラス。角丸を 2px に抑えているのは、書類の質感に丸みが馴染まないため。 */
+const VARIANT_CLASSES: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary: 'bg-acc text-acc-on hover:opacity-90',
+    outline: 'border border-field text-ink hover:bg-panel',
+    ghost: 'text-mute hover:text-ink',
+};
+
+/** サイズ別のクラス。 */
+const SIZE_CLASSES: Record<NonNullable<ButtonProps['size']>, string> = {
+    sm: 'h-8 px-3 text-xs',
+    md: 'h-10 px-5 text-sm',
+    lg: 'h-12 px-7 text-sm',
+};
+
 /**
  * アプリ共通のボタン。
  *
@@ -29,8 +43,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  *
  * `disabled` は `disabled || isLoading` で評価されるので、処理中は呼び出し側が
  * `disabled` を指定しなくても押せない状態になる。
+ *
+ * フォーカスリングは `--acc` を使う。地の色（`--paper`）との間に `ring-offset` を挟むのは、
+ * ボタン自身が `--acc` で塗られている場合にリングが同化して見えなくなるため。
  */
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     (
         {
             className,
@@ -43,31 +60,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ref,
     ) => {
-        const baseStyles =
-            'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none relative overflow-hidden';
-
-        const variants = {
-            primary:
-                'glass-card text-white hover:shadow-neon hover:scale-105 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-500 hover:to-purple-500 border-primary-400/30',
-            secondary:
-                'glass-effect text-white hover:bg-white/20 hover:shadow-glass-lg hover:scale-105 border-white/30',
-            outline:
-                'glass-effect border-2 border-primary-400/50 text-primary-300 hover:bg-primary-500/10 hover:border-primary-400 hover:text-primary-200 hover:shadow-neon-sm hover:scale-105',
-            ghost: 'text-secondary-300 hover:bg-white/10 hover:text-white hover:scale-105',
-        };
-
-        const sizes = {
-            sm: 'h-8 px-3 text-sm',
-            md: 'h-10 px-4 text-base',
-            lg: 'h-12 px-6 text-lg',
-        };
-
         return (
             <button
                 className={cn(
-                    baseStyles,
-                    variants[variant],
-                    sizes[size],
+                    'inline-flex items-center justify-center rounded-sm font-bold tracking-wide transition-opacity',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acc focus-visible:ring-offset-2 focus-visible:ring-offset-paper',
+                    'disabled:pointer-events-none disabled:opacity-50',
+                    VARIANT_CLASSES[variant],
+                    SIZE_CLASSES[size],
                     isLoading && 'cursor-not-allowed',
                     className,
                 )}
@@ -81,6 +81,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                     >
                         <circle
                             className="opacity-25"
@@ -104,6 +105,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
-
-export { Button };
-export type { ButtonProps };
