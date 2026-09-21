@@ -90,7 +90,7 @@
 
 | ツール | バージョン | ドキュメント |
 |--------|-----------|-------------|
-| ESLint | 8.57.0 | <https://eslint.org/docs/latest/> |
+| ESLint | 9.39.5 | <https://eslint.org/docs/latest/> |
 | Prettier | ^3.3.2 | <https://prettier.io/docs/en/> |
 | @typescript-eslint | ^7.18.0 | <https://typescript-eslint.io/> |
 | PostCSS | 8.4.38 | <https://postcss.org/> |
@@ -176,7 +176,8 @@ pnpm dev
 | `pnpm dev` | 開発サーバー起動（ホットリロード対応） |
 | `pnpm build` | 本番ビルド |
 | `pnpm start` | 本番ビルドのローカル実行 |
-| `pnpm lint` | ESLint によるコード静的解析 |
+| `pnpm lint` | ESLint によるコード静的解析（`eslint .`） |
+| `pnpm lint:fix` | ESLint の自動修正 |
 | `make lint-actions` | GitHub Actions ワークフローを actionlint で検証（要 Docker） |
 | `make lint-md` | Markdown を markdownlint で検証 |
 | `make lint-md-fix` | Markdown の自動修正可能な違反を直す |
@@ -226,6 +227,8 @@ pnpm dev
 | リンク切れ | 目次のアンカー **12 件**（見出し改名・ディレクトリ移設・削除済みセクションへの参照） |
 | 手順の誤り | `docs/09` のドメイン構築 runbook の番号が 1, 1, 2, 3 になっていた |
 | JSDoc（TSDoc） | `eslint-plugin-jsdoc` で `src/**` の TS/TSX を静的検査（型再掲禁止・`@param`/`@returns` 必須、公開シンボルへの JSDoc ブロックを `require-jsdoc` で必須化。`.tsx` は `@returns` を除外）。末尾の `export { X }` 形式は検出できないため、宣言と同時に export する。詳細は `.claude/rules/jsdoc.md` |
+| 設定形式 | **flat config**（`eslint.config.mjs`）。ESLint 9 は `.eslintrc.json` を既定で読まない。実行は `next lint` ではなく **ESLint CLI**（`next lint` は Next.js 16 で削除される） |
+| 検査範囲 | `eslint .` はリポジトリ全体。`next lint` の既定（`app/` `pages/` `components/` `lib/` `src/`）より広く、`e2e/` や設定ファイルも対象になる |
 | モジュール | ESModules（`"module": "esnext"`） |
 | ターゲット | ES5（`"target": "es5"`） |
 | パスエイリアス | `@/*` は `./src/*` にマッピング |

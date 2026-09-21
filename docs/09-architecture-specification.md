@@ -141,11 +141,10 @@
 | tailwindcss | 3.4.4 | ユーティリティファースト CSS フレームワーク |
 | postcss | 8.4.38 | CSS 変換ツール |
 | autoprefixer | 10.4.19 | ベンダープレフィックス自動付与 |
-| eslint | 8.57.0 | JavaScript/TypeScript リンター |
-| eslint-config-next | 14.2.5 | Next.js 用 ESLint 設定 |
-| @typescript-eslint/eslint-plugin | ^7.18.0 | TypeScript ESLint プラグイン |
-| @typescript-eslint/parser | ^7.18.0 | TypeScript ESLint パーサー |
-| eslint-plugin-jsdoc | ^48.11.0 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象。ESLint 8 互換のため v48 系を採用） |
+| eslint | 9.39.5 | JavaScript/TypeScript リンター（flat config） |
+| eslint-config-next | 16.3.5 | Next.js 用 ESLint 設定。**アプリの Next.js は 15 系のまま**で、本パッケージは `next` への peer 依存を持たない（issue #133） |
+| typescript-eslint | ^8.70.0 | TypeScript 用パーサ / プラグインの統合パッケージ（旧 `@typescript-eslint/*` v7 を置換） |
+| eslint-plugin-jsdoc | ^64.5.0 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象） |
 | prettier | ^3.3.2 | コードフォーマッター |
 | vitest | ^4.1.10 | テストランナー（ユニットテスト） |
 | @vitest/coverage-v8 | ^4.1.10 | カバレッジ計測（v8 プロバイダ） |
@@ -185,7 +184,7 @@ nextjs-intro-app/
 │   ├── lib/                    # 純粋ユーティリティ（通信しない）
 │   ├── types/                  # TypeScript 型定義
 │   └── utils/                  # クライアントサイドユーティリティ
-├── .eslintrc.json              # ESLint 設定
+├── eslint.config.mjs           # ESLint 設定（flat config）
 ├── .gitignore                  # Git 除外設定
 ├── .prettierrc                 # Prettier 設定
 ├── next.config.js              # Next.js 設定
@@ -828,7 +827,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 | `dev` | `next dev` | 開発サーバー起動（ホットリロード対応） |
 | `build` | `next build` | 本番ビルド |
 | `start` | `next start` | 本番サーバー起動 |
-| `lint` | `next lint` | ESLint によるコード品質チェック |
+| `lint` | `eslint .` | ESLint によるコード品質チェック（flat config） |
 | `format` | `prettier --write .` | Prettier によるコードフォーマット |
 | `format:check` | `prettier --check .` | フォーマット準拠チェック（CI 用） |
 | `type-check` | `tsc --noEmit` | TypeScript 型チェック（ファイル出力なし） |
@@ -841,7 +840,7 @@ Cloud Run 側のドメインマッピングは削除済み。
   ├── 1. TypeScript 型チェック (tsc --noEmit)
   │     └── strict モード、エイリアスパス解決
   │
-  ├── 2. ESLint チェック (next lint)
+  ├── 2. ESLint チェック (eslint .)
   │     └── Next.js 推奨ルール + TypeScript ルール
   │
   ├── 3. Prettier チェック (prettier --check .)

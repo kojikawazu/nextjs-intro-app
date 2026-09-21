@@ -14,7 +14,7 @@ TF_DIR      := terraform
 
 # 全ターゲットはファイルを生成しない（同名ファイルがあっても常に実行する）
 .PHONY: help setup install sample dev build start lint format format-check \
-        type-check test test-run test-coverage test-it test-e2e check lint-actions lint-md lint-md-fix \
+        type-check test test-run test-coverage test-it test-e2e check lint-actions lint-fix lint-md lint-md-fix \
         docker-build docker-run tf-init tf-plan tf-apply clean
 
 # デフォルトターゲット: ヘルプ表示
@@ -57,6 +57,10 @@ start:
 ## lint: ESLint を実行する（JSDoc ルール含む）
 lint:
 	$(PNPM) lint
+
+## lint-fix: ESLint の自動修正可能な違反を直す
+lint-fix:
+	$(PNPM) lint:fix
 
 ## lint-md: Markdown を markdownlint で検証する
 lint-md:

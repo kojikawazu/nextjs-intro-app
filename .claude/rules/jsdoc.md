@@ -56,7 +56,9 @@ export async function resolveDisplayName(
 
 ## Lint による強制（導入済み）
 
-`eslint-plugin-jsdoc`（ESLint 8 互換の v48 系）を導入し、`.eslintrc.json` の `overrides` で `src/**/*.{ts,tsx}` に機械判定可能なルールを適用している。`settings.jsdoc.mode: "typescript"` で TS モードを有効化。
+`eslint-plugin-jsdoc` を導入し、**flat config（`eslint.config.mjs`）の `files: ['src/**/*.ts', 'src/**/*.tsx']`** で機械判定可能なルールを適用している。`settings.jsdoc.mode: "typescript"` で TS モードを有効化。
+
+> **flat config は配列を上から順に適用し、後の要素が前を上書きする。** レガシー config の `overrides` 2 段（`src/**` → `src/**/*.tsx`）は、配列にこの順で並べることで等価になる。**順序を入れ替えると `.tsx` の `require-returns` を off にする意図が消える**ため、要素の並び替えは慎重に行うこと（issue #133）。
 
 | ルール | レベル | 目的 |
 |---|---|---|
@@ -72,21 +74,24 @@ export async function resolveDisplayName(
 
 - **`.tsx`（React コンポーネント）は `require-returns` / `require-returns-description` を off**: JSX を返す要素に「@returns …の要素」を書くのはノイズになるため。`.ts`（フック / lib / API）では `@returns` 必須のまま。
 - **`require-jsdoc` は `contexts` を指定して採用している。** 素の `require-jsdoc` は行コメント（`//`）を誤検知するが、対象ノードを限定し `publicOnly: true` で export 済みシンボルに絞ることで、誤検知なしに運用できる。
-- 参考: 上記方針は `youtube-my-collection`（ESLint 9 フラット config）を ESLint 8 レガシー config 向けに移植したもの。
+- 参考: 上記方針は `youtube-my-collection`（ESLint 9 フラット config）から移植したもの。本プロジェクトも issue #133 で ESLint 9 + flat config へ移行したため、現在は両者とも同じ形式。
 
 ### `require-jsdoc` の設定
 
-```json
-"jsdoc/require-jsdoc": ["error", {
-    "publicOnly": true,
-    "require": { "FunctionDeclaration": false },
-    "contexts": [
-        "FunctionDeclaration",
-        "TSInterfaceDeclaration",
-        "TSTypeAliasDeclaration",
-        "VariableDeclaration"
-    ]
-}]
+```js
+'jsdoc/require-jsdoc': [
+    'error',
+    {
+        publicOnly: true,
+        require: { FunctionDeclaration: false },
+        contexts: [
+            'FunctionDeclaration',
+            'TSInterfaceDeclaration',
+            'TSTypeAliasDeclaration',
+            'VariableDeclaration',
+        ],
+    },
+],
 ```
 
 ### `require-jsdoc` が検出できない形式（重要）
