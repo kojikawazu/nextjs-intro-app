@@ -621,6 +621,7 @@ src/components/
   |   +-- Input.tsx
   |   +-- TextArea.tsx
   |   +-- Badge.tsx
+  |   +-- ThemeToggle.tsx
   +-- molecules/      ... Atoms を組み合わせた複合コンポーネント
   |   +-- CareerCard.tsx
   |   +-- SocialLinks.tsx
@@ -740,7 +741,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 #### ContactForm
 
-フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.6 節参照)。
+フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.5 節参照)。
 
 ---
 
