@@ -1,10 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import path from 'node:path';
 
-// NOTE: @vitejs/plugin-react は導入していない。
-// 現状はユーティリティ（純粋関数）の UT のみで JSX 変換が不要なため。
-// React コンポーネントテストを追加する際に、TypeScript 5.5 互換の JSX 設定を別途整える。
+// React コンポーネントテスト（.tsx）を動かすための JSX 変換設定。
+//
+// tsconfig の jsx は "preserve"（変換は Next.js のビルドが担うため）。Vite はこの設定を
+// 尊重して JSX を素通しするので、テスト実行時だけ明示的に変換を指示する必要がある。
+//
+// **Vite 8 のトランスフォーマは esbuild ではなく oxc。** そのため広く案内されている
+// `esbuild: { jsx }` や @vitejs/plugin-react は効かない（前者は無視され、後者も内部で
+// esbuild オプションを設定するため同じ）。oxc へ直接指示すればプラグインは不要。
 export default defineConfig({
+    oxc: { jsx: { runtime: 'automatic' } },
     test: {
         environment: 'jsdom',
         globals: true,
@@ -18,7 +24,8 @@ export default defineConfig({
             include: ['src/**/*.{ts,tsx}'],
             exclude: ['src/**/*.d.ts', 'src/**/*.{test,spec}.{ts,tsx}', 'src/__tests__/**'],
             // NOTE: カバレッジ閾値（statements 80% 等）は docs/08 の目標値。
-            // 現状はユーティリティのみのため未設定。テスト拡充に合わせて後日有効化する。
+            // コンポーネントテストは 2 / 9 件（docs/11 タスク #30）で途上のため未設定。
+            // 拡充に合わせて後日有効化する（docs/11 タスク #52）。
         },
     },
     resolve: {

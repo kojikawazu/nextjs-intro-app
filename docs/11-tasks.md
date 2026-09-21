@@ -20,6 +20,8 @@
     - [2.2 パフォーマンス最適化](#22-パフォーマンス最適化)
     - [2.3 機能拡張](#23-機能拡張)
     - [2.4 セキュリティ・品質改善](#24-セキュリティ品質改善)
+    - [2.5 テスト・CI/CD 拡充（残タスク）](#25-テストcicd-拡充残タスク)
+    - [2.6 デザイン刷新（issue #135）](#26-デザイン刷新issue-135)
 - [3. マイルストーン](#3-マイルストーン)
     - [Phase 1: MVP リリース（完了）](#phase-1-mvp-リリース完了)
     - [Phase 2: 品質強化（次期）](#phase-2-品質強化次期)
@@ -38,13 +40,13 @@
 |---|---------|-----------|--------|------|
 | 1 | プロジェクト初期セットアップ（Next.js 14 + TypeScript + Tailwind CSS） | 完了 | 最高 | App Router、TypeScript strict モード有効 |
 | 2 | Atomic Design コンポーネント設計・実装 | 完了 | 最高 | atoms: Button, Input, TextArea, Badge / molecules: SkillCard, CareerCard, SocialLinks / organisms: Header, ContactForm |
-| 3 | Hero セクション実装 | 完了 | 高 | キャッチコピー、CTA、背景画像、ネオンエフェクト、フロートアニメーション |
+| 3 | Hero セクション実装 | 完了 | 高 | キャッチコピー、CTA、背景画像、ネオンエフェクト、フロートアニメーション。**※ issue #138 で再構成。CTA・背景画像・装飾エフェクトを廃し、キャッチコピー + 引用パネル + 実績バンド（件数 / 技術数 / 経歴開始年）の構成へ** |
 | 4 | About セクション実装 | 完了 | 高 | プロフィール画像、自己紹介テキスト、SNSリンク（X, GitHub, Zenn, Qiita） |
 | 5 | Career セクション実装 | 完了 | 高 | タイムライン表示、プロジェクト経歴カード、期間・チーム規模・技術スタック・フェーズ・役割表示 |
 | 6 | Skills セクション実装 | 完了 | 高 | グリッド表示、初期9件表示、6件ずつ追加読み込み、フェードインアニメーション。**※ 掲載内容の見直しによりセクションごと削除した（issue #126 / タスク #68）** |
 | 7 | Contact セクション実装 | 完了 | 高 | React Hook Form + Zod バリデーション、Resend メール送信、送信完了画面 |
 | 8 | Footer セクション実装 | 完了 | 中 | コピーライト表示 |
-| 9 | ナビゲーション（Header）実装 | 完了 | 高 | 固定ヘッダー、スクロール時のグラスエフェクト、スムーズスクロール |
+| 9 | ナビゲーション（Header）実装 | 完了 | 高 | 固定ヘッダー、スクロール時のグラスエフェクト、スムーズスクロール。**※ issue #138 で追従・グラスエフェクトを廃止（本文に被る要素が書類の読みを妨げるため）。スムーズスクロールは維持し、テーマトグルを追加** |
 | 10 | モバイルハンバーガーメニュー実装 | 完了 | 高 | レスポンシブ対応、`md:` ブレークポイントで切替 |
 | 11 | レスポンシブデザイン対応 | 完了 | 高 | モバイル / タブレット / デスクトップの3段階対応 |
 | 12 | GCS データソース連携 | 完了 | 最高 | プライベートバケットからの JSON 取得、ADC / サービスアカウント認証対応 |
@@ -52,8 +54,8 @@
 | 14 | API Route 実装（/api/portfolio） | 完了 | 最高 | ポートフォリオデータ取得、Cache-Control ヘッダー設定 |
 | 15 | API Route 実装（/api/contact） | 完了 | 最高 | お問い合わせ送信、サーバーサイドバリデーション、Resend 連携 |
 | 16 | SEO メタデータ設定 | 完了 | 中 | title, description, keywords, OGP, Twitter Card, robots |
-| 17 | Glassmorphism / Neon エフェクト CSS 実装 | 完了 | 中 | glass-effect, glass-card, neon-text, shadow-neon 等のカスタムクラス |
-| 18 | カスタムアニメーション定義 | 完了 | 中 | fade-in-up, fade-in-down, slide-in, float, glow 等（tailwind.config.js） |
+| 17 | Glassmorphism / Neon エフェクト CSS 実装 | 完了 | 中 | glass-effect, glass-card, neon-text, shadow-neon 等のカスタムクラス。**※ issue #138 で全廃。配色は CSS カスタムプロパティ（デザイントークン）へ置き換え（タスク #71）** |
+| 18 | カスタムアニメーション定義 | 完了 | 中 | fade-in-up, fade-in-down, slide-in, float, glow 等（tailwind.config.js）。**※ issue #138 で `fade-in-up`（Hero 初回表示の 1 回）を残して全廃。`prefers-reduced-motion: reduce` での無効化を `globals.css` に追加** |
 | 19 | TypeScript 型定義（PortfolioData） | 完了 | 高 | 全セクション対応の包括的な型定義 |
 | 20 | Zod バリデーションスキーマ定義 | 完了 | 高 | 名前（2-50文字）、メール（255文字以内）、メッセージ（10-2000文字） |
 
@@ -86,7 +88,7 @@
 |---|---------|-----------|--------|------|
 | 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
 | 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/custom-date.test.ts`）/ `ContactFormSchema`（`src/schemas/contact.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
-| 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms（Button / Input / TextArea / Badge）/ molecules（CareerCard / SocialLinks）/ organisms（Header / ContactForm）の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
+| 30 | コンポーネントテスト実装 | 完了 | 中 | issue #141（前半は #138）。**前提だった JSX 変換設定は issue #138 で解消**（Vite 8 は esbuild ではなく oxc を使うため、`@vitejs/plugin-react` も `esbuild.jsx` も効かない。`vitest.config.ts` に `oxc: { jsx: { runtime: 'automatic' } }` を設定し、プラグイン依存を削除）。全 9 コンポーネント + `useTheme` に計 68 ケース（正常系 10 : 準正常系+異常系 48）。検証はクラス名ではなく**振る舞いと契約**（ロール・アクセシブルネーム・`aria-*`・`disabled`）を対象にし、クラスは `variant` / `size` のようにクラスとしてしか観測できない props に限定。9 変異を注入して検出力を確認済み。**副産物として、`required` / `type="email"` のネイティブ検証が submit を止めるため Zod の `min(1)` / `.email()` メッセージがクライアントでは表示されないことを文書化した**（docs/03 §3.5 / docs/08 §4.7.9） |
 | 31 | API Route / データフェッチ統合テスト実装 | 完了 | 中 | 統合テスト（`*.integration.test.ts`）を実装。GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証、Resend は MSW で HTTP モック。`GET /api/portfolio`（`route.integration.test.ts`）/ `POST /api/contact`（同）/ `gcs`（`gcs.integration.test.ts`）を対象、計 10 ケース（正常・準正常・異常）。`vitest.integration.config.ts` + `pnpm test:it`、CI（`ci.yml`）で実行 |
 | 32 | E2E テスト導入（Playwright） | 完了 | 低 | Playwright を導入し `e2e/` にシナリオテストを実装（`home` / `contact` / `error`、計 7 ケース、正常/準正常/異常）。ポートフォリオ表示は fake-gcs-server コンテナの実データ（`next start` を `GCS_API_ENDPOINT` で向ける）、送信・失敗系は `page.route` でスタブ。`playwright.config.ts` に retries/trace（flaky 対応）。専用ワークフロー `.github/workflows/e2e.yml`（PR）で実行 |
 | 51 | `/api/portfolio` がビルド時プリレンダーされ実行時に GCS を参照しない不具合修正 | 完了 | 中 | Route Handler に動的 API が無く静的プリレンダーされていたため、データがビルド時点で固定され（かつビルドに GCS 認証が必要）、実行時の GCS 取得・キャッシュ（docs/07 §5）が機能していなかった。E2E 導入時に検出し `export const dynamic = 'force-dynamic'` を追加。実行時に GCS を取得し、キャッシュは CDN 側の `Cache-Control` に委ねる |
@@ -110,13 +112,13 @@
 | 40 | i18n（国際化）対応 | 未着手 | 低 | 現在は日本語のみ。英語対応を検討（`next-intl` 等） |
 | 41 | OGP 画像の設定 | 未着手 | 中 | SNSシェア時のプレビュー画像。`og:image` メタタグの設定 |
 | 42 | お問い合わせ自動返信メール | 未着手 | 低 | 送信者への確認メール自動送信 |
-| 43 | ライトモード / テーマ切替 | 未着手 | 低 | 現在ダークテーマ固定。`next-themes` 等の導入検討 |
+| 43 | ライトモード / テーマ切替 | 完了 | 低 | issue #136 / #138 で対応。**`next-themes` は使わない**（テーマ復元のためのインラインスクリプトが nonce ベース CSP と相性が悪い）。Cookie をサーバー側（`layout.tsx`）で読んで `<html data-theme>` に反映する方式とし、JS を足さずに FOUC を回避した |
 
 ### 2.4 セキュリティ・品質改善
 
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
-| 44 | React Error Boundary 実装 | 未着手 | 高 | コンポーネントエラー時のフォールバックUI表示 |
+| 44 | React Error Boundary 実装 | 完了 | 高 | issue #76 の server-first 化で `src/app/error.tsx` として実装済み。`page.tsx`（Server Component）の例外を捕捉し、`reset()`（セグメント再レンダリング）と `location.reload()` の 2 段の復帰手段を出す。docs/10 §6.1 の既知課題からも除外 |
 | 45 | お問い合わせフォームのレート制限実装 | 完了 | 高 | issue #60 で対応。クライアント IP 単位で 10分/5回。バリデーション前に判定し 429 + `Retry-After` を返す。プロセス内メモリのためインスタンスごとの制限になる限界は docs/06 §10.3 に明記 |
 | 46 | CSRF トークン検証の導入 | 検討中 | 中 | API Route へのCSRF保護追加 |
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | issue #84 で対応。`git mv` で `src/lib/custom-date.ts` へリネームし、`client.tsx` とテストの import を更新。docs 6 ファイルの記述も追随 |
@@ -149,6 +151,22 @@
 | 52 | テストカバレッジ閾値の有効化 | 未着手 | 中 | 現状 `vitest.config.ts` の coverage 閾値は未設定（docs/08 目標: statements 80% 等）。テスト拡充に合わせ `test:coverage` の閾値を有効化し、CI に組み込むか判断する |
 | 53 | 実行環境の Node バージョン整合 | 完了 | 中 | issue #130 で対応。本番 v18 / CI 24 / 型定義 26 相当という 3 層の不整合を **Node 24 に統一**。`Dockerfile` を `node:24-alpine` へ、`package.json` に `engines.node: ">=24.0.0"` を追加（バージョンの正本）、`@types/node` を 24 系へ揃えた。下限を決めているのは testcontainers（→ undici@8）の `>=22.19.0` |
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | （再掲・§2.4）issue #84 で対応 |
+
+### 2.6 デザイン刷新（issue #135）
+
+採用担当者が読み手であることを前提に、トップページを「書類（職務経歴書）」として再設計する。
+親 issue #135 を 3 つのサブ issue に分割し、土台 -> 部品 -> 画面の順に実装した。
+
+| # | タスク名 | ステータス | 優先度 | 備考 |
+|---|---------|-----------|--------|------|
+| 74 | クライアントロジックの `hooks/` への切り出し | 完了 | 低 | issue #138 のセルフレビューで検出。`frontend.md`「クライアントコンポーネントのロジックはカスタムフックへ」に対し、`ThemeToggle` が DOM と Cookie への書き込みを内部に持っていた。`src/hooks/useTheme.ts` を新設（本プロジェクト初の `hooks/`）。**状態は返さない**（初期描画時点では「いまどちらのテーマか」が決まらないため）。`useCallback` で参照を安定させ、呼び出し側が `useEffect` の依存配列へ入れても再実行を誘発しないことをテストで固定 |
+| 73 | 全セクションの再構成とテーマ切替 UI | 完了 | 中 | issue #138（親 #135）。Hero / About / Career / Contact / Footer と Header を書類の体裁へ作り替え、`ThemeToggle` を追加。**`layout.tsx` を `async` 化し Cookie から `<html data-theme>` を解決**するため、`/_not-found` が静的から動的（`ƒ`）へ変わる。これはトレードオフを承知の上の判断で、`<html>` 要素にテーマを載せない限り FOUC を避けられないため（docs/09 §6.7）。`summarizeCareers` で Hero の実績バンド（件数 / 技術数 / 経歴開始年）を算出する |
+| 72 | 技術スタックの 9 区分への分類 | 完了 | 中 | issue #137（親 #135）。1 案件あたり最大 30 件がフラットに並び、読み手が信号とノイズを分離できなかった問題に対応。**件数を減らすのではなく分類する**方針（掲載データを変えない制約があるため）。`src/types/tech-category.ts` / `src/constants/tech-categories.ts`（実データ準拠の 82 件）/ `src/lib/group-tech-stack.ts` を追加し、`CareerCard` はチップ表示へ |
+| 71 | 配色トークンとテーマ解決機構 | 完了 | 中 | issue #136（親 #135）。**画面の変更を含まない土台のみ**の回。`globals.css` に 11 種のトークンを定義し、`:root` / `@media (prefers-color-scheme: dark)` / `[data-theme='light']` / `[data-theme='dark']` の 4 ブロックで値を割り当てる。`src/types/theme.ts` / `src/constants/theme.ts` / `src/lib/theme.ts`（`parseTheme` / `serializeThemeCookie`）を追加。`design-tokens.test.ts` が `globals.css` を実際に解析し、4 ブロックの網羅・カスケード順・コントラスト比（WCAG 2.1 AA）を検証する |
+
+**掲載データを変えない制約**: 本刷新は「GCS の JSON とハードコード文字列を変更しない」前提で行った。
+そのため打ち手は**配置・分類・強弱**に限られ、文言の追加・削除は行っていない。
+Hero のリード文は新規に書き起こしたものではなく、`about_contents[1]` を移設したもの。
 
 ---
 
@@ -216,21 +234,26 @@
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 55 |
-| 未着手 | 9 |
+| 完了 | 62 |
+| 未着手 | 8 |
 | 検討中 | 4 |
-| **合計** | **70** |
+| **合計** | **74** |
 
 | 優先度 | 件数 |
 |--------|------|
 | 最高 | 5 |
 | 高 | 25 |
-| 中 | 29 |
-| 低 | 11 |
+| 中 | 32 |
+| 低 | 12 |
+| **合計** | **74** |
 
-> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#52（カバレッジ閾値）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #30（コンポーネントテスト）、#74（クライアントロジックの hooks/ 切り出し）、#73（全セクションの再構成とテーマ切替 UI）、#72（技術スタックの 9 区分化）、#71（配色トークンとテーマ解決機構）、#43（ライトモード / テーマ切替）、#70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #52（カバレッジ閾値）、#41（OGP 画像）、#39（Google Analytics）。
 >
-> 件数は 2026-09-20 に実テーブルから再集計した（従来値 完了 33 / 合計 53 は追随漏れ）。再掲行（#30 / #47）は 1 件として数える。
+> 件数は 2026-09-22（issue #138）に実テーブルから再集計した。再掲行（#30 / #47）は 1 件として数える。
+> 従来のステータス表は内訳が合計と一致していなかった（55 + 9 + 4 = 68 に対し合計 73 行）。
+> 実際の未着手が 11 件だったため、合計側が正しく、ステータス別の内訳を修正した。
+> **タスク #44（Error Boundary）は未着手として残っていたが、issue #76 の server-first 化で
+> `src/app/error.tsx` として実装済みだった**ため、本更新で完了に改めた。
 
 ---
 
@@ -238,6 +261,10 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-22 | コンポーネントテストを全 9 コンポーネント + `useTheme` へ拡充し、タスク #30 を完了（issue #141）。あわせて `ThemeToggle` のロジックを `src/hooks/useTheme.ts` へ切り出し（タスク #74）。docs/08 §4.3〜4.5 の未実装時点の計画表は実装と二重管理になっていたため削除し、§4.7 へ一本化 | - |
+| 2026-09-22 | 全セクションを書類の体裁へ再構成し、テーマ切替 UI を追加（issue #138 / 親 #135）。`layout.tsx` の `async` 化により `/_not-found` が動的化するトレードオフを承知で採用。コンポーネントテストの前提だった JSX 変換設定（Vite 8 = oxc）も解消し、タスク #30 に着手 | - |
+| 2026-09-22 | 技術スタックを 9 区分へ分類する `groupTechStack` を追加（issue #137 / 親 #135）。掲載データを変えずに、最大 30 件のフラットな列挙を読める形にした | - |
+| 2026-09-22 | 配色トークンとテーマ解決機構を追加（issue #136 / 親 #135）。画面は変えず土台のみ。`globals.css` を解析してコントラスト比まで検証するテストを併設 | - |
 | 2026-09-21 | ESLint 9 + flat config へ移行し、`next lint` から ESLint CLI へ切替。検出能力の維持を違反の混入 8 項目で実証（issue #133）。#88 のブロッカーが 0 件になった | - |
 | 2026-09-21 | Node バージョンを 24 に統一。本番 v18 / CI 24 / 型定義 26 相当の 3 層の不整合を解消し、`engines.node` を正本として明記（issue #130 / タスク #53） | - |
 | 2026-09-21 | Skills セクションをコード・型・データごと削除。ドキュメント 12 ファイル・56 箇所を追随させ、`cn()` 解説の題材を差し替え（issue #126 / 親 #125） | - |

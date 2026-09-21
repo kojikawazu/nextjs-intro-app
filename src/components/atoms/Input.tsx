@@ -2,10 +2,10 @@ import React, { useId } from 'react';
 import { cn } from '@/utils/cn';
 
 /** `Input` の props。ネイティブの `<input>` 属性をすべて受け付ける。 */
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     /** 入力欄の上に表示するラベル。未指定ならラベル自体を描画しない */
     label?: string;
-    /** エラーメッセージ。指定すると枠線が赤系に変わり、`hint` の代わりに表示される */
+    /** エラーメッセージ。指定すると枠線が警告色に変わり、`hint` の代わりに表示される */
     error?: string;
     /** 補助説明。`error` が指定されている間は表示されない */
     hint?: string;
@@ -25,8 +25,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  *
  * `error` / `hint` は `aria-describedby` で入力欄に結び付け、エラー時は `aria-invalid` を立てる。
  * これによりフォーカス時に説明文やエラー内容が読み上げられる。
+ *
+ * 枠線に `--rule`（装飾罫線）ではなく `--field` を使う。WCAG 1.4.11 は操作できる部品の
+ * 境界に 3:1 を要求しており、装飾用の細い罫線ではこれを満たせない（`docs/04` §5.2）。
  */
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     ({ className, label, error, hint, type = 'text', ...props }, ref) => {
         const hasError = !!error;
         // 呼び出し側が id を指定していればそれを優先する（外部から label を紐付けたい場合に備える）。
@@ -38,11 +41,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         const describedBy = hasError ? errorId : hint ? hintId : undefined;
 
         return (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 {label && (
-                    <label htmlFor={inputId} className="block text-sm font-medium text-white">
+                    <label htmlFor={inputId} className="block text-xs font-medium text-mute">
                         {label}
-                        {props.required && <span className="ml-1 text-red-400">*</span>}
+                        {props.required && <span className="ml-1 text-acc">*</span>}
                     </label>
                 )}
                 <input
@@ -51,22 +54,23 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     aria-describedby={describedBy}
                     type={type}
                     className={cn(
-                        'block w-full glass-effect rounded-xl px-4 py-3 text-sm text-white placeholder:text-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300',
-                        hasError
-                            ? 'border-red-400/50 focus:border-red-400 focus:ring-red-400'
-                            : 'border-white/20 hover:border-white/30',
+                        'block w-full rounded-sm border bg-panel px-3 py-2.5 text-sm text-ink',
+                        'placeholder:text-mute',
+                        'focus:outline-none focus:ring-2 focus:ring-acc focus:ring-offset-0',
+                        'disabled:cursor-not-allowed disabled:opacity-50',
+                        hasError ? 'border-warn focus:ring-warn' : 'border-field',
                         className,
                     )}
                     ref={ref}
                     {...props}
                 />
                 {hint && !error && (
-                    <p id={hintId} className="text-xs text-secondary-400">
+                    <p id={hintId} className="text-xs text-mute">
                         {hint}
                     </p>
                 )}
                 {error && (
-                    <p id={errorId} className="text-xs text-red-400">
+                    <p id={errorId} className="text-xs text-warn">
                         {error}
                     </p>
                 )}
@@ -76,6 +80,3 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
-
-export { Input };
-export type { InputProps };

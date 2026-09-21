@@ -26,9 +26,11 @@
 
 1 ページのスクロール型サイトで、以下のセクションを上から順に表示します。
 
-`Hero（キャッチコピー＋CTA）` → `About（プロフィール・SNS）` → `Career（タイムライン）` → `Contact（お問い合わせフォーム）` → `Footer`
+`Hero（キャッチコピー・実績サマリ）` → `About（プロフィール・SNS）` → `Career（案件ごとの経歴）` → `Contact（お問い合わせフォーム）` → `Footer`
 
-固定ヘッダーからの **スムーススクロール**、ダークテーマ＋グラスモーフィズム／ネオン調の演出が特徴です。
+**職務経歴書のように読ませる設計**です。装飾よりも情報の構造を優先し、見出しと罫線で区切った紙面に、
+明朝（見出し）とゴシック（本文）を組み合わせて配置しています。ヘッダーからの **スムーススクロール**、
+**ライト / ダークの切り替え**（OS 設定に追従。選択は Cookie に保存）に対応します。
 
 <!-- スクリーンショットを追加する場合はここに配置してください:
 ![TechProfile Pro screenshot](docs/assets/screenshot.png)
@@ -131,10 +133,11 @@ nextjs-intro-app/
 
 [Atomic Design](./docs/component-design-report/01-atomic-design.md) に基づき 3 階層で構成しています（Templates 層は省略し `page.tsx` が担当）。
 
-- **Atoms**: Button, Input, TextArea, Badge
+- **Atoms**: Button, Input, TextArea, Badge, ThemeToggle
 - **Molecules**: CareerCard, SocialLinks
 - **Organisms**: Header, ContactForm
 
+クライアントコンポーネントのロジックは `src/hooks/`（`useTheme`）へ切り出し、コンポーネントは描画に専念させています。
 クラス結合は [`cn()`](./docs/component-design-report/02-cn-utility.md)（`clsx` + `tailwind-merge`）、フォーム部品は [`forwardRef`](./docs/component-design-report/03-forward-ref.md) で ref を転送しています。
 
 ### レスポンシブ（Tailwind ブレークポイント基準）
@@ -205,14 +208,15 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | 機能 | 状態 | 補足 |
 |------|:----:|------|
 | レスポンシブデザイン | ✅ | Mobile / Tablet / Desktop の 3 段階 |
-| スムーススクロールナビゲーション | ✅ | 固定ヘッダー＋モバイルメニュー |
+| スムーススクロールナビゲーション | ✅ | ヘッダー＋モバイルメニュー |
+| ライト / ダークテーマ切替 | ✅ | 既定は OS の `prefers-color-scheme`。選択は Cookie に保存し、サーバー側で初期 HTML に反映するためちらつかない |
 | Hero / About / Career / Contact / Footer | ✅ | 1 ページ構成 |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
 | sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
-| アクセシビリティ | 🟡 | フォームは `htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role="status"` / `role="alert"` に対応。スキップリンクや `prefers-reduced-motion` は未対応 |
-| 自動テスト | 🔜 | ランナー未導入（[docs/08](./docs/08-test-specification.md)） |
+| アクセシビリティ | 🟡 | フォームは `htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role="status"` / `role="alert"` に対応。`prefers-reduced-motion: reduce` で動きを無効化。本文・見出しは WCAG 2.1 AA（4.5:1）を両テーマで満たす。スキップリンクは未対応 |
+| 自動テスト | ✅ | Vitest + Testing Library（ユニット 284 件・全コンポーネントを含む）／ Playwright（E2E・スモーク 40 件）。方針は [docs/08](./docs/08-test-specification.md) |
 | データ更新 UI（CMS / 管理画面） | 🔜 | 現状は GCS / `sample.json` を直接編集 |
 
 ## 🚀 デプロイ

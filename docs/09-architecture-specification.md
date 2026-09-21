@@ -24,12 +24,12 @@
     - [5.4 状態管理](#54-状態管理)
 - [6. スタイリングアーキテクチャ](#6-スタイリングアーキテクチャ)
     - [6.1 スタイリング技術構成](#61-スタイリング技術構成)
-    - [6.2 カスタムカラーシステム](#62-カスタムカラーシステム)
-    - [6.3 デザインシステム: Glassmorphism](#63-デザインシステム-glassmorphism)
+    - [6.2 配色トークン](#62-配色トークン)
+    - [6.3 デザインシステム: 書類](#63-デザインシステム-書類)
         - [カスタムコンポーネントクラス](#カスタムコンポーネントクラス)
         - [カスタムユーティリティクラス](#カスタムユーティリティクラス)
-    - [6.4 カスタムアニメーション](#64-カスタムアニメーション)
-    - [6.5 カスタムボックスシャドウ](#65-カスタムボックスシャドウ)
+    - [6.4 アニメーション](#64-アニメーション)
+    - [6.5 影](#65-影)
     - [6.6 フォントファミリー](#66-フォントファミリー)
     - [6.7 配色トークンとテーマ切替](#67-配色トークンとテーマ切替)
         - [トークンの構造](#トークンの構造)
@@ -206,17 +206,18 @@ src/
 ├── app/                        # Next.js App Router ディレクトリ
 │   ├── globals.css             # グローバルスタイル定義
 │   │                             - Tailwind ディレクティブ (@tailwind)
-│   │                             - Web フォント読み込み (Inter, Noto Sans JP)
-│   │                             - カスタムコンポーネントクラス (glass-effect, neon-text 等)
-│   │                             - カスタムユーティリティクラス (container, section-padding 等)
-│   ├── layout.tsx              # ルートレイアウト
+│   │                             - Web フォント読み込み (Zen Old Mincho, Zen Kaku Gothic New)
+│   │                             - 配色トークン 11 種と 4 ブロックの写像 (§6.2 / §6.7)
+│   │                             - カスタムクラス (container, section-padding, section-heading,
+│   │                               quote-panel, theme-toggle-light/dark)
+│   ├── layout.tsx              # ルートレイアウト（async・Server Component）
 │   │                             - HTML メタデータ設定 (OGP, Twitter Card, SEO)
 │   │                             - html lang="ja" 設定
+│   │                             - Cookie から配色テーマを解決し html data-theme に出力 (§6.7)
 │   ├── page.tsx                # ホームページ（Server Component・データ取得）
 │   ├── client.tsx              # ホームページの描画・対話（Client Component）
 │   │                             - page.tsx: repositories からサーバー側でデータ取得
 │   │                             - client.tsx: 全セクションの統合表示
-│   │                             - client.tsx: スキル表示のページネーション管理
 │   │                             - error.tsx: 取得失敗時のエラー表示
 │   └── api/
 │       ├── portfolio/
@@ -230,16 +231,20 @@ src/
 │
 ├── components/                 # Atomic Design に基づくコンポーネント構成
 │   ├── atoms/                  # 最小単位の UI 部品
-│   │   ├── Badge.tsx           # バッジ (variant: default/secondary/accent/outline, size: sm/md)
-│   │   ├── Button.tsx          # ボタン (variant: primary/secondary/outline/ghost, size: sm/md/lg)
+│   │   ├── Badge.tsx           # 状態を示す小さな印 (variant: accent/outline)
+│   │   ├── Button.tsx          # ボタン (variant: primary/outline/ghost, size: sm/md/lg)
 │   │   ├── Input.tsx           # テキスト入力 (label, error, hint 対応)
-│   │   └── TextArea.tsx        # テキストエリア (label, error, hint 対応)
+│   │   ├── TextArea.tsx        # テキストエリア (label, error, hint 対応)
+│   │   └── ThemeToggle.tsx     # 配色テーマ切り替え (ボタン 2 個。§6.7)
 │   ├── molecules/              # Atoms を組み合わせた複合部品
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
-│   │   └── SocialLinks.tsx     # SNS リンク群 (アイコン画像 + 外部リンク)
+│   │   └── SocialLinks.tsx     # SNS リンク群 (名前のテキスト + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
-│       └── Header.tsx          # ヘッダー (ナビゲーション, モバイルメニュー, スクロール検知)
+│       └── Header.tsx          # ヘッダー (ナビゲーション, モバイルメニュー, テーマ切り替え)
+│
+├── hooks/                      # クライアントコンポーネントのロジック
+│   └── useTheme.ts             # 配色テーマの適用と Cookie 保存 (§6.7)
 │
 ├── repositories/               # 外部 I/O（fetch / 外部サービスクライアントはここだけ）
 │   ├── gcs.ts                  # Google Cloud Storage クライアント (環境別認証設定)
@@ -254,6 +259,7 @@ src/
 ├── lib/                        # 純粋ユーティリティ（通信しない）
 │   ├── client-ip.ts            # クライアント IP の解決 (レートリミットのキー。docs/06 §10.2)
 │   ├── custom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
+│   ├── career-summary.ts       # 経歴の件数・技術数・開始年を算出 (Hero の数値帯)
 │   ├── group-tech-stack.ts     # 技術スタックを 9 区分へ分類 (docs/05 §5.4)
 │   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
 │   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
@@ -299,7 +305,7 @@ src/
 │  │  │  - ロゴ表示      │   │  - React Hook Form       │   │  │
 │  │  │  - ナビゲーション │   │  - Zod バリデーション      │   │  │
 │  │  │  - モバイルメニュー│   │  - API 通信              │   │  │
-│  │  │  - スクロール検知  │   │  - 送信状態管理           │   │  │
+│  │  │  - ThemeToggle  │   │  - 送信状態管理           │   │  │
 │  │  └─────────────────┘   └─────────────────────────┘   │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
@@ -308,8 +314,8 @@ src/
 │  │                                                       │  │
 │  │  ┌─────────────────┐ ┌─────────────────┐            │  │
 │  │  │   CareerCard    │ │   SocialLinks   │            │  │
-│  │  │   - Badge       │ │   - Image       │            │  │
-│  │  │   - テキスト     │ │   - 外部リンク   │            │  │
+│  │  │   - Badge       │ │   - テキストチップ│            │  │
+│  │  │   - 分類チップ   │ │   - 外部リンク   │            │  │
 │  │  └─────────────────┘ └─────────────────┘            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
@@ -319,6 +325,9 @@ src/
 │  │  ┌────────┐  ┌────────┐  ┌──────────┐  ┌──────────┐  │  │
 │  │  │ Button │  │ Input  │  │ TextArea │  │  Badge   │  │  │
 │  │  └────────┘  └────────┘  └──────────┘  └──────────┘  │  │
+│  │  ┌─────────────┐                                     │  │
+│  │  │ ThemeToggle │                                     │  │
+│  │  └─────────────┘                                     │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -506,16 +515,15 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 │  │  ├── @tailwind components (コンポーネントクラス)  │  │
 │  │  ├── @tailwind utilities  (ユーティリティクラス)  │  │
 │  │  ├── @layer base          (html, body 設定)    │  │
-│  │  ├── @layer components    (glass系, neon系)    │  │
+│  │  ├── @layer components    (section-heading 等) │  │
 │  │  └── @layer utilities     (container, text系)  │  │
 │  └──────────────────────────────────────────────┘  │
 │                        │                           │
 │  ┌──────────────────────────────────────────────┐  │
 │  │  tailwind.config.js                          │  │
-│  │  ├── カスタムカラーパレット                      │  │
-│  │  ├── カスタムフォント                           │  │
-│  │  ├── カスタムアニメーション                      │  │
-│  │  └── カスタムボックスシャドウ                     │  │
+│  │  ├── 配色トークン (var(--*) を参照)             │  │
+│  │  ├── カスタムフォント (明朝 / ゴシック)           │  │
+│  │  └── カスタムアニメーション (fade-in-up のみ)     │  │
 │  └──────────────────────────────────────────────┘  │
 │                        │                           │
 │  ┌──────────────────────────────────────────────┐  │
@@ -525,77 +533,85 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 └────────────────────────────────────────────────────┘
 ```
 
-### 6.2 カスタムカラーシステム
+### 6.2 配色トークン
 
-4つのカラーパレットを各10段階（50-950）で定義している。
+**固定色のカラーパレットは廃止した**（issue #136 / #138）。`tailwind.config.js` の色はすべて CSS 変数を指す。
 
-| カラー名 | ベースカラー | 主な用途 |
-|---------|------------|---------|
-| primary | スカイブルー (#0ea5e9 / 500) | メインアクセント、リンク、フォーカスリング、ネオンエフェクト |
-| secondary | スレート (#64748b / 500) | 背景、テキスト、ボーダー、サーフェス |
-| accent | グリーン (#22c55e / 500) | 成功状態、「現在」バッジ、アクセント要素 |
-| purple | パープル (#a855f7 / 500) | グラデーション終点、タイムライン、フェーズバッジ |
+```js
+colors: {
+    paper: 'var(--paper)',
+    ink: 'var(--ink)',
+    // ... 全 11 トークン
+}
+```
 
-### 6.3 デザインシステム: Glassmorphism
+**透過度の修飾子（`text-ink/50` 等）は使えない。** Tailwind が `rgb(var(--x) / <alpha-value>)` の形を要求するのに対し、トークンは hex / oklch の完成した色だからである。濃淡が要る箇所は専用トークンを足す。
 
-本プロジェクトのデザインは Glassmorphism（ガラスモーフィズム）を基調としている。
+トークンの定義・カスケード・実測コントラスト比は §6.7 と `docs/04-non-functional-specification.md` §5.2 を参照。
+
+### 6.3 デザインシステム: 書類
+
+**Glassmorphism（ガラスモーフィズム）を全廃した**（issue #135 / #138）。
+
+旧デザインは半透明のガラス質とネオンの発光を基調としていたが、明るい環境のオフィスモニタで読みにくく、採用担当者に「何ができる人か」を伝えるという目的に対して装飾が勝っていた。現在は**職務経歴書（紙の書類）の作法**を基調とする。
+
+| 要素 | 旧 | 現在 |
+|------|-----|------|
+| 面 | 半透明 + backdrop-blur | 不透明の地色（`--paper` / `--panel`） |
+| 区切り | グラデーションの発光ライン | 1px のヘアライン（`--rule`） |
+| 見出し | ネオングラデーション文字 | 明朝（Zen Old Mincho） |
+| 角丸 | `rounded-xl` / `rounded-2xl` | `rounded-sm`（2px） |
+| 影 | ネオン / ガラス影 | 使わない |
+| 動き | 常時アニメーション多数 | 初回の `fade-in-up` のみ |
 
 #### カスタムコンポーネントクラス
 
-| クラス名 | 定義 | 用途 |
-|---------|------|------|
-| `glass-effect` | `bg-white/10 backdrop-blur-md border border-white/20` | 標準的なガラスエフェクト（ヘッダー、入力フィールド、ボタン） |
-| `glass-card` | `bg-white/5 backdrop-blur-xl border border-white/10 shadow-glass` | カード要素用の深いガラスエフェクト |
-| `neon-text` | `text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-purple-400` + text-shadow | ネオン発光テキスト（セクション見出し、ロゴ） |
-| `floating-card` | `hover:scale-[1.02] hover:shadow-glass-lg hover:-translate-y-1` | ホバー時の浮き上がりエフェクト |
-| `animated-bg` | 4色グラデーション + `gradientShift` アニメーション (15秒) | Hero セクション背景のゆらぎ |
-| `mesh-background` | 3つの `radial-gradient` の重ね合わせ | 各セクションの装飾背景 |
-| `particle-bg` | 5つの小さな `radial-gradient` ドットの繰り返し | パーティクル風の背景装飾 |
+| クラス名 | 用途 |
+|---------|------|
+| `.section-heading` | 章見出し。タイトルと罫線を横並びにし、右端へ補助情報（件数など）を置く。**この罫線がセクションの区切りを兼ねる**ため、`<section>` 側に上罫を足さない（横罫が 2 本並ぶと、どちらが区切りか読めなくなる） |
+| `.quote-panel` | 引用のように見せる面。Hero の要約と送信完了画面に使う |
+| `.theme-toggle-light` / `.theme-toggle-dark` | テーマトグルの選択状態。配色トークンと同じ 4 ブロックのカスケードで決める（§6.7） |
 
 #### カスタムユーティリティクラス
 
-| クラス名 | 定義 | 用途 |
-|---------|------|------|
-| `container` | `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` | コンテンツ幅の制約 |
-| `section-padding` | `py-20 lg:py-32` | セクション間の余白 |
-| `text-gradient` | `bg-gradient-to-r from-primary-400 via-purple-400 to-accent-400 bg-clip-text text-transparent` | 3色グラデーションテキスト |
-| `hover-lift` | `hover:-translate-y-2 hover:shadow-2xl` | ホバー時の浮上エフェクト |
-| `glow-on-hover` | `hover:shadow-neon hover:scale-105` | ホバー時のネオン発光 |
+| クラス名 | 用途 |
+|---------|------|
+| `.container` | 本文幅 `max-w-4xl`（896px）。旧 `max-w-7xl`（1280px）から狭めた。1 行が長すぎると視線が行末から次の行頭へ戻れない |
+| `.section-padding` | `py-14` / `lg:py-20` |
 
-### 6.4 カスタムアニメーション
+### 6.4 アニメーション
 
-| アニメーション名 | キーフレーム | 持続時間 | 用途 |
-|----------------|------------|---------|------|
-| `fade-in-up` | 0%: opacity:0, translateY(40px) → 100%: opacity:1, translateY(0) | 0.8s ease-out | セクション表示時のフェードイン |
-| `fade-in-down` | 0%: opacity:0, translateY(-40px) → 100%: opacity:1, translateY(0) | 0.8s ease-out | 上からのフェードイン |
-| `fade-in` | 0%: opacity:0 → 100%: opacity:1 | 0.6s ease-out | シンプルなフェードイン |
-| `slide-in-left` | 0%: opacity:0, translateX(-50px) → 100%: opacity:1, translateX(0) | 0.8s ease-out | 左からのスライドイン |
-| `slide-in-right` | 0%: opacity:0, translateX(50px) → 100%: opacity:1, translateX(0) | 0.8s ease-out | 右からのスライドイン |
-| `float` | 0%,100%: translateY(0) → 50%: translateY(-20px) | 6s ease-in-out infinite | Hero ボタンの浮遊アニメーション |
-| `glow` | 0%: shadow 5px → 100%: shadow 20px+30px | 2s ease-in-out infinite alternate | ネオン発光の明滅 |
-| `gradientShift` | background-position の循環 | 15s ease infinite | Hero 背景グラデーションの移動 |
+| 名前 | 動作 | 時間 | 適用箇所 |
+|------|------|------|---------|
+| `fade-in-up` | opacity 0->1, translateY 12px->0 | 0.5s | Hero（初回表示の 1 回のみ） |
 
-### 6.5 カスタムボックスシャドウ
+**常時動くアニメーションは持たない。** `prefers-reduced-motion: reduce` の環境では、アニメーション・トランジション・スムーススクロールをすべて無効化する（`globals.css`）。
 
-| シャドウ名 | 値 | 用途 |
-|-----------|-----|------|
-| `glass` | `0 8px 32px 0 rgba(31, 38, 135, 0.37)` | glass-card のデフォルトシャドウ |
-| `glass-lg` | `0 25px 45px rgba(31, 38, 135, 0.25)` | ホバー時の強調シャドウ |
-| `neon` | primary-400 の 5px + 20px + 35px 三重シャドウ | ネオン発光エフェクト |
-| `neon-sm` | primary-400 の 10px シャドウ | 小さなネオン発光 |
+### 6.5 影
+
+**使わない。** 書類の質感に影は馴染まないため、`boxShadow` のカスタム定義（ネオン / ガラス）はすべて削除した。
 
 ### 6.6 フォントファミリー
 
 | 用途 | フォント | 読み込み元 |
 |------|---------|-----------|
-| 本文 (sans) | Inter, Noto Sans JP, sans-serif | Google Fonts (globals.css で @import) |
-| コード (mono) | JetBrains Mono, Fira Code, monospace | tailwind.config.js で定義（現時点で未使用） |
+| 見出し (serif) | Zen Old Mincho | Google Fonts (globals.css で @import) |
+| 本文 (sans) | Zen Kaku Gothic New | Google Fonts (globals.css で @import) |
+| 等幅 (mono) | ui-monospace, SFMono-Regular, Menlo | システムフォント（期間・件数・SNS 名に使用） |
+
+英語見出し（`Solving Problems with Technology`）も明朝で組む。issue #135 の検討で、旧デザインのネオングラデーションより読みやすく品位が出ることを確認している。
+
+**`next/font` は使わない。** 日本語のサブセット指定ができず全字形を取りに行くため。Google Fonts の CSS は unicode-range で字形を分割配信するので、実際に使う範囲だけが落ちてくる。`<head>` に `preconnect` を置いて接続を先に開く（`layout.tsx`）。
+
+CSP は `style-src` に `https://fonts.googleapis.com`、`font-src` に `https://fonts.gstatic.com` を許可済み（§9 / `src/middleware.ts`）。書体の差し替えで CSP の変更は不要だった。
 
 ### 6.7 配色トークンとテーマ切替
 
-デザイン刷新 (issue #135) の土台として、`globals.css` に配色トークンとライト / ダークの切替機構を定義している (issue #136)。
+デザイン刷新 (issue #135) の土台として、`globals.css` に配色トークンとライト / ダークの切替機構を定義し (issue #136)、全コンポーネントへ適用した (issue #138)。
 
-**現時点では、どのコンポーネントもこのトークンを参照していない。** 画面への適用は issue #138 でまとめて行う。main への push は Cloud Run へ自動デプロイされるため、旧デザインと新デザインが混在した状態を本番へ出さないよう、定義と適用を別 PR に分けている。
+**色はこのトークンを経由してのみ指定する。** `tailwind.config.js` は値を持たず `var(--*)` を参照するだけなので、配色を変えるときに触るのは `globals.css` のトークン定義に閉じる。色名を直書きしたクラス (`text-red-600` 等) は使わない。
+
+> 定義 (#136) と適用 (#138) を別 PR に分けたのは、main への push が Cloud Run へ自動デプロイされるため、旧デザインと新デザインが混在した状態を本番へ出さないようにするため。
 
 #### トークンの構造
 
@@ -615,15 +631,26 @@ CSS の `light-dark()` を使えば写像は 1 行で書けるが採用してい
 #### テーマの解決経路
 
 ```text
-ブラウザ ──(Cookie: theme=dark)──> page.tsx (force-dynamic)
+[初期表示]
+ブラウザ ──(Cookie: theme=dark)──> layout.tsx (async / cookies())
                                       │ parseTheme() で検証
                                       ▼
-                            <div data-theme="dark"> を初期 HTML に出力
+                            <html data-theme="dark"> を初期 HTML に出力
+
+[切り替え]
+ThemeToggle (Client) ──> document.documentElement.dataset.theme = 'dark'  … 即座に反映
+                    └──> document.cookie = serializeThemeCookie('dark')   … 次回以降に反映
 ```
 
 - Cookie 名は `src/constants/theme.ts`、値の検証と Cookie 文字列の組み立ては `src/lib/theme.ts`
 - Cookie は利用者が書き換えられる外部入力のため、`parseTheme()` で検証する。未設定・不正値は `null` を返し、`data-theme` を出力せずに OS 設定へ委ねる
 - **サーバー側で解決するためテーマのちらつきが起きない**。クライアントで適用すると、一度ライトで描画してからダークへ切り替わる
+
+#### `<html>` に載せる理由と、その代償
+
+属性は `<html>` に出す必要がある。ラッパー要素に載せると `color-scheme` がブラウザ既定の部品 (スクロールバー・入力欄・オーバースクロール領域) へ効かず、OS がダークで利用者がライトを選んだ場合などに一部だけ色が食い違う。
+
+その代償として、`layout.tsx` が `cookies()` を呼ぶことで**レイアウトを共有する 404 ページ (`_not-found`) も動的レンダリング (`ƒ`) になる**。issue #136 では静的のままにするため `page.tsx` 側で Cookie を読んでいたが、issue #138 で上記の理由から `layout.tsx` へ移した。404 に CSP が付かないことは変わらない (middleware のマッチャは `/` のみ)。
 
 #### なぜインラインスクリプトを使わないか
 

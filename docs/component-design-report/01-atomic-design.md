@@ -39,18 +39,28 @@
 
 ```text
 src/components/
-├── atoms/          ← 最小単位の汎用UIパーツ（4コンポーネント）
+├── atoms/          ← 最小単位の汎用UIパーツ（5コンポーネント）
 │   ├── Badge.tsx
 │   ├── Button.tsx
 │   ├── Input.tsx
-│   └── TextArea.tsx
-├── molecules/      ← Atoms を組み合わせた複合コンポーネント（3コンポーネント）
+│   ├── TextArea.tsx
+│   └── ThemeToggle.tsx
+├── molecules/      ← Atoms を組み合わせた複合コンポーネント（2コンポーネント）
 │   ├── CareerCard.tsx
 │   └── SocialLinks.tsx
 └── organisms/      ← 独立した機能単位のコンポーネント（2コンポーネント）
     ├── ContactForm.tsx
     └── Header.tsx
 ```
+
+**ロジックは階層の外に置く。** クライアントコンポーネントの振る舞い（DOM 操作・保存など）は
+`src/hooks/` のカスタムフックへ切り出し、`components/` 配下は描画と操作の割り当てに専念させる
+（`frontend.md`「クライアントコンポーネントのロジックはカスタムフックに切り出す」）。
+現在は `useTheme`（`ThemeToggle` が使用）の 1 件。
+
+> 階層の件数は 2026-09-22（issue #141）に実ファイルから数え直した。
+> 以前は atoms 4 / molecules 3 と記載されていたが、`ThemeToggle` の追加（#138）と
+> `SkillCard` の削除（#126）に追随していなかった。
 
 ---
 

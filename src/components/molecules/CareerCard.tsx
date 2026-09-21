@@ -1,25 +1,26 @@
 import { Badge } from '@/components/atoms/Badge';
+import { groupTechStack } from '@/lib/group-tech-stack';
 import { cn } from '@/utils/cn';
 
 /** `CareerCard` の props。 */
-interface CareerCardProps {
+export interface CareerCardProps {
     /** プロジェクト名 / 案件タイトル */
     title: string;
-    /** 表示用に整形済みの期間文字列。整形は呼び出し側（`page.tsx` の `formatCareerPeriod`）が行う */
+    /** 表示用に整形済みの期間文字列。整形は呼び出し側（`client.tsx` の `formatCareerPeriod`）が行う */
     period: string;
     /** チーム人数（例: `5名`） */
     teamSize: string;
     /** 業務内容の説明 */
     description: string;
-    /** 使用技術一覧。`Badge` として並べて表示する */
+    /** 使用技術一覧。分類ごとにまとめて表示する */
     techStack: string[];
-    /** 担当フェーズ一覧。`Badge` として並べて表示する */
+    /** 担当フェーズ一覧 */
     phases: string[];
     /** プロジェクトでの役割 */
     role: string;
     /**
      * 進行中の案件かどうか。既定は `false`。
-     * `true` のときカード右上に点滅する「現在」バッジを表示する。
+     * `true` のとき左罫をアクセント色にし、タイトル横に「現在」を出す。
      * 呼び出し側は `career_end === 'now'` から判定している。
      */
     isCurrent?: boolean;
@@ -28,11 +29,18 @@ interface CareerCardProps {
 }
 
 /**
- * 経歴タイムラインに並ぶプロジェクト 1 件分のカード。
+ * 経歴 1 件分。
  *
- * 各項目のラベル（「技術スタック」「担当フェーズ」等）は**ハードコードされており**、
- * GCS の `career_title_data`（`CareerTitleData`）は参照していない。
- * 詳細は `docs/05-data-specification.md` §2.6。
+ * **技術スタックを分類ごとにまとめて出す**（issue #137 の `groupTechStack`）。
+ * 1 案件あたり最大 30 件をフラットに並べると、読み手が信号（言語・フレームワーク・テスト）と
+ * ノイズ（協働ツール）を自力で分離しなければならなかった。
+ *
+ * **進行中と過去で重みを変える。** 進行中は左罫をアクセント色にして「現在」を添え、
+ * 過去は地の罫線色へ落とす。全 7 件が等価に並ぶと直近の案件と 2015 年の業務が
+ * 同じ重さで読まれてしまう（issue #135 の弱点(4)）。
+ *
+ * 各項目のラベル（「技術スタック」「担当フェーズ」「役割」）は**ハードコードされており**、
+ * GCS の `career_title_data` は参照していない。詳細は `docs/05-data-specification.md` §2.6。
  */
 export function CareerCard({
     title,
@@ -45,114 +53,77 @@ export function CareerCard({
     isCurrent = false,
     className,
 }: CareerCardProps) {
+    const techGroups = groupTechStack(techStack);
+
     return (
-        <div
-            className={cn(
-                'group relative glass-card rounded-2xl p-6 floating-card overflow-hidden',
-                className,
-            )}
+        <article
+            className={cn('border-l-2 pl-5', isCurrent ? 'border-acc' : 'border-rule', className)}
         >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out" />
-
-            {isCurrent && (
-                <div className="absolute -top-2 -right-2 z-20">
-                    <Badge
-                        variant="accent"
-                        className="bg-gradient-to-r from-accent-500 to-accent-400 text-white shadow-neon-sm animate-pulse"
-                    >
-                        現在
-                    </Badge>
-                </div>
-            )}
-
-            <div className="relative z-10 space-y-4">
-                <div>
-                    <h3 className="text-xl font-semibold text-white group-hover:neon-text transition-all duration-300 ease-out mb-2">
-                        {title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-300">
-                        <span className="flex items-center">
-                            <svg
-                                className="w-4 h-4 mr-1 text-primary-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                            </svg>
-                            {period}
-                        </span>
-                        <span className="flex items-center">
-                            <svg
-                                className="w-4 h-4 mr-1 text-primary-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                />
-                            </svg>
-                            {teamSize}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="h-px bg-gradient-to-r from-transparent via-primary-400/50 to-transparent" />
-
-                <div>
-                    <p className="text-sm text-secondary-200 leading-relaxed">{description}</p>
-                </div>
-
-                <div>
-                    <h4 className="text-sm font-semibold text-gradient mb-2">技術スタック</h4>
-                    <div className="flex flex-wrap gap-2">
-                        {techStack.map((tech, index) => (
-                            <Badge
-                                key={index}
-                                variant="secondary"
-                                size="sm"
-                                className="glass-effect border-primary-400/30 text-primary-300 hover:text-primary-200"
-                            >
-                                {tech}
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
-
-                <div>
-                    <h4 className="text-sm font-semibold text-gradient mb-2">担当フェーズ</h4>
-                    <div className="flex flex-wrap gap-2">
-                        {phases.map((phase, index) => (
-                            <Badge
-                                key={index}
-                                variant="outline"
-                                size="sm"
-                                className="border-purple-400/50 text-purple-300 hover:text-purple-200"
-                            >
-                                {phase}
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
-
-                <div>
-                    <h4 className="text-sm font-semibold text-gradient mb-2">役割</h4>
-                    <p className="text-sm text-secondary-200 leading-relaxed">{role}</p>
-                </div>
+            <div className="mb-2 flex flex-wrap items-baseline gap-3">
+                <h3 className="text-base font-bold leading-relaxed text-ink">{title}</h3>
+                {isCurrent && <Badge>現在</Badge>}
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-400 to-purple-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out" />
-        </div>
+            <p className="mb-4 font-mono text-xs text-mute">
+                {period} ・ {teamSize}
+            </p>
+
+            <p className="mb-6 text-[13px] leading-loose text-body">{description}</p>
+
+            {techGroups.length > 0 && (
+                <section className="mb-6">
+                    <h4 className="mb-3 border-b border-rule pb-1.5 text-[11px] font-bold tracking-wider text-ink">
+                        技術スタック
+                    </h4>
+                    {/*
+                     * 技術名は読点で連ねず 1 件ずつチップにする。読点区切りは「文章」として
+                     * 読まれてしまい、個々の技術を拾い読みできない。
+                     *
+                     * 等幅にしない理由: `C言語` `グラフィックMW` のように日本語を含む技術名があり、
+                     * 等幅フォントにグリフが無いと字形が混ざる。SNS リンク（`github` / `zenn`）は
+                     * 短い英小文字の識別子なので等幅のままでよい。
+                     *
+                     * 枠線ではなく地色（--panel）で塗る。--paper との差は小さいが、チップの背景は
+                     * 装飾でありコントラスト要件の対象外（文字は --body on --panel で 11.3:1 以上）。
+                     * 枠線を引くと 30 個並んだときに線が主張しすぎる。
+                     */}
+                    <dl className="grid grid-cols-[5.5rem_1fr] gap-x-4 gap-y-2.5">
+                        {techGroups.map((group) => (
+                            <div key={group.category} className="contents">
+                                <dt className="pt-1 text-right text-[10px] text-mute">
+                                    {group.label}
+                                </dt>
+                                <dd className="flex flex-wrap gap-1.5">
+                                    {group.items.map((item) => (
+                                        <span
+                                            key={item}
+                                            className="rounded-sm bg-panel px-2 py-0.5 text-xs leading-relaxed text-body"
+                                        >
+                                            {item}
+                                        </span>
+                                    ))}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </section>
+            )}
+
+            {phases.length > 0 && (
+                <section className="mb-6">
+                    <h4 className="mb-3 border-b border-rule pb-1.5 text-[11px] font-bold tracking-wider text-ink">
+                        担当フェーズ
+                    </h4>
+                    <p className="text-xs leading-loose text-body">{phases.join(' ・ ')}</p>
+                </section>
+            )}
+
+            <section>
+                <h4 className="mb-3 border-b border-rule pb-1.5 text-[11px] font-bold tracking-wider text-ink">
+                    役割
+                </h4>
+                <p className="text-[13px] leading-loose text-body">{role}</p>
+            </section>
+        </article>
     );
 }
-
-export type { CareerCardProps };

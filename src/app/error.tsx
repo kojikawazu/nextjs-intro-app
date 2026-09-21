@@ -30,10 +30,10 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
     }, [error]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center">
             <div className="text-center">
-                <p className="text-red-600 mb-4">Failed to load portfolio data</p>
-                <div className="flex items-center justify-center gap-4">
+                <p className="mb-5 text-sm text-warn">Failed to load portfolio data</p>
+                <div className="flex items-center justify-center gap-3">
                     <Button onClick={reset}>Try Again</Button>
                     <Button variant="outline" onClick={() => window.location.reload()}>
                         Reload Page

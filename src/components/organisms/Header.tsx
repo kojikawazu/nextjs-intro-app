@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { ThemeToggle } from '@/components/atoms/ThemeToggle';
 import { cn } from '@/utils/cn';
 
 /** `Header` の props。 */
-interface HeaderProps {
+export interface HeaderProps {
     /** ナビゲーション項目。`name` が表示ラベル、`href` が遷移先のページ内アンカー */
     navItems: Array<{
         name: string;
@@ -15,28 +16,23 @@ interface HeaderProps {
 }
 
 /**
- * 画面上部に固定表示されるヘッダー。
+ * 画面上部のヘッダー。
  *
- * スクロール量と モバイルメニューの開閉という 2 つの状態を内部で持つため
- * Client Component（`'use client'`）。一定量スクロールするとガラス調の背景を出し、
- * 狭い画面ではハンバーガーメニューに切り替わる。
+ * **スクロール追従をやめ、地の流れに置いた。** 旧デザインは固定ヘッダーにガラス調の
+ * 背景を敷いていたが、書類として読ませる設計では本文に被る要素が邪魔になる。
+ * 併せてスクロール量の監視も不要になった。
  *
- * 状態が内部で完結しており外部から DOM を触る必要がないため `forwardRef` は使わない
+ * ナビは `<button>` のまま維持している。`e2e/home.spec.ts` と `e2e/security.spec.ts` が
+ * `getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、
+ * `<a>` へ変えると JS を実行しなくても遷移してしまい、確認の意味が失われる
+ * （issue #131 で一度壊した箇所）。
+ *
+ * モバイルメニューの開閉状態だけを内部で持つため Client Component。
+ * 外部から DOM を触る必要がないため `forwardRef` は使わない
  * （判断基準は `docs/component-design-report/03-forward-ref.md` §2.2）。
  */
 export function Header({ navItems, logo }: HeaderProps) {
-    const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-    useEffect(() => {
-        const SCROLL_THRESHOLD = 10;
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const scrollToSection = (href: string) => {
         const element = document.querySelector(href);
@@ -47,96 +43,72 @@ export function Header({ navItems, logo }: HeaderProps) {
     };
 
     return (
-        <header
-            className={cn(
-                'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-                isScrolled ? 'glass-effect shadow-glass' : 'bg-transparent',
-            )}
-        >
-            <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between h-16 lg:h-20">
-                    <div className="flex items-center">
-                        <h1
-                            className={cn(
-                                'text-xl lg:text-2xl font-bold transition-all duration-300',
-                                isScrolled ? 'text-primary-400' : 'neon-text',
-                            )}
-                        >
-                            {logo}
-                        </h1>
-                    </div>
+        <header className="border-b border-rule">
+            <div className="container flex h-16 items-center gap-5">
+                <span className="mr-auto font-serif text-[15px] font-bold tracking-wide text-ink">
+                    {logo}
+                </span>
 
-                    {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center space-x-8">
-                        {navItems.map((item, index) => (
+                {/* デスクトップ: 項目が 6 件（#127〜#129 の追加後）でも収まる幅で組む。 */}
+                <nav className="hidden items-center gap-5 md:flex">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.href}
+                            type="button"
+                            onClick={() => scrollToSection(item.href)}
+                            className="text-xs tracking-wide text-mute transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acc"
+                        >
+                            {item.name}
+                        </button>
+                    ))}
+                </nav>
+
+                <ThemeToggle />
+
+                <button
+                    type="button"
+                    className="p-1 text-mute md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acc"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label="メニューを開く"
+                    aria-expanded={isMobileMenuOpen}
+                >
+                    <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d={
+                                isMobileMenuOpen
+                                    ? 'M6 18L18 6M6 6l12 12'
+                                    : 'M4 7h16M4 12h16M4 17h16'
+                            }
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            {isMobileMenuOpen && (
+                <nav className={cn('border-t border-rule md:hidden')}>
+                    <div className="container py-2">
+                        {navItems.map((item) => (
                             <button
-                                key={index}
+                                key={item.href}
+                                type="button"
                                 onClick={() => scrollToSection(item.href)}
-                                className={cn(
-                                    'text-sm font-medium transition-all duration-300 hover:scale-105',
-                                    isScrolled
-                                        ? 'text-white hover:text-primary-400'
-                                        : 'text-secondary-200 hover:neon-text',
-                                )}
+                                className="block w-full py-2 text-left text-sm text-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-acc"
                             >
                                 {item.name}
                             </button>
                         ))}
-                    </nav>
-
-                    {/* Mobile Menu Button */}
-                    <button
-                        className={cn(
-                            'md:hidden p-2 transition-colors duration-300',
-                            isScrolled ? 'text-white' : 'text-secondary-200',
-                        )}
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="メニューを開く"
-                    >
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            {isMobileMenuOpen ? (
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            ) : (
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                />
-                            )}
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Mobile Navigation */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden border-t border-white/20 glass-effect">
-                        <nav className="py-4 space-y-2">
-                            {navItems.map((item, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => scrollToSection(item.href)}
-                                    className="block w-full text-left px-4 py-2 text-sm font-medium text-white hover:text-primary-400 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                                >
-                                    {item.name}
-                                </button>
-                            ))}
-                        </nav>
                     </div>
-                )}
-            </div>
+                </nav>
+            )}
         </header>
     );
 }
-
-export type { HeaderProps };

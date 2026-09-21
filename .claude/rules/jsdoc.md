@@ -111,4 +111,6 @@ export async function resolveDisplayName(
 
 **したがって、宣言と同時に export する形式（`export function` / `export const` / `export interface`）を使うこと。**
 末尾でまとめて `export { ... }` する形式は lint の網から外れるため、新規コードでは避ける。
-既存の atoms（`Button` / `Input` / `TextArea` / `Badge`）はこの形式を使っており、JSDoc は付与済みだが lint では保護されていない。
+
+かつて atoms（`Button` / `Input` / `TextArea` / `Badge`）が末尾 export 形式で lint の保護外だったが、
+issue #138 で宣言時 export へ揃えたため、現在 `src/**` に検出漏れの形式は残っていない。

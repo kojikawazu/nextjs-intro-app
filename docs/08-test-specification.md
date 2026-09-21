@@ -27,21 +27,22 @@
         - [4.1.3 formatCareerPeriod関数 (`src/app/page.tsx` 内)](#413-formatcareerperiod関数-srcapppagetsx-内)
     - [4.2 バリデーションロジック](#42-バリデーションロジック)
         - [4.2.1 ContactFormSchema (`src/schemas/contact.ts`)](#421-contactformschema-srcschemascontactts)
-    - [4.3 Atomsコンポーネント](#43-atomsコンポーネント)
-        - [4.3.1 Button (`src/components/atoms/Button.tsx`)](#431-button-srccomponentsatomsbuttontsx)
-        - [4.3.2 Input (`src/components/atoms/Input.tsx`)](#432-input-srccomponentsatomsinputtsx)
-        - [4.3.3 TextArea (`src/components/atoms/TextArea.tsx`)](#433-textarea-srccomponentsatomstextareatsx)
-        - [4.3.4 Badge (`src/components/atoms/Badge.tsx`)](#434-badge-srccomponentsatomsbadgetsx)
-    - [4.4 Moleculesコンポーネント](#44-moleculesコンポーネント)
-        - [4.4.1 CareerCard (`src/components/molecules/CareerCard.tsx`)](#441-careercard-srccomponentsmoleculescareercardtsx)
-        - [4.4.2 SocialLinks (`src/components/molecules/SocialLinks.tsx`)](#442-sociallinks-srccomponentsmoleculessociallinkstsx)
-    - [4.5 Organismsコンポーネント](#45-organismsコンポーネント)
-        - [4.5.1 Header (`src/components/organisms/Header.tsx`)](#451-header-srccomponentsorganismsheadertsx)
-        - [4.5.2 ContactForm (`src/components/organisms/ContactForm.tsx`)](#452-contactform-srccomponentsorganismscontactformtsx)
+    - [4.3 Atoms / Molecules / Organisms コンポーネント](#43-atoms--molecules--organisms-コンポーネント)
     - [4.6 サイトURL解決とクローラ向けルート](#46-サイトurl解決とクローラ向けルート)
         - [4.6.1 getSiteUrl関数 (`src/lib/site-url.ts`)](#461-getsiteurl関数-srclibsite-urlts)
         - [4.6.2 sitemap (`src/app/sitemap.ts`)](#462-sitemap-srcappsitemapts)
         - [4.6.3 robots (`src/app/robots.ts`)](#463-robots-srcapprobotsts)
+    - [4.7 実装済みコンポーネントテスト](#47-実装済みコンポーネントテスト)
+        - [4.7.1 CareerCard (`src/components/molecules/CareerCard.tsx`)](#471-careercard-srccomponentsmoleculescareercardtsx)
+        - [4.7.2 ThemeToggle (`src/components/atoms/ThemeToggle.tsx`)](#472-themetoggle-srccomponentsatomsthemetoggletsx)
+        - [4.7.3 Badge (`src/components/atoms/Badge.tsx`)](#473-badge-srccomponentsatomsbadgetsx)
+        - [4.7.4 Button (`src/components/atoms/Button.tsx`)](#474-button-srccomponentsatomsbuttontsx)
+        - [4.7.5 Input (`src/components/atoms/Input.tsx`)](#475-input-srccomponentsatomsinputtsx)
+        - [4.7.6 TextArea (`src/components/atoms/TextArea.tsx`)](#476-textarea-srccomponentsatomstextareatsx)
+        - [4.7.7 SocialLinks (`src/components/molecules/SocialLinks.tsx`)](#477-sociallinks-srccomponentsmoleculessociallinkstsx)
+        - [4.7.8 Header (`src/components/organisms/Header.tsx`)](#478-header-srccomponentsorganismsheadertsx)
+        - [4.7.9 ContactForm (`src/components/organisms/ContactForm.tsx`)](#479-contactform-srccomponentsorganismscontactformtsx)
+        - [4.7.10 useTheme (`src/hooks/useTheme.ts`)](#4710-usetheme-srchooksusethemets)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -583,6 +584,26 @@ Cookie は利用者が自由に書き換えられる外部入力のため、想�
 
 **導入時に、対応表から `Vitest` を 1 件削除して 4 つのテストが落ちることを確認済み。**
 
+#### 4.1.13 summarizeCareers (`src/lib/career-summary.ts`)
+
+Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）の算出。正常系1 : 準正常系+異常系10。
+
+**数値はハードコードせず必ずデータから数える。** 案件や技術が増えたときに数値だけ古いまま残ると、採用担当者に見せる情報として最も質が悪い種類の誤りになる。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-CS-001 | 件数・ユニーク技術数・最古の開始年を返す | 2件 / 3技術 / 2015 |
+| UT-CS-002 | 空配列なら 0 / 0 / null | — |
+| UT-CS-003 | 同じ技術が複数案件に出ても 1 件 | — |
+| UT-CS-004 | 大文字小文字違いは同じ技術 | `Docker` / `docker` / `DOCKER` → 1 |
+| UT-CS-005 | 前後の空白を無視する | — |
+| UT-CS-006 | 技術が 0 件の案件も件数には数える | — |
+| UT-CS-007 | 月が 1 桁でも 2 桁でも同じ年 | `2019年1月` / `2019年01月` |
+| UT-CS-008 | 開始年月が不正な案件は開始年から除外（件数と技術数には影響しない） | 1 件の表記ゆれでページ全体を落とさない |
+| UT-CS-009 | すべて不正なら開始年は null | — |
+| UT-CS-010 | 文字列以外が混ざっても落ちない | — |
+| UT-CS-011 | 空文字・空白のみの技術は数えない | — |
+
 ### 4.2 バリデーションロジック
 
 #### 4.2.1 ContactFormSchema (`src/schemas/contact.ts`)
@@ -631,131 +652,21 @@ Cookie は利用者が自由に書き換えられる外部入力のため、想�
 
 ---
 
-### 4.3 Atomsコンポーネント
+### 4.3 Atoms / Molecules / Organisms コンポーネント
 
-#### 4.3.1 Button (`src/components/atoms/Button.tsx`)
+**実装済みのテスト仕様は §4.7 を正本とする。**
 
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-BTN-001 | デフォルトpropsでレンダリングされる | variant='primary'、size='md' のスタイルが適用される |
-| UT-BTN-002 | children が正しく表示される | テキスト内容が DOM に反映される |
-| UT-BTN-003 | variant='primary' のスタイルが適用される | glass-card, bg-gradient-to-r クラスが含まれる |
-| UT-BTN-004 | variant='secondary' のスタイルが適用される | glass-effect クラスが含まれる |
-| UT-BTN-005 | variant='outline' のスタイルが適用される | border-2, border-primary-400/50 クラスが含まれる |
-| UT-BTN-006 | variant='ghost' のスタイルが適用される | text-secondary-300 クラスが含まれる |
-| UT-BTN-007 | size='sm' のサイズが適用される | h-8 px-3 text-sm クラスが含まれる |
-| UT-BTN-008 | size='lg' のサイズが適用される | h-12 px-6 text-lg クラスが含まれる |
-| UT-BTN-009 | isLoading=true でスピナーが表示される | SVGスピナー要素が描画される |
-| UT-BTN-010 | isLoading=true でボタンが無効化される | disabled属性がtrueになる |
-| UT-BTN-011 | disabled=true でボタンが無効化される | disabled属性がtrueになる、opacity-50が適用される |
-| UT-BTN-012 | onClick ハンドラが呼ばれる | ボタンクリック時にコールバックが実行される |
-| UT-BTN-013 | ref が正しくフォワードされる | React.createRef で参照可能 |
-| UT-BTN-014 | className が追加される | カスタムクラスが既存クラスとマージされる |
+本節にはかつて未実装時点の計画表（`UT-BTN-*` / `UT-HDR-*` 等）を置いていたが、issue #138 / #141 で
+全コンポーネントのテストを実装した時点で、計画と実装が二重管理になり乖離した
+（例: 廃止済みの `glass-card` / `bg-gradient-to-r` を期待値に含んでいた）。
+テストは実装が正本であるため、計画表は削除し §4.7 へ一本化した。
 
-#### 4.3.2 Input (`src/components/atoms/Input.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-INP-001 | デフォルトpropsでレンダリングされる | input要素がtype='text'で描画される |
-| UT-INP-002 | label が表示される | label要素にテキストが反映される |
-| UT-INP-003 | required時に「*」マークが表示される | label内にtext-red-400のspan要素が存在する |
-| UT-INP-004 | error メッセージが表示される | text-red-400 のエラーテキストが描画される |
-| UT-INP-005 | error時にボーダーカラーが変わる | border-red-400/50 クラスが適用される |
-| UT-INP-006 | hint テキストが表示される | text-secondary-400 のヒントテキストが描画される |
-| UT-INP-007 | error がある場合 hint は非表示になる | error表示時にhint要素が存在しない |
-| UT-INP-008 | ref が正しくフォワードされる | React.createRef で参照可能 |
-| UT-INP-009 | placeholder が表示される | placeholder属性が反映される |
-| UT-INP-010 | type='email' が適用される | input要素のtype属性がemailになる |
-
-#### 4.3.3 TextArea (`src/components/atoms/TextArea.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-TA-001 | デフォルトpropsでレンダリングされる | textarea要素が描画される |
-| UT-TA-002 | label が表示される | label要素にテキストが反映される |
-| UT-TA-003 | required時に「*」マークが表示される | label内にtext-red-400のspan要素が存在する |
-| UT-TA-004 | error メッセージが表示される | text-red-400 のエラーテキストが描画される |
-| UT-TA-005 | hint テキストが表示される（errorなし時） | text-secondary-400 のヒントテキストが描画される |
-| UT-TA-006 | rows属性が反映される | textarea要素のrows属性が設定値と一致する |
-| UT-TA-007 | ref が正しくフォワードされる | React.createRef で参照可能 |
-
-#### 4.3.4 Badge (`src/components/atoms/Badge.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-BDG-001 | デフォルトpropsでレンダリングされる | variant='default'、size='md' のスタイルが適用される |
-| UT-BDG-002 | children が正しく表示される | テキスト内容が DOM に反映される |
-| UT-BDG-003 | variant='secondary' のスタイルが適用される | border-secondary-400/30 クラスが含まれる |
-| UT-BDG-004 | variant='accent' のスタイルが適用される | border-accent-400/30 クラスが含まれる |
-| UT-BDG-005 | variant='outline' のスタイルが適用される | border-white/20 クラスが含まれる |
-| UT-BDG-006 | size='sm' のサイズが適用される | px-2 py-0.5 text-xs クラスが含まれる |
-
----
-
-### 4.4 Moleculesコンポーネント
-
-#### 4.4.1 CareerCard (`src/components/molecules/CareerCard.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-CRC-001 | タイトルが表示される | h3要素にタイトルが反映される |
-| UT-CRC-002 | 期間が表示される | 期間テキストが描画される |
-| UT-CRC-003 | チームサイズが表示される | チームサイズテキストが描画される |
-| UT-CRC-004 | 説明文が表示される | p要素に説明文が反映される |
-| UT-CRC-005 | 技術スタックがBadgeとして表示される | techStack配列の各要素がBadgeコンポーネントとして描画される |
-| UT-CRC-006 | 担当フェーズがBadgeとして表示される | phases配列の各要素がBadgeコンポーネントとして描画される |
-| UT-CRC-007 | 役割が表示される | 役割テキストが描画される |
-| UT-CRC-008 | isCurrent=true で「現在」バッジが表示される | accent variant の Badge に「現在」テキストが含まれる |
-| UT-CRC-009 | isCurrent=false で「現在」バッジが非表示になる | 「現在」テキストが DOM に存在しない |
-| UT-CRC-010 | 空の技術スタック配列で正常描画される | techStack=[] でクラッシュしない |
-| UT-CRC-011 | 空のフェーズ配列で正常描画される | phases=[] でクラッシュしない |
-
-#### 4.4.2 SocialLinks (`src/components/molecules/SocialLinks.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-SL-001 | SNSリンクが正しい数だけ表示される | links配列の数とa要素の数が一致する |
-| UT-SL-002 | 各リンクが新しいタブで開く設定になっている | target='_blank' が設定される |
-| UT-SL-003 | noopener noreferrer が設定される | rel属性に 'noopener noreferrer' が含まれる |
-| UT-SL-004 | aria-label が正しく設定される | `${sns_name}のプロフィールを開く` 形式のaria-labelが設定される |
-| UT-SL-005 | size='sm' でアイコンサイズが24pxになる | Image の width/height が 24 になる |
-| UT-SL-006 | size='lg' でアイコンサイズが40pxになる | Image の width/height が 40 になる |
-| UT-SL-007 | 空のlinks配列でクラッシュしない | links=[] でエラーが発生しない |
-
----
-
-### 4.5 Organismsコンポーネント
-
-#### 4.5.1 Header (`src/components/organisms/Header.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-HDR-001 | ロゴテキストが表示される | h1要素にlogoプロパティのテキストが表示される |
-| UT-HDR-002 | ナビゲーション項目が表示される | navItems配列の各nameがボタンテキストとして描画される |
-| UT-HDR-003 | デスクトップナビがmd以上で表示される | 'hidden md:flex' クラスがnav要素に適用される |
-| UT-HDR-004 | モバイルメニューボタンが表示される | aria-label='メニューを開く' のボタンが存在する |
-| UT-HDR-005 | モバイルメニューが初期非表示になる | モバイルメニュー領域が初期状態で描画されない |
-| UT-HDR-006 | モバイルメニューボタンクリックでメニューが開く | クリック後にモバイルナビゲーション領域が描画される |
-| UT-HDR-007 | スクロール時にglass-effectが適用される | window.scrollY > 10 でヘッダーにglass-effectクラスが追加される |
-| UT-HDR-008 | スクロール前はbg-transparentが適用される | 初期状態でbg-transparentクラスが適用される |
-
-#### 4.5.2 ContactForm (`src/components/organisms/ContactForm.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-CF-001 | フォームが正しくレンダリングされる | 名前入力、メール入力、メッセージ入力、送信ボタンが描画される |
-| UT-CF-002 | 各入力フィールドにlabelが表示される | 「お名前」「メールアドレス」「お問い合わせ内容」ラベルが表示される |
-| UT-CF-003 | 空フォーム送信でバリデーションエラーが表示される | 各フィールドのエラーメッセージが表示される |
-| UT-CF-004 | 正常値入力後に送信できる | フォーム送信後にfetchが呼ばれる |
-| UT-CF-005 | 送信中にローディング状態になる | 「送信中...」テキストが表示される |
-| UT-CF-006 | 送信成功後に完了メッセージが表示される | 「送信完了」「お問い合わせありがとうございます」が表示される |
-| UT-CF-007 | 送信失敗時にエラーメッセージが表示される | text-red-300 のエラーメッセージが表示される |
-| UT-CF-008 | 「新しいお問い合わせ」ボタンでフォームに戻る | 完了状態からボタンクリックでフォームが再表示される |
-| UT-CF-009 | 名前の最小文字数バリデーションが機能する | 1文字入力で「2文字以上」エラーが表示される |
-| UT-CF-010 | メールアドレスの形式バリデーションが機能する | 不正形式で「正しいメールアドレスを入力してください」エラーが表示される |
-| UT-CF-011 | メッセージの最小文字数バリデーションが機能する | 9文字以下で「10文字以上」エラーが表示される |
-
----
+| 階層 | コンポーネント | テスト仕様 |
+|------|--------------|-----------|
+| Atoms | `Button` / `Input` / `TextArea` / `Badge` / `ThemeToggle` | §4.7.2〜§4.7.6 |
+| Molecules | `CareerCard` / `SocialLinks` | §4.7.1 / §4.7.7 |
+| Organisms | `Header` / `ContactForm` | §4.7.8 / §4.7.9 |
+| Hooks | `useTheme` | §4.7.10 |
 
 ### 4.6 サイトURL解決とクローラ向けルート
 
@@ -795,6 +706,166 @@ Cookie は利用者が自由に書き換えられる外部入力のため、想�
 | UT-ROBOTS-004 | 準正常系 | `SITE_URL` が末尾スラッシュ付き | sitemap URL が二重スラッシュにならない |
 | UT-ROBOTS-005 | 異常系 | `SITE_URL` が不正 | 例外を投げず正規オリジンで生成 |
 | UT-ROBOTS-006 | 異常系 | `SITE_URL` が空文字 | 正規ホストを返す |
+
+### 4.7 実装済みコンポーネントテスト
+
+**issue #138 で `src/components/` に初めてユニットテストを追加し、issue #141 で全コンポーネントへ広げた。** JSX の変換は `vitest.config.ts` の `oxc: { jsx: { runtime: 'automatic' } }` で行う（Vite 8 のトランスフォーマは esbuild ではなく oxc のため、`esbuild: { jsx }` や `@vitejs/plugin-react` は効かない）。
+
+合計 正常系 10 : 準正常系 + 異常系 48（`testing.md` の目安 1 : 2 以上を満たす）。
+
+**検証の対象は見た目ではなく振る舞いと契約**とする。クラス名を期待値に書くのは、`variant` / `size` のようにクラスとしてしか観測できない props に限る。それ以外はロール・アクセシブルネーム・`aria-*`・`disabled` など、利用者と支援技術から見える性質で検証する。
+
+#### 4.7.1 CareerCard (`src/components/molecules/CareerCard.tsx`)
+
+正常系2 : 準正常系+異常系8。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-CC-001 | タイトル・期間・チーム規模・説明・役割を表示 | — |
+| UT-CC-002 | 技術を分類ラベル付きで 1 件ずつチップ表示 | `TypeScript、PHP` のような連結文字列にならない |
+| UT-CC-003 | 進行中は「現在」を表示 | — |
+| UT-CC-004 | 過去は「現在」を表示しない | — |
+| UT-CC-005 | 技術スタックが空なら見出しごと描画しない | — |
+| UT-CC-006 | 担当フェーズが空なら見出しごと描画しない | — |
+| UT-CC-007 | 担当フェーズは中黒区切りの 1 行 | `設計 ・ 実装 ・ テスト` |
+| UT-CC-008 | 中身のある分類だけを出す | `Java8` + `Miracle Linux5~8` で テスト/設計 は出ない |
+| UT-CC-009 | 未登録の技術は「その他」として表示 | 黙って消さない |
+| UT-CC-010 | 役割が空文字でも見出しは残す | 項目の欠落が分かるようにする |
+
+**導入時に、意図的に壊して落ちることを確認済み**（「現在」バッジを常時表示 / 分類のチップ連結を空白区切りへ変更 の 2 変異）。
+
+#### 4.7.2 ThemeToggle (`src/components/atoms/ThemeToggle.tsx`)
+
+正常系2 : 準正常系+異常系5。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-TT-001 | ダークを押すと `<html>` の `data-theme` が `dark` | — |
+| UT-TT-002 | ライトを押すと `light` | — |
+| UT-TT-003 | 選択を Cookie に保存する | リロード後にサーバーが読む |
+| UT-TT-004 | 押す前は `data-theme` を設定しない | サーバーが出した値を上書きしない |
+| UT-TT-005 | 連続して押すと最後の選択が残る | — |
+| UT-TT-006 | 2 つのボタンが名前で特定できる | `role="group"` + 各 `aria-label` |
+| UT-TT-007 | 記号 (○ / ●) は `aria-hidden` | 読み上げを汚さない |
+
+#### 4.7.3 Badge (`src/components/atoms/Badge.tsx`)
+
+正常系1 : 準正常系+異常系6。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-BDG-001 | 渡した内容を表示する | — |
+| UT-BDG-002 | 既定はアクセント色 | `bg-acc` / `text-acc-on` |
+| UT-BDG-003 | `outline` は枠線のみ | `bg-acc` を含まない |
+| UT-BDG-004 | `className` を渡しても既定クラスが消えない | `cn()` は上書きでなく追加 |
+| UT-BDG-005 | ネイティブ `span` 属性を透過する | — |
+| UT-BDG-006 | `<span>` で描画する | 見出し行内に挟めるため。`<div>` だと改行される |
+| UT-BDG-007 | 内容が空でも落ちない | — |
+
+#### 4.7.4 Button (`src/components/atoms/Button.tsx`)
+
+正常系1 : 準正常系+異常系8。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-BTN-001 | ラベル表示とクリック | ハンドラが 1 回呼ばれる |
+| UT-BTN-002 | `isLoading` 中は押せない | `disabled` が立ち、二重送信されない |
+| UT-BTN-003 | `isLoading` 中もラベルを残す | 何のボタンか分かる |
+| UT-BTN-004 | `disabled` で押せない | — |
+| UT-BTN-005 | 無効化が無ければ押せる | — |
+| UT-BTN-006 | `variant` / `size` で見た目が変わる | クラスとしてしか観測できないため例外的にクラス検証 |
+| UT-BTN-007 | `ref` を内部の `<button>` へ透過 | react-hook-form の `register()` 経路（issue #131 で一度破損） |
+| UT-BTN-008 | スピナーは `aria-hidden` | 読み上げを汚さない |
+| UT-BTN-009 | `type` を明示しない | フォーム内で submit として働く |
+
+#### 4.7.5 Input (`src/components/atoms/Input.tsx`)
+
+正常系1 : 準正常系+異常系9。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-INP-001 | ラベルから入力欄を特定でき、入力が反映される | `getByLabelText` で引けること自体が関連付けの証明 |
+| UT-INP-002 | エラー時に `aria-invalid` とエラー文の紐付け | `toHaveAccessibleDescription` |
+| UT-INP-003 | 補助説明の紐付け | `aria-invalid` は立てない |
+| UT-INP-004 | エラーと補助説明が同時ならエラーのみ | `describedby` が両方を指さない |
+| UT-INP-005 | 呼び出し側の `id` を優先 | — |
+| UT-INP-006 | `label` 未指定ならラベルを描画しない | — |
+| UT-INP-007 | `required` で必須の印を出す | — |
+| UT-INP-008 | `ref` を内部の `<input>` へ透過 | — |
+| UT-INP-009 | 2 つ置いても `id` が衝突しない | `useId` による生成 |
+| UT-INP-010 | 空文字の `error` はエラー扱いにしない | 正常な欄が壊れて読み上げられない |
+
+#### 4.7.6 TextArea (`src/components/atoms/TextArea.tsx`)
+
+正常系1 : 準正常系+異常系9。`Input` と同じ契約を `textarea` 版として持つため、同等のケースを両方に置く（共通化するとどちらが壊れたか読みにくくなる）。`rows` の反映のみ `TextArea` 固有。
+
+#### 4.7.7 SocialLinks (`src/components/molecules/SocialLinks.tsx`)
+
+正常系1 : 準正常系+異常系7。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-SNS-001 | SNS 名をリンクとして表示し URL を設定 | — |
+| UT-SNS-002 | 別タブで開き遷移先から操作されない | `target="_blank"` + `rel="noopener noreferrer"` |
+| UT-SNS-003 | `aria-label` で行き先を補う | `{SNS名}のプロフィールを開く` |
+| UT-SNS-004 | 渡した順に並べる | — |
+| UT-SNS-005 | 0 件ならリンクを描画しない | — |
+| UT-SNS-006 | `className` を渡しても既定レイアウトが消えない | — |
+| UT-SNS-007 | `sns_img` を画面に出さない | 白一色 SVG は明るい地で見えないため（issue #135） |
+| UT-SNS-008 | 同名でも URL が違えば両方描画 | 名前で束ねない |
+
+#### 4.7.8 Header (`src/components/organisms/Header.tsx`)
+
+正常系1 : 準正常系+異常系7。`Element.prototype.scrollIntoView` は jsdom 未実装のため spy を差し込む（モックは DOM API のみで、ナビの判定ロジックは実物を動かす）。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-HDR-001 | ロゴとナビを表示し、押すとスクロール | `scrollIntoView({ behavior: 'smooth' })` |
+| UT-HDR-002 | モバイルメニューは初期状態で閉じている | `aria-expanded="false"` |
+| UT-HDR-003 | 押すと開きナビ項目が増える | `aria-expanded="true"` |
+| UT-HDR-004 | モバイルの項目を押すとスクロールして閉じる | — |
+| UT-HDR-005 | テーマ切り替えを内包する | `role="group"` `配色テーマ` |
+| UT-HDR-006 | 遷移先が無ければ何もしない | #127〜#129 の未実装セクションでも落ちない |
+| UT-HDR-007 | ナビ項目が空でも描画できる | — |
+| UT-HDR-008 | ナビは `<button>` のまま維持 | `<a>` にすると JS 無効でも遷移し、E2E のハイドレーション確認が無効化（issue #131） |
+
+#### 4.7.9 ContactForm (`src/components/organisms/ContactForm.tsx`)
+
+正常系1 : 準正常系+異常系9。モックは `fetch`（HTTP 通信）だけで、Zod 検証と react-hook-form の状態遷移は実物が動く。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-CTF-001 | 有効な入力で送信すると完了画面へ | `POST /api/contact` に入力値がそのまま載る |
+| UT-CTF-002 | 未入力ではリクエストを飛ばさない | ネイティブ検証が submit を止める（後述） |
+| UT-CTF-003 | メール形式が不正ならリクエストを飛ばさない | 同上（`validity.typeMismatch`） |
+| UT-CTF-004 | 文字数不足は文字数エラーを出す | `min(1)` ではなく `min(2)` のメッセージ |
+| UT-CTF-005 | 「新しいお問い合わせ」で空のフォームへ戻る | — |
+| UT-CTF-006 | 完了画面は `role="status"` | 穏やかに通知する |
+| UT-CTF-007 | サーバーエラーは `role="alert"`、入力は残す | やり直しで打ち直させない |
+| UT-CTF-008 | エラー本文が無くても既定文言を出す | — |
+| UT-CTF-009 | 通信失敗でも画面が壊れない | 送信ボタンが押せる状態へ戻る |
+| UT-CTF-010 | 送信中はボタンを押せない | 二重送信の防止 |
+
+> **クライアントで観測できない検証メッセージがある。** 各項目に `required` / `type="email"` を
+> 付けているため、**空欄と不正なメール形式はブラウザのネイティブ検証が submit 自体を止め**、
+> react-hook-form の `handleSubmit` まで到達しない。したがって `min(1)`（`お名前は必須です` 等）と
+> `.email()`（`正しいメールアドレスを入力してください`）のメッセージはクライアントでは表示されず、
+> 実際に効くのはサーバー側（`POST /api/contact`）の検証である。同じ前提は `e2e/contact.spec.ts` にも記録している。
+
+#### 4.7.10 useTheme (`src/hooks/useTheme.ts`)
+
+正常系1 : 準正常系+異常系5。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-UTH-001 | `applyTheme` が `data-theme` と Cookie を更新 | — |
+| UT-UTH-002 | 呼ぶまで `data-theme` を設定しない | サーバーが出した値を上書きしない |
+| UT-UTH-003 | 続けて呼ぶと最後の値が残る | — |
+| UT-UTH-004 | 同じ値を 2 回適用しても結果が変わらない | 冪等 |
+| UT-UTH-005 | 再レンダリングしても `applyTheme` の参照が変わらない | `useCallback` による安定化 |
+| UT-UTH-006 | 状態を返さない | 「いまどちらか」は React では持たない |
+
+**issue #141 でも変異注入で検出力を確認した**（`disabled` の解除 / `describedby` の付け替え / `id` 優先の無視 / `aria-invalid` の無効化 / `rel` の削除 / メニュー閉じ条件の緩和 / `useCallback` の除去 / `finally` の削除 / `variant` の統合 の 9 変異）。いずれも落ちることを確認済み。
 
 ---
 
@@ -1032,6 +1103,18 @@ projects: [
 | E2E-TH-006 | 属性注入を無力化する | `theme=dark" onload="alert(1)` | `onload` も `data-theme=` も含まない |
 | E2E-TH-007 | 他の Cookie が混ざっても theme だけ読む | `other=dark; theme=light; another=dark` | `data-theme="light"` |
 | E2E-TH-008 | ハイドレーション後も値が変わらない | ブラウザで開いて描画完了を待つ | `data-theme` が `dark` のまま |
+| E2E-TH-009 | トグルで切り替え、リロード後も保持される | ダーク→リロード→ライト→リロード | `data-theme` が追従する |
+| E2E-TH-010 | テーマに応じてトークンの実効値が変わる | 切替後に `--paper` を評価 | `#14130f` / `#faf8f3`（クラス名だけ変わって色が同じ、を防ぐ） |
+| E2E-TH-011 | スクロールバーと入力部品の配色も追従 | 切替後に `color-scheme` を評価 | `dark`（`<html>` に無いとブラウザ既定の部品へ効かない） |
+
+### 6.12 経歴の技術スタック表示
+
+`e2e/home.spec.ts`。分類集約（issue #137）が画面に適用されていることを確認する。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| E2E-TS-001 | 技術を分類ごとにまとめて表示する | 分類見出し（言語）と技術が出る |
+| E2E-TS-002 | 対応表に無い技術は「その他」として出る | 未分類を黙って隠さない設計の確認 |
 
 ---
 

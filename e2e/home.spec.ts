@@ -32,3 +32,23 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         await expect(page.locator('#contact')).toBeInViewport({ timeout: 10_000 });
     });
 });
+
+test.describe('経歴の技術スタック（正常系）', () => {
+    test('技術スタックを分類ごとにまとめて表示する', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
+
+        // 分類見出し（issue #137）ごとに、技術を 1 件ずつチップとして出す（issue #138）。
+        // 見出しを持たないフラットな羅列に戻っていないことを、分類ラベルの存在で確かめる。
+        await expect(page.getByText('言語', { exact: true }).first()).toBeVisible();
+        await expect(page.getByText('TypeScript', { exact: true }).first()).toBeVisible();
+    });
+
+    test('対応表に無い技術は「その他」として画面に出る', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
+
+        // 未分類を黙って隠すとデータ追加時の取りこぼしに気づけないため、あえて表に出す設計。
+        await expect(page.getByText('その他', { exact: true }).first()).toBeVisible();
+    });
+});
