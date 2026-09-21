@@ -167,6 +167,7 @@ pnpm dev           # 開発サーバー起動
 pnpm build         # プロダクションビルド
 pnpm start         # プロダクションサーバー起動
 pnpm lint          # ESLint 実行（JSDoc ルール含む）
+pnpm lint:fix      # ESLint の自動修正
 pnpm lint:md       # markdownlint 実行（Markdown の静的検査）
 pnpm lint:md:fix   # markdownlint の自動修正
 pnpm format        # Prettier で整形

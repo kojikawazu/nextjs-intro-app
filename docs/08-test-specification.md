@@ -999,7 +999,7 @@ handlers.ts で定義すべきハンドラー:
 ```text
 テスト実行フロー:
   1. 型チェック (tsc --noEmit)          ← 実装済み（ci.yml）
-  2. リント (next lint)                 ← 実装済み（ci.yml。ESLint + JSDoc）
+  2. リント (eslint .)                  ← 実装済み（ci.yml。ESLint + JSDoc）
   3. フォーマットチェック (prettier --check .)  ← 実装済み（ci.yml。.prettierignore でコードのみ対象）
   4. ユニットテスト (vitest run)         ← 実装済み（ci.yml。ユーティリティ UT）
   5. 統合テスト (vitest run --config …)   ← 実装済み（ci.yml。Testcontainers + MSW。要 Docker）
