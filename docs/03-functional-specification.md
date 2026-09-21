@@ -28,28 +28,22 @@
         - [タイムライン表示](#タイムライン表示)
         - [CareerCard コンポーネント仕様](#careercard-コンポーネント仕様)
         - [日付フォーマットロジック (`formatCareerPeriod`)](#日付フォーマットロジック-formatcareerperiod)
-    - [3.5 Skills Section](#35-skills-section)
+    - [3.5 Contact Section](#35-contact-section)
         - [機能概要](#機能概要-4)
         - [仕様詳細](#仕様詳細-4)
-        - [ページネーション (スキル段階表示)](#ページネーション-スキル段階表示)
-        - [SkillCard コンポーネント仕様](#skillcard-コンポーネント仕様)
-    - [3.6 Contact Section](#36-contact-section)
-        - [機能概要](#機能概要-5)
-        - [仕様詳細](#仕様詳細-5)
         - [フォームフィールド](#フォームフィールド)
         - [バリデーションルール (Zod スキーマ)](#バリデーションルール-zod-スキーマ)
         - [サーバーサイドバリデーション (`POST /api/contact`)](#サーバーサイドバリデーション-post-apicontact)
         - [送信フロー](#送信フロー)
         - [送信完了画面](#送信完了画面)
         - [メール送信仕様](#メール送信仕様)
-    - [3.7 Footer](#37-footer)
-        - [機能概要](#機能概要-6)
-        - [仕様詳細](#仕様詳細-6)
+    - [3.6 Footer](#36-footer)
+        - [機能概要](#機能概要-5)
+        - [仕様詳細](#仕様詳細-5)
 - [4. ユーザーフロー](#4-ユーザーフロー)
     - [4.1 ページ読み込みフロー](#41-ページ読み込みフロー)
     - [4.2 ナビゲーションフロー](#42-ナビゲーションフロー)
-    - [4.3 スキル展開フロー](#43-スキル展開フロー)
-    - [4.4 お問い合わせ送信フロー](#44-お問い合わせ送信フロー)
+    - [4.3 お問い合わせ送信フロー](#43-お問い合わせ送信フロー)
 - [5. UI/UX仕様](#5-uiux仕様)
     - [5.1 レスポンシブブレークポイント](#51-レスポンシブブレークポイント)
     - [5.2 コンテナ仕様](#52-コンテナ仕様)
@@ -67,7 +61,6 @@
         - [TextArea](#textarea)
         - [Badge](#badge)
     - [6.3 Molecules](#63-molecules)
-        - [SkillCard](#skillcard)
         - [CareerCard](#careercard)
         - [SocialLinks](#sociallinks)
     - [6.4 Organisms](#64-organisms)
@@ -76,9 +69,8 @@
 - [7. ビジネスロジック](#7-ビジネスロジック)
     - [7.1 日付変換 (`toDateString`)](#71-日付変換-todatestring)
     - [7.2 経歴期間フォーマット (`formatCareerPeriod`)](#72-経歴期間フォーマット-formatcareerperiod)
-    - [7.3 スキルページネーション](#73-スキルページネーション)
-    - [7.4 フォームバリデーション](#74-フォームバリデーション)
-    - [7.5 データ取得戦略](#75-データ取得戦略)
+    - [7.3 フォームバリデーション](#73-フォームバリデーション)
+    - [7.4 データ取得戦略](#74-データ取得戦略)
 - [8. 型定義](#8-型定義)
     - [8.1 ポートフォリオデータ型](#81-ポートフォリオデータ型)
     - [8.2 SNSItem](#82-snsitem)
@@ -118,7 +110,6 @@ page.tsx (クライアントコンポーネント)
   +-- Hero Section
   +-- About Section
   +-- Career Section
-  +-- Skills Section
   +-- Contact Section
   +-- Footer
 ```
@@ -159,7 +150,7 @@ page.tsx (クライアントコンポーネント)
 
 #### デスクトップナビゲーション (md以上)
 
-- ナビ項目: About, Career, Skills, Contact (データ駆動)
+- ナビ項目: About, Career, Contact (データ駆動)
 - クリック時: 対応セクションへスムーズスクロール (`scrollIntoView({ behavior: 'smooth' })`)
 - ホバー効果: `hover:scale-105`、テキスト色変化
 
@@ -296,52 +287,7 @@ page.tsx (クライアントコンポーネント)
 
 ---
 
-### 3.5 Skills Section
-
-#### 機能概要
-
-技術スキルをカードグリッドで表示するセクション。段階的にカードを表示する「もっと見る」機能を搭載。
-
-#### 仕様詳細
-
-| 項目 | 仕様 |
-|------|------|
-| 背景 | `bg-gradient-to-br from-secondary-900 to-secondary-800` + `mesh-background opacity-30` |
-| グリッド | `grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`、`gap-6` |
-
-#### ページネーション (スキル段階表示)
-
-| 定数 | 値 | 説明 |
-|------|----|------|
-| `INITIAL_SKILLS_COUNT` | 9 | 初期表示枚数 |
-| `SKILLS_INCREMENT` | 6 | 追加表示枚数 |
-
-**表示ロジック:**
-
-1. 初期状態: 先頭9枚のスキルカードを表示
-2. "and more..." ボタンクリック: 6枚ずつ追加表示
-3. 全カード表示後: ボタン非表示、`skills_more` テキストを表示
-
-**アニメーション最適化:**
-
-- `prevVisibleCountRef` (useRef) で前回表示数を追跡
-- 新しく追加されたカードのみ `animate-fade-in-up` を適用
-- 既存カードにはアニメーションを適用しない
-- 各新規カードに `animationDelay: (index - prevVisibleCount) * 0.1s` でスタガー効果
-
-#### SkillCard コンポーネント仕様
-
-| 要素 | 仕様 |
-|------|------|
-| レイアウト | 横並び (`flex items-start space-x-4`) |
-| アイコン | 48px x 48px、`rounded-lg`、グラデーション背景オーバーレイ |
-| カード名 | `text-lg font-semibold`、ホバーで `neon-text` |
-| 説明文 | `text-sm text-secondary-300` |
-| ホバー効果 | `floating-card` (scale 1.02, shadow増加, -1px上移動)、下部にグラデーションライン出現 (`scale-x-0` -> `scale-x-100`) |
-
----
-
-### 3.6 Contact Section
+### 3.5 Contact Section
 
 #### 機能概要
 
@@ -418,7 +364,7 @@ page.tsx (クライアントコンポーネント)
 
 ---
 
-### 3.7 Footer
+### 3.6 Footer
 
 #### 機能概要
 
@@ -443,7 +389,7 @@ page.tsx (クライアントコンポーネント)
 2. サーバー側で page.tsx がポートフォリオデータを取得
 3a. 成功: client.tsx に渡して描画 -> 全セクションを含む HTML を返す
     - ブラウザはローディング表示を経ずに本文を表示する
-    - ハイドレーション後に Skills の段階表示などの対話が有効になる
+    - ハイドレーション後に Header のモバイルメニューやフォーム入力などの対話が有効になる
 3b. 失敗: error.tsx のエラーバウンダリを描画
     - テキスト: "Failed to load portfolio data" (赤)
     - "Try Again" ボタン -> reset()（セグメントの再レンダリング）
@@ -469,23 +415,7 @@ page.tsx (クライアントコンポーネント)
 5. メニューが自動的に閉じる
 ```
 
-### 4.3 スキル展開フロー
-
-```text
-1. 初期表示: 9枚のスキルカード
-2. "and more..." ボタンクリック
-3. prevVisibleCountRef に現在の表示数を保存
-4. visibleSkillsCount を +6 増加
-5. 新しいカードが fade-in-up アニメーションで順次表示
-   - 1枚目: delay 0s
-   - 2枚目: delay 0.1s
-   - 3枚目: delay 0.2s
-   - ...
-6. まだ未表示カードがあれば "and more..." ボタンを継続表示
-7. 全カード表示後: skills_more テキストを表示
-```
-
-### 4.4 お問い合わせ送信フロー
+### 4.3 お問い合わせ送信フロー
 
 ```text
 1. フォームに入力
@@ -603,7 +533,6 @@ src/components/
   |   +-- TextArea.tsx
   |   +-- Badge.tsx
   +-- molecules/      ... Atoms を組み合わせた複合コンポーネント
-  |   +-- SkillCard.tsx
   |   +-- CareerCard.tsx
   |   +-- SocialLinks.tsx
   +-- organisms/      ... ページの主要セクションを構成するコンポーネント
@@ -666,16 +595,6 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 **共通:** `rounded-full`, `font-medium`, `hover:scale-105`
 
 ### 6.3 Molecules
-
-#### SkillCard
-
-| Props | 型 | 説明 |
-|-------|-----|------|
-| `name` | `string` | スキル名 |
-| `description` | `string` | 説明テキスト |
-| `iconUrl` | `string` | アイコン画像URL |
-| `className` | `string?` | 追加CSSクラス (アニメーション用) |
-| `style` | `CSSProperties?` | インラインスタイル (animationDelay用) |
 
 #### CareerCard
 
@@ -749,25 +668,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
   - それ以外: "YYYY年M月 - YYYY年M月"
 ```
 
-### 7.3 スキルページネーション
-
-```text
-状態:
-  - visibleSkillsCount: number (初期値: 9)
-  - prevVisibleCountRef: useRef<number> (初期値: 0)
-
-表示スキル = skills_cards.slice(0, visibleSkillsCount)
-残りあり = visibleSkillsCount < skills_cards.length
-
-showMoreSkills():
-  1. prevVisibleCountRef.current = visibleSkillsCount
-  2. visibleSkillsCount += 6
-
-新規カード判定: index >= prevVisibleCountRef.current
-アニメーション遅延: (index - prevVisibleCountRef.current) * 0.1s
-```
-
-### 7.4 フォームバリデーション
+### 7.3 フォームバリデーション
 
 **クライアントサイド (Zod + React Hook Form):**
 
@@ -782,7 +683,7 @@ showMoreSkills():
 - メールアドレス正規表現チェック
 - メッセージ長上限チェック (5000文字 -- クライアントの2000文字より緩い)
 
-### 7.5 データ取得戦略
+### 7.4 データ取得戦略
 
 ```text
 本番環境:
@@ -809,7 +710,7 @@ showMoreSkills():
 ```typescript
 PortfolioData
   +-- navbar_data: NavbarData
-  |     link_title, about_name, career_name, skills_name, contact_name
+  |     link_title, about_name, career_name, contact_name
   +-- hero_data: HeroData
   |     hero_img_url
   +-- about_data: AboutData
@@ -820,8 +721,6 @@ PortfolioData
   +-- career_data: CareerData[]
   |     career_title, career_start, career_end, career_member,
   |     career_contents, career_skill_stack[], career_skill_phase[], career_role
-  +-- skills_data: SkillsData
-  |     skills_cards: SkillCard[], skills_more
   +-- contact_data: ContactData           ※ 型定義のみ。UIでは未使用（文言はハードコード）
   |     contact_name, contact_email, contact_contents, contact_btn_name
   +-- footer_data: FooterData

@@ -63,7 +63,7 @@
 │  │                   page.tsx ('use client')                 │  │
 │  │                                                           │  │
 │  │  ┌─────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │  │
-│  │  │  Hero   │  │  About   │  │  Career  │  │  Skills   │  │  │
+│  │  │  Hero   │  │  About   │  │  Career  │  │  Contact  │  │  │
 │  │  │ Section │  │ Section  │  │ Section  │  │ Section   │  │  │
 │  │  └─────────┘  └──────────┘  └──────────┘  └──────────┘  │  │
 │  │  ┌─────────┐  ┌──────────┐                               │  │
@@ -232,7 +232,6 @@ src/
 │   │   └── TextArea.tsx        # テキストエリア (label, error, hint 対応)
 │   ├── molecules/              # Atoms を組み合わせた複合部品
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
-│   │   ├── SkillCard.tsx       # スキルカード (アイコン, 名前, 説明)
 │   │   └── SocialLinks.tsx     # SNS リンク群 (アイコン画像 + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
@@ -263,7 +262,6 @@ src/
 │                                 - PortfolioData (ルート型)
 │                                 - NavbarData, HeroData, AboutData
 │                                 - CareerTitleData, CareerData
-│                                 - SkillsData, SkillCard
 │                                 - ContactData, FooterData
 │                                 - ContactFormData, ContactFormErrors
 │
@@ -296,11 +294,11 @@ src/
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │              Molecules (複合 UI 部品)                   │  │
 │  │                                                       │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌────────────────┐  │  │
-│  │  │  SkillCard  │ │ CareerCard  │ │  SocialLinks   │  │  │
-│  │  │  - Image    │ │ - Badge     │ │  - Image       │  │  │
-│  │  │  - テキスト  │ │ - テキスト   │ │  - 外部リンク   │  │  │
-│  │  └─────────────┘ └─────────────┘ └────────────────┘  │  │
+│  │  ┌─────────────────┐ ┌─────────────────┐            │  │
+│  │  │   CareerCard    │ │   SocialLinks   │            │  │
+│  │  │   - Badge       │ │   - Image       │            │  │
+│  │  │   - テキスト     │ │   - 外部リンク   │            │  │
+│  │  └─────────────────┘ └─────────────────┘            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -325,7 +323,6 @@ page.tsx
 │   ├── TextArea (atom)
 │   ├── ContactFormSchema (util/validation)
 │   └── cn (util)
-├── SkillCard (molecule)
 │   ├── next/image
 │   └── cn (util)
 ├── CareerCard (molecule)
@@ -386,7 +383,7 @@ page.tsx
   │<─────────────────────────│                          │
   │                         │                          │
   │  6. ハイドレーション       │                          │
-  │  (Skills 段階表示などの    │                          │
+  │  (モバイルメニュー等の      │                          │
   │   対話が有効になる)        │                          │
   │                         │                          │
 ```
@@ -473,7 +470,6 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 |------|---------|---------|------|
 | portfolioData | page.tsx | useState | API から取得したポートフォリオデータ |
 | loading | page.tsx | useState | データ取得中のローディング状態 |
-| visibleSkillsCount | page.tsx | useState | スキルカードの表示件数 |
 | prevVisibleCountRef | page.tsx | useRef | アニメーション制御用の前回表示件数 |
 | isScrolled | Header.tsx | useState + useEffect | ヘッダースクロール状態 |
 | isMobileMenuOpen | Header.tsx | useState | モバイルメニュー開閉状態 |
@@ -895,7 +891,6 @@ PortfolioData
 │   ├── link_title: string
 │   ├── about_name: string
 │   ├── career_name: string
-│   ├── skills_name: string
 │   └── contact_name: string
 │
 ├── hero_data: HeroData
@@ -929,12 +924,6 @@ PortfolioData
 │   ├── career_skill_phase: string[]
 │   └── career_role: string
 │
-├── skills_data: SkillsData
-│   ├── skills_cards: SkillCard[]
-│   │   ├── skills_card_icon: string
-│   │   ├── skills_card_name: string
-│   │   └── skills_card_contents: string
-│   └── skills_more: string
 │
 ├── contact_data: ContactData             ※ UIで未使用（見出し・ボタン文言はpage.tsx/ContactForm.tsxでハードコード）
 │   ├── contact_name: string

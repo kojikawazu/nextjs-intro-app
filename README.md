@@ -26,7 +26,7 @@
 
 1 ページのスクロール型サイトで、以下のセクションを上から順に表示します。
 
-`Hero（キャッチコピー＋CTA）` → `About（プロフィール・SNS）` → `Career（タイムライン）` → `Skills（カードグリッド）` → `Contact（お問い合わせフォーム）` → `Footer`
+`Hero（キャッチコピー＋CTA）` → `About（プロフィール・SNS）` → `Career（タイムライン）` → `Contact（お問い合わせフォーム）` → `Footer`
 
 固定ヘッダーからの **スムーススクロール**、ダークテーマ＋グラスモーフィズム／ネオン調の演出が特徴です。
 
@@ -130,7 +130,7 @@ nextjs-intro-app/
 [Atomic Design](./docs/component-design-report/01-atomic-design.md) に基づき 3 階層で構成しています（Templates 層は省略し `page.tsx` が担当）。
 
 - **Atoms**: Button, Input, TextArea, Badge
-- **Molecules**: SkillCard, CareerCard, SocialLinks
+- **Molecules**: CareerCard, SocialLinks
 - **Organisms**: Header, ContactForm
 
 クラス結合は [`cn()`](./docs/component-design-report/02-cn-utility.md)（`clsx` + `tailwind-merge`）、フォーム部品は [`forwardRef`](./docs/component-design-report/03-forward-ref.md) で ref を転送しています。
@@ -157,7 +157,6 @@ nextjs-intro-app/
 | `about_data` | 自己紹介・SNS リンク |
 | `career_title_data` | 経歴カードのラベル定義 |
 | `career_data` | 経歴情報（配列） |
-| `skills_data` | 技術スキル（カード配列＋補足文） |
 | `contact_data` | お問い合わせフォーム設定 |
 | `footer_data` | フッター情報 |
 
@@ -204,8 +203,7 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 |------|:----:|------|
 | レスポンシブデザイン | ✅ | Mobile / Tablet / Desktop の 3 段階 |
 | スムーススクロールナビゲーション | ✅ | 固定ヘッダー＋モバイルメニュー |
-| Hero / About / Career / Skills / Contact / Footer | ✅ | 1 ページ構成 |
-| Skills の段階表示（初期 9 件 → 6 件ずつ追加） | ✅ | `page.tsx` の `and more...` |
+| Hero / About / Career / Contact / Footer | ✅ | 1 ページ構成 |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
