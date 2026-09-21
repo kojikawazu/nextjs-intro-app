@@ -8,7 +8,8 @@ const BUCKET = 'e2e-bucket';
 const JSON_PATH = 'json/portfolio.json';
 
 declare global {
-    // eslint-disable-next-line no-var
+    // グローバル拡張は構文上 var が必須（let / const では宣言できない）。
+    // no-var は declare 内を対象外とするため、抑制コメントは不要。
     var __E2E_GCS_CONTAINER__: StartedTestContainer | undefined;
 }
 
