@@ -7,6 +7,7 @@ import { SocialLinks } from '@/components/molecules/SocialLinks';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { Button } from '@/components/atoms/Button';
 import { PortfolioData } from '@/types/portfolio';
+import { Theme } from '@/types/theme';
 import { toDateString } from '@/lib/custom-date';
 
 /**
@@ -39,6 +40,14 @@ function formatCareerPeriod(start: string, end: string): string {
 interface HomeClientProps {
     /** サーバー側で取得済みのポートフォリオ表示データ */
     portfolioData: PortfolioData;
+    /**
+     * 利用者が明示的に選んだ配色テーマ。未選択なら `null`。
+     *
+     * `null` のときは `data-theme` を出力せず、OS の `prefers-color-scheme` に委ねる。
+     * サーバー側で解決済みの値を受け取るため、初期描画時点で確定しており
+     * テーマのちらつき（一度ライトで描画してからダークへ切り替わる現象）が起きない。
+     */
+    theme: Theme | null;
 }
 
 /**
@@ -52,8 +61,12 @@ interface HomeClientProps {
  * `'use client'` を維持しているのは、Header のモバイルメニュー・スクロール検知や
  * ContactForm の入力状態など、子のクライアントコンポーネントを配置するため。
  * 本コンポーネント自身は Skills セクションの削除（issue #126）により状態を持たなくなった。
+ *
+ * ルート要素の `data-theme` が配色トークンの適用範囲になる（issue #136）。
+ * **現時点ではまだどの要素もトークンを参照していない**ため、この属性に表示上の効果はない。
+ * 適用は issue #138 でまとめて行う。
  */
-export function HomeClient({ portfolioData }: HomeClientProps) {
+export function HomeClient({ portfolioData, theme }: HomeClientProps) {
     const navItems = [
         { name: portfolioData.navbar_data.about_name, href: '#about' },
         { name: portfolioData.navbar_data.career_name, href: '#career' },
@@ -68,7 +81,7 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen" data-theme={theme ?? undefined}>
             <Header navItems={navItems} logo={portfolioData.navbar_data.link_title} />
 
             {/* Hero Section */}

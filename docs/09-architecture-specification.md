@@ -31,6 +31,11 @@
     - [6.4 カスタムアニメーション](#64-カスタムアニメーション)
     - [6.5 カスタムボックスシャドウ](#65-カスタムボックスシャドウ)
     - [6.6 フォントファミリー](#66-フォントファミリー)
+    - [6.7 配色トークンとテーマ切替](#67-配色トークンとテーマ切替)
+        - [トークンの構造](#トークンの構造)
+        - [テーマの解決経路](#テーマの解決経路)
+        - [なぜインラインスクリプトを使わないか](#なぜインラインスクリプトを使わないか)
+        - [なぜ layout.tsx ではなく page.tsx で読むか](#なぜ-layouttsx-ではなく-pagetsx-で読むか)
 - [7. デプロイアーキテクチャ](#7-デプロイアーキテクチャ)
     - [7.1 Cloud Run デプロイ構成](#71-cloud-run-デプロイ構成)
     - [7.2 環境変数](#72-環境変数)
@@ -253,10 +258,15 @@ src/
 │   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
 │   ├── mail-header.ts          # メールヘッダー値の無害化 (ヘッダーインジェクション対策。docs/06 §8.3)
 │   ├── rate-limit.ts           # スライディングウィンドウのレートリミット (docs/06 §10)
-│   └── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
+│   ├── site-url.ts             # サイト公開 URL の解決 (metadataBase / canonical / sitemap / robots)
+│   └── theme.ts                # 配色テーマ Cookie の検証と組み立て (§6.7)
+│
+├── constants/                  # 全環境で不変な値（環境変数は置かない）
+│   └── theme.ts                # 配色テーマ Cookie 名 (§6.7)
 │
 ├── types/
 │   ├── api-error.ts            # ApiErrorResponse (Route Handler の統一エラーレスポンス)
+│   ├── theme.ts                # Theme と THEMES (配色テーマの union。§6.7)
 │   └── portfolio.ts            # ポートフォリオデータ型定義
 │                                 - PortfolioData (ルート型)
 │                                 - NavbarData, HeroData, AboutData
@@ -577,6 +587,52 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 |------|---------|-----------|
 | 本文 (sans) | Inter, Noto Sans JP, sans-serif | Google Fonts (globals.css で @import) |
 | コード (mono) | JetBrains Mono, Fira Code, monospace | tailwind.config.js で定義（現時点で未使用） |
+
+### 6.7 配色トークンとテーマ切替
+
+デザイン刷新 (issue #135) の土台として、`globals.css` に配色トークンとライト / ダークの切替機構を定義している (issue #136)。
+
+**現時点では、どのコンポーネントもこのトークンを参照していない。** 画面への適用は issue #138 でまとめて行う。main への push は Cloud Run へ自動デプロイされるため、旧デザインと新デザインが混在した状態を本番へ出さないよう、定義と適用を別 PR に分けている。
+
+#### トークンの構造
+
+値は `--light-*` / `--dark-*` に 1 度だけ定義し、4 つのブロックが公開トークン (`--paper` 等) へ写像する。
+
+| ブロック | 役割 |
+|----------|------|
+| `:root` | 既定 (ライト) |
+| `@media (prefers-color-scheme: dark) { :root }` | OS 設定がダークの場合 |
+| `[data-theme='light']` | 利用者が明示的にライトを選んだ場合 |
+| `[data-theme='dark']` | 利用者が明示的にダークを選んだ場合 |
+
+`[data-theme]` と `:root` は詳細度が同じ (0,1,0) ため、**明示指定のブロックを後に書くことでのみ上書きできる**。順序を入れ替えると「ダークの OS でライトを選んでも戻らない」不具合になる。この並び順は `src/app/design-tokens.test.ts` が検証している。
+
+CSS の `light-dark()` を使えば写像は 1 行で書けるが採用していない。未対応ブラウザではカスタムプロパティが計算値の時点で無効になり、`var()` を参照した側のプロパティごと落ちる (inherit / initial に化ける) ため。閲覧環境を選べない相手に出す画面では危険度が高い。
+
+#### テーマの解決経路
+
+```text
+ブラウザ ──(Cookie: theme=dark)──> page.tsx (force-dynamic)
+                                      │ parseTheme() で検証
+                                      ▼
+                            <div data-theme="dark"> を初期 HTML に出力
+```
+
+- Cookie 名は `src/constants/theme.ts`、値の検証と Cookie 文字列の組み立ては `src/lib/theme.ts`
+- Cookie は利用者が書き換えられる外部入力のため、`parseTheme()` で検証する。未設定・不正値は `null` を返し、`data-theme` を出力せずに OS 設定へ委ねる
+- **サーバー側で解決するためテーマのちらつきが起きない**。クライアントで適用すると、一度ライトで描画してからダークへ切り替わる
+
+#### なぜインラインスクリプトを使わないか
+
+ちらつき対策の定石は `<head>` 内で早期に `data-theme` を設定するインラインスクリプトだが、本プロジェクトの CSP は `script-src` を nonce + `strict-dynamic` で絞っており `'unsafe-inline'` を許可していない (§9 および `src/middleware.ts` 参照)。Cookie + サーバー解決なら**スクリプトが 1 行も不要**になるため、CSP と衝突しない。
+
+なお `style-src` は `'unsafe-inline'` を許可しているが、これは Next.js が差し込むインラインスタイルのためであり、テーマ切替では使っていない。
+
+#### なぜ `layout.tsx` ではなく `page.tsx` で読むか
+
+`layout.tsx` で `cookies()` を呼ぶと、レイアウトを共有する 404 ページ (`_not-found`) まで動的レンダリングになる。**404 が静的プリレンダーされることは `e2e/security.spec.ts` が検証している不変条件**で、nonce ベース CSP のマッチャを `/` に限定している理由でもある。`page.tsx` は元から `force-dynamic` なので、ここで読む分には描画方式が変わらない。
+
+ビルド出力で `/_not-found` が `○ (Static)` のままであることを確認すること。
 
 ---
 

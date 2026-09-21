@@ -1,4 +1,7 @@
+import { cookies } from 'next/headers';
 import { getPortfolioDataServer } from '@/repositories/portfolio';
+import { THEME_COOKIE_NAME } from '@/constants/theme';
+import { parseTheme } from '@/lib/theme';
 import { HomeClient } from './client';
 
 /**
@@ -27,9 +30,17 @@ export const dynamic = 'force-dynamic';
  * 取得に失敗した場合は例外がそのまま伝播し、`error.tsx` のエラーバウンダリが描画される。
  * ここで握りつぶすと「本文が無いのに 200 が返る」状態になり、検索エンジンに
  * 空ページとしてインデックスされうるため、あえて捕捉しない。
+ *
+ * 配色テーマを**ここで**読むのは、`layout.tsx` で `cookies()` を呼ぶと
+ * レイアウトを共有する 404 ページ（`_not-found`）まで動的レンダリングになるため。
+ * 404 が静的プリレンダーされることは `e2e/security.spec.ts` が検証している不変条件で、
+ * nonce ベース CSP のマッチャを `/` に限定している理由でもある（`src/middleware.ts` 参照）。
+ * 本ページは元から `force-dynamic` なので、ここで読む分には描画方式が変わらない。
  */
 export default async function HomePage() {
     const portfolioData = await getPortfolioDataServer();
+    const cookieStore = await cookies();
+    const theme = parseTheme(cookieStore.get(THEME_COOKIE_NAME)?.value);
 
-    return <HomeClient portfolioData={portfolioData} />;
+    return <HomeClient portfolioData={portfolioData} theme={theme} />;
 }

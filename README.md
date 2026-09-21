@@ -114,7 +114,9 @@ nextjs-intro-app/
 │   │   ├── molecules/       # Molecules（複合）
 │   │   └── organisms/       # Organisms（有機体）
 │   ├── repositories/        # 外部 I/O（GCS / Resend / ポートフォリオ取得）
+│   ├── schemas/             # Zod スキーマ（クライアント / サーバーで共有）
 │   ├── lib/                 # 純粋ユーティリティ（通信しない: 日付整形 / サイトURL解決）
+│   ├── constants/           # 全環境で不変な値（Cookie 名など。環境変数は置かない）
 │   ├── types/               # TypeScript 型定義（PortfolioData 等）
 │   └── utils/               # クライアント側ユーティリティ（cn など）
 ├── docs/                    # 仕様・設計ドキュメント（索引: docs/README.md）

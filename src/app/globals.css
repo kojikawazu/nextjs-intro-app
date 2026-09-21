@@ -6,6 +6,131 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
+    /*
+     * 配色トークン（issue #136）
+     *
+     * **まだどのコンポーネントも参照していない。** 画面への適用は issue #138 でまとめて行う。
+     * main は Cloud Run へ自動デプロイされるため、旧デザインと新デザインが混在した状態を
+     * 本番へ出さないよう、定義と適用を別 PR に分けている。
+     *
+     * ---- 値を 1 箇所に保つ仕組み ----
+     * ダーク値は 3 つのセレクタ（OS 設定・明示ダーク・明示ライトの打ち消し）から使うため、
+     * 素直に書くと同じ色を 3 回書くことになり、片方だけ更新される事故が起きる。
+     * そこで値は --light-* / --dark-* に 1 度だけ定義し、下のブロックは写像だけを行う。
+     *
+     * CSS の light-dark() を使えば 1 行で書けるが採用していない。未対応ブラウザでは
+     * カスタムプロパティが**計算値の時点で無効**になり、var() を参照した側のプロパティごと
+     * 落ちる（inherit / initial に化ける）ため、閲覧環境が選べない相手に出す画面では危険。
+     *
+     * ---- --rule と --field を分けている理由 ----
+     * WCAG 1.4.11（非テキストのコントラスト）は「UI 部品の境界」に 3:1 を要求する一方、
+     * 純粋に装飾的な区切り線は対象外。セクション区切りの細い罫線に 3:1 を課すと線が太く重くなり
+     * 書類としての繊細さが失われるため、役割で分けている。
+     *   --rule : 装飾的な区切り線（コントラスト要件なし）
+     *   --field: 入力欄・トグルなど**操作できる部品の境界**（paper に対し 3.3:1 以上）
+     *
+     * ---- 実測コントラスト比（背景 --paper に対して）----
+     *            ライト    ダーク
+     *   --ink    16.69:1   15.78:1   見出し・強調
+     *   --body   12.38:1   12.12:1   本文
+     *   --lead   11.30:1   12.98:1   リード文
+     *   --mute    5.41:1    6.35:1   補助・ラベル（小さい文字のため 4.5:1 が必要）
+     *   --acc     7.02:1    8.07:1   アクセント文字
+     *   --warn    5.52:1    7.52:1   注意表示
+     *   --field   3.31:1    3.41:1   操作部品の境界（3:1 が必要）
+     * --acc-on を --acc の上に置いた場合はライト 7.02:1 / ダーク 8.07:1。
+     * いずれも WCAG 2.1 AA を満たす。値を変えたら再測定すること。
+     */
+    :root {
+        /* 値の定義（ここだけが真実） */
+        --light-paper: #faf8f3;
+        --light-ink: #1a1815;
+        --light-body: #33302b;
+        --light-lead: #3a3630;
+        --light-mute: #6b6560;
+        --light-rule: #ddd8cf;
+        --light-field: #8e887e;
+        --light-panel: #f2efe8;
+        --light-acc: oklch(0.45 0.09 255);
+        --light-acc-on: #faf8f3;
+        --light-warn: #a8471f;
+
+        /* ダークは青黒ではなく温かみのある黒。青に寄せると明朝の紙質感が死ぬため。 */
+        --dark-paper: #14130f;
+        --dark-ink: #f0ece4;
+        --dark-body: #d6d0c5;
+        --dark-lead: #ddd7cc;
+        --dark-mute: #9d968b;
+        --dark-rule: #2e2b25;
+        --dark-field: #6f695e;
+        --dark-panel: #1c1a15;
+        --dark-acc: oklch(0.74 0.11 255);
+        --dark-acc-on: #14130f;
+        --dark-warn: #e2916a;
+
+        /* 既定はライト */
+        --paper: var(--light-paper);
+        --ink: var(--light-ink);
+        --body: var(--light-body);
+        --lead: var(--light-lead);
+        --mute: var(--light-mute);
+        --rule: var(--light-rule);
+        --field: var(--light-field);
+        --panel: var(--light-panel);
+        --acc: var(--light-acc);
+        --acc-on: var(--light-acc-on);
+        --warn: var(--light-warn);
+    }
+
+    /* OS がダークなら既定をダークへ。下の [data-theme] ブロックが後勝ちで上書きする。 */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --paper: var(--dark-paper);
+            --ink: var(--dark-ink);
+            --body: var(--dark-body);
+            --lead: var(--dark-lead);
+            --mute: var(--dark-mute);
+            --rule: var(--dark-rule);
+            --field: var(--dark-field);
+            --panel: var(--dark-panel);
+            --acc: var(--dark-acc);
+            --acc-on: var(--dark-acc-on);
+            --warn: var(--dark-warn);
+        }
+    }
+
+    /*
+     * 利用者が明示的に選んだ場合は OS 設定より優先する。
+     * 属性セレクタは要素を問わないため、data-theme を <html> に移しても同じ CSS で動く。
+     */
+    [data-theme='light'] {
+        --paper: var(--light-paper);
+        --ink: var(--light-ink);
+        --body: var(--light-body);
+        --lead: var(--light-lead);
+        --mute: var(--light-mute);
+        --rule: var(--light-rule);
+        --field: var(--light-field);
+        --panel: var(--light-panel);
+        --acc: var(--light-acc);
+        --acc-on: var(--light-acc-on);
+        --warn: var(--light-warn);
+    }
+
+    [data-theme='dark'] {
+        --paper: var(--dark-paper);
+        --ink: var(--dark-ink);
+        --body: var(--dark-body);
+        --lead: var(--dark-lead);
+        --mute: var(--dark-mute);
+        --rule: var(--dark-rule);
+        --field: var(--dark-field);
+        --panel: var(--dark-panel);
+        --acc: var(--dark-acc);
+        --acc-on: var(--dark-acc-on);
+        --warn: var(--dark-warn);
+    }
+
     html {
         scroll-behavior: smooth;
     }
