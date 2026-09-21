@@ -245,7 +245,7 @@ pnpm dev
 | 分類 | ディレクトリ | 命名 | 例 |
 |------|-------------|------|-----|
 | Atom | `src/components/atoms/` | PascalCase | `Button.tsx`, `Input.tsx`, `Badge.tsx`, `TextArea.tsx` |
-| Molecule | `src/components/molecules/` | PascalCase | `SkillCard.tsx`, `CareerCard.tsx`, `SocialLinks.tsx` |
+| Molecule | `src/components/molecules/` | PascalCase | `CareerCard.tsx`, `SocialLinks.tsx` |
 | Organism | `src/components/organisms/` | PascalCase | `Header.tsx`, `ContactForm.tsx` |
 | Page | `src/app/` | Next.js 規約（`page.tsx`） | `page.tsx` |
 | Layout | `src/app/` | Next.js 規約（`layout.tsx`） | `layout.tsx` |

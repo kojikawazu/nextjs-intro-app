@@ -11,12 +11,10 @@
     - [2.5 SNSItem（SNSリンクデータ）](#25-snsitemsnsリンクデータ)
     - [2.6 CareerTitleData（経歴テーブルタイトルデータ）](#26-careertitledata経歴テーブルタイトルデータ)
     - [2.7 CareerData（経歴データ）](#27-careerdata経歴データ)
-    - [2.8 SkillsData（スキルセクションデータ）](#28-skillsdataスキルセクションデータ)
-    - [2.9 SkillCard（スキルカードデータ）](#29-skillcardスキルカードデータ)
-    - [2.10 ContactData（お問い合わせセクションデータ）](#210-contactdataお問い合わせセクションデータ)
-    - [2.11 FooterData（フッターデータ）](#211-footerdataフッターデータ)
-    - [2.12 ContactFormData（問い合わせフォームデータ）](#212-contactformdata問い合わせフォームデータ)
-    - [2.13 ContactFormErrors（フォームバリデーションエラー）](#213-contactformerrorsフォームバリデーションエラー)
+    - [2.8 ContactData（お問い合わせセクションデータ）](#28-contactdataお問い合わせセクションデータ)
+    - [2.9 FooterData（フッターデータ）](#29-footerdataフッターデータ)
+    - [2.10 ContactFormData（問い合わせフォームデータ）](#210-contactformdata問い合わせフォームデータ)
+    - [2.11 ContactFormErrors（フォームバリデーションエラー）](#211-contactformerrorsフォームバリデーションエラー)
 - [3. データソースとストレージ](#3-データソースとストレージ)
     - [3.1 Google Cloud Storage（GCS）](#31-google-cloud-storagegcs)
         - [接続設定](#接続設定)
@@ -35,8 +33,7 @@
     - [5.2 URL 形式](#52-url-形式)
     - [5.3 テキスト形式](#53-テキスト形式)
     - [5.4 メール送信日時形式](#54-メール送信日時形式)
-- [6. スキル表示仕様](#6-スキル表示仕様)
-- [7. 環境変数一覧](#7-環境変数一覧)
+- [6. 環境変数一覧](#6-環境変数一覧)
 
 ---
 
@@ -59,7 +56,6 @@
 | `about_data` | `AboutData` | Yes | 自己紹介セクションの表示データ |
 | `career_title_data` | `CareerTitleData` | Yes | 経歴セクションのカラムタイトルデータ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`CareerCard.tsx`）ではラベルがハードコードされており、このデータは画面に反映されていない |
 | `career_data` | `CareerData[]` | Yes | 経歴一覧データ（配列） |
-| `skills_data` | `SkillsData` | Yes | スキルセクションの表示データ |
 | `contact_data` | `ContactData` | Yes | お問い合わせセクションの表示データ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`page.tsx`, `ContactForm.tsx`）ではセクション見出し・ボタン文言がハードコードされており、このデータは画面に反映されていない |
 | `footer_data` | `FooterData` | Yes | フッターの表示データ |
 
@@ -70,7 +66,6 @@
 | `link_title` | `string` | Yes | サイトのロゴ / タイトルテキスト | `"TechProfile"` |
 | `about_name` | `string` | Yes | Aboutセクションのナビリンク表示名 | `"About"` |
 | `career_name` | `string` | Yes | Careerセクションのナビリンク表示名 | `"Career"` |
-| `skills_name` | `string` | Yes | Skillsセクションのナビリンク表示名 | `"Skills"` |
 | `contact_name` | `string` | Yes | Contactセクションのナビリンク表示名 | `"Contact"` |
 
 ### 2.3 HeroData（ヒーローデータ）
@@ -125,22 +120,7 @@
 | `career_skill_phase` | `string[]` | Yes | 担当フェーズ一覧（配列） | `["設計", "開発", "テスト"]` |
 | `career_role` | `string` | Yes | プロジェクトでの役割 | `"バックエンドエンジニア"` |
 
-### 2.8 SkillsData（スキルセクションデータ）
-
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|---|---|---|---|---|
-| `skills_cards` | `SkillCard[]` | Yes | スキルカード一覧（配列） | - |
-| `skills_more` | `string` | Yes | 全スキル表示後のメッセージ | `"全てのスキルを表示しました"` |
-
-### 2.9 SkillCard（スキルカードデータ）
-
-| フィールド名 | 型 | 必須 | 説明 | 例 |
-|---|---|---|---|---|
-| `skills_card_icon` | `string` | Yes | スキルアイコン画像のURL | `"https://storage.googleapis.com/.../react.svg"` |
-| `skills_card_name` | `string` | Yes | スキル名 | `"React"` |
-| `skills_card_contents` | `string` | Yes | スキルの説明 / 経験詳細 | `"3年以上の実務経験"` |
-
-### 2.10 ContactData（お問い合わせセクションデータ）
+### 2.8 ContactData（お問い合わせセクションデータ）
 
 > **未使用**: この型はGCSのJSONデータに含まれ、`PortfolioData` の型定義にも存在するが、**現在のUI（`page.tsx:274` のセクション見出し「Contact」、`ContactForm.tsx:127` のボタン文言「上記内容で送信する」等）ではハードコードされており、このデータは参照されていない**。将来的にデータ駆動の表示に切り替える場合に使用可能。
 
@@ -151,13 +131,13 @@
 | `contact_contents` | `string` | Yes | セクションの説明テキスト | `"お気軽にお問い合わせください"` |
 | `contact_btn_name` | `string` | Yes | 送信ボタンの表示テキスト | `"送信"` |
 
-### 2.11 FooterData（フッターデータ）
+### 2.9 FooterData（フッターデータ）
 
 | フィールド名 | 型 | 必須 | 説明 | 例 |
 |---|---|---|---|---|
 | `copyright` | `string` | Yes | コピーライト表記 | `"(C) 2025 TechProfile Pro"` |
 
-### 2.12 ContactFormData（問い合わせフォームデータ）
+### 2.10 ContactFormData（問い合わせフォームデータ）
 
 ユーザーが問い合わせフォームから送信するデータ。PortfolioData には含まれず、フォーム入力から生成される。
 
@@ -167,7 +147,7 @@
 | `email` | `string` | Yes | 送信者のメールアドレス | `"taro@example.com"` |
 | `message` | `string` | Yes | 問い合わせメッセージ本文 | `"サービスについて詳しく知りたいです"` |
 
-### 2.13 ContactFormErrors（フォームバリデーションエラー）
+### 2.11 ContactFormErrors（フォームバリデーションエラー）
 
 クライアント側のバリデーション結果を保持する。各フィールドはオプショナルで、エラーがある場合のみ値が設定される。
 
@@ -385,21 +365,7 @@ toLocaleString('ja-JP', {
 })
 ```
 
-## 6. スキル表示仕様
-
-スキルカードは段階的に表示される。
-
-| パラメータ | 値 | 説明 |
-|---|---|---|
-| `INITIAL_SKILLS_COUNT` | 9 | 初回表示時のスキル数 |
-| `SKILLS_INCREMENT` | 6 | 「and more...」ボタン押下時の追加表示数 |
-
-- 初回: 最初の9件を表示
-- ボタン押下ごとに6件ずつ追加表示
-- 全件表示後は `skills_more` のメッセージを表示
-- 新しく追加されたカードには `animate-fade-in-up` アニメーションと段階的遅延が適用される
-
-## 7. 環境変数一覧
+## 6. 環境変数一覧
 
 | 環境変数 | 必須 | 説明 | 使用箇所 |
 |---|---|---|---|

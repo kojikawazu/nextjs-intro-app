@@ -33,9 +33,8 @@
         - [4.3.3 TextArea (`src/components/atoms/TextArea.tsx`)](#433-textarea-srccomponentsatomstextareatsx)
         - [4.3.4 Badge (`src/components/atoms/Badge.tsx`)](#434-badge-srccomponentsatomsbadgetsx)
     - [4.4 Moleculesコンポーネント](#44-moleculesコンポーネント)
-        - [4.4.1 SkillCard (`src/components/molecules/SkillCard.tsx`)](#441-skillcard-srccomponentsmoleculesskillcardtsx)
-        - [4.4.2 CareerCard (`src/components/molecules/CareerCard.tsx`)](#442-careercard-srccomponentsmoleculescareercardtsx)
-        - [4.4.3 SocialLinks (`src/components/molecules/SocialLinks.tsx`)](#443-sociallinks-srccomponentsmoleculessociallinkstsx)
+        - [4.4.1 CareerCard (`src/components/molecules/CareerCard.tsx`)](#441-careercard-srccomponentsmoleculescareercardtsx)
+        - [4.4.2 SocialLinks (`src/components/molecules/SocialLinks.tsx`)](#442-sociallinks-srccomponentsmoleculessociallinkstsx)
     - [4.5 Organismsコンポーネント](#45-organismsコンポーネント)
         - [4.5.1 Header (`src/components/organisms/Header.tsx`)](#451-header-srccomponentsorganismsheadertsx)
         - [4.5.2 ContactForm (`src/components/organisms/ContactForm.tsx`)](#452-contactform-srccomponentsorganismscontactformtsx)
@@ -54,15 +53,14 @@
 - [6. E2Eテスト仕様](#6-e2eテスト仕様)
     - [6.1 ホームページ表示テスト](#61-ホームページ表示テスト)
     - [6.2 ナビゲーションテスト](#62-ナビゲーションテスト)
-    - [6.3 スキルセクションテスト](#63-スキルセクションテスト)
-    - [6.4 お問い合わせフォームテスト](#64-お問い合わせフォームテスト)
-    - [6.5 レスポンシブデザインテスト](#65-レスポンシブデザインテスト)
-    - [6.6 アクセシビリティテスト](#66-アクセシビリティテスト)
-    - [6.7 SEOメタデータテスト](#67-seoメタデータテスト)
-    - [6.8 サーバーサイドレンダリングテスト](#68-サーバーサイドレンダリングテスト)
-    - [6.9 データ取得失敗テスト](#69-データ取得失敗テスト)
-    - [6.10 セキュリティヘッダー・CSP テスト](#610-セキュリティヘッダーcsp-テスト)
-    - [6.11 フォームアクセシビリティテスト](#611-フォームアクセシビリティテスト)
+    - [6.3 お問い合わせフォームテスト](#63-お問い合わせフォームテスト)
+    - [6.4 レスポンシブデザインテスト](#64-レスポンシブデザインテスト)
+    - [6.5 アクセシビリティテスト](#65-アクセシビリティテスト)
+    - [6.6 SEOメタデータテスト](#66-seoメタデータテスト)
+    - [6.7 サーバーサイドレンダリングテスト](#67-サーバーサイドレンダリングテスト)
+    - [6.8 データ取得失敗テスト](#68-データ取得失敗テスト)
+    - [6.9 セキュリティヘッダー・CSP テスト](#69-セキュリティヘッダーcsp-テスト)
+    - [6.10 フォームアクセシビリティテスト](#610-フォームアクセシビリティテスト)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -308,8 +306,6 @@ src/
 │   │   ├── Badge.tsx
 │   │   └── Badge.test.tsx
 │   ├── molecules/
-│   │   ├── SkillCard.tsx
-│   │   ├── SkillCard.test.tsx
 │   │   ├── CareerCard.tsx
 │   │   ├── CareerCard.test.tsx
 │   │   ├── SocialLinks.tsx
@@ -613,19 +609,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 
 ### 4.4 Moleculesコンポーネント
 
-#### 4.4.1 SkillCard (`src/components/molecules/SkillCard.tsx`)
-
-| テストID | テストケース | 検証内容 |
-|----------|------------|---------|
-| UT-SKC-001 | スキル名が表示される | h3要素にスキル名が反映される |
-| UT-SKC-002 | 説明文が表示される | p要素に説明文が反映される |
-| UT-SKC-003 | アイコン画像が表示される | Image要素にiconUrlがsrcとして設定される |
-| UT-SKC-004 | アイコンのalt属性が適切に設定される | `${name} icon` 形式のalt属性が設定される |
-| UT-SKC-005 | className が追加適用される | カスタムクラスがマージされる |
-| UT-SKC-006 | style プロパティが適用される | インラインスタイルが要素に反映される |
-| UT-SKC-007 | glass-card クラスが適用される | ベーススタイルとしてglass-cardが存在する |
-
-#### 4.4.2 CareerCard (`src/components/molecules/CareerCard.tsx`)
+#### 4.4.1 CareerCard (`src/components/molecules/CareerCard.tsx`)
 
 | テストID | テストケース | 検証内容 |
 |----------|------------|---------|
@@ -641,7 +625,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | UT-CRC-010 | 空の技術スタック配列で正常描画される | techStack=[] でクラッシュしない |
 | UT-CRC-011 | 空のフェーズ配列で正常描画される | phases=[] でクラッシュしない |
 
-#### 4.4.3 SocialLinks (`src/components/molecules/SocialLinks.tsx`)
+#### 4.4.2 SocialLinks (`src/components/molecules/SocialLinks.tsx`)
 
 | テストID | テストケース | 検証内容 |
 |----------|------------|---------|
@@ -806,7 +790,6 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | E2E-HOME-003 | Heroセクションが表示される | ページロード完了を待機 | 「Solving Problems with Technology」見出しが表示される |
 | E2E-HOME-004 | Aboutセクションが表示される | #about にスクロール | About見出しと紹介文が表示される |
 | E2E-HOME-005 | Careerセクションが表示される | #career にスクロール | Career見出しと経歴カードが表示される |
-| E2E-HOME-006 | Skillsセクションが表示される | #skills にスクロール | Skills見出しとスキルカードが表示される |
 | E2E-HOME-007 | Contactセクションが表示される | #contact にスクロール | Contact見出しとフォームが表示される |
 | E2E-HOME-008 | フッターが表示される | ページ最下部にスクロール | コピーライト文が表示される |
 
@@ -816,23 +799,13 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 |----------|------------|---------|---------|
 | E2E-NAV-001 | ヘッダーナビゲーションでAboutに移動する | 「About」ボタンをクリック | #about セクションまでスムーズスクロールする |
 | E2E-NAV-002 | ヘッダーナビゲーションでCareerに移動する | 「Career」ボタンをクリック | #career セクションまでスムーズスクロールする |
-| E2E-NAV-003 | ヘッダーナビゲーションでSkillsに移動する | 「Skills」ボタンをクリック | #skills セクションまでスムーズスクロールする |
 | E2E-NAV-004 | ヘッダーナビゲーションでContactに移動する | 「Contact」ボタンをクリック | #contact セクションまでスムーズスクロールする |
 | E2E-NAV-005 | Heroの「お問い合わせ」ボタンでContactに移動する | 「お問い合わせ」ボタンをクリック | #contact セクションまでスムーズスクロールする |
 | E2E-NAV-006 | スクロール時にヘッダーが半透明になる | 下方にスクロール | ヘッダーにglass-effectが適用される |
 | E2E-NAV-007 | モバイルメニューが開閉する | ハンバーガーメニューをクリック | モバイルナビゲーションの表示/非表示が切り替わる |
 | E2E-NAV-008 | モバイルメニュー項目クリックでメニューが閉じる | モバイルメニュー項目をクリック | メニューが閉じてセクションにスクロールする |
 
-### 6.3 スキルセクションテスト
-
-| テストID | テストケース | 操作手順 | 期待結果 |
-|----------|------------|---------|---------|
-| E2E-SKL-001 | 初期表示で9件のスキルカードが表示される | Skillsセクションを確認 | 最大9件のスキルカードが表示される |
-| E2E-SKL-002 | 「and more...」ボタンで追加スキルが表示される | 「and more...」ボタンをクリック | さらに6件のスキルカードが表示される |
-| E2E-SKL-003 | 追加表示時にフェードインアニメーションが適用される | 「and more...」ボタンをクリック | 新しいカードにanimate-fade-in-upクラスが付与される |
-| E2E-SKL-004 | 全スキル表示後にボタンが消えメッセージが表示される | 全スキルが表示されるまでクリック | 「and more...」ボタンが消え、skills_moreテキストが表示される |
-
-### 6.4 お問い合わせフォームテスト
+### 6.3 お問い合わせフォームテスト
 
 | テストID | テストケース | 操作手順 | 期待結果 |
 |----------|------------|---------|---------|
@@ -843,7 +816,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | E2E-CF-005 | 「新しいお問い合わせ」クリックでフォームに戻る | 「新しいお問い合わせ」ボタンをクリック | フォームが再表示され、入力フィールドが空になる |
 | E2E-CF-006 | API接続エラー時にエラーメッセージが表示される | ネットワークエラーをシミュレート | エラーメッセージが表示される |
 
-### 6.5 レスポンシブデザインテスト
+### 6.4 レスポンシブデザインテスト
 
 | テストID | テストケース | ビューポート | 期待結果 |
 |----------|------------|------------|---------|
@@ -854,7 +827,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | E2E-RES-005 | デスクトップでナビゲーションバーが表示される | 1920 x 1080 | 横並びのナビゲーション項目が表示される |
 | E2E-RES-006 | スキルカードのグリッドが画面幅に応じて変化する | 各ビューポート | モバイル: 1列、md: 2列、lg: 3列、xl: 4列 |
 
-### 6.6 アクセシビリティテスト
+### 6.5 アクセシビリティテスト
 
 | テストID | テストケース | 検証内容 |
 |----------|------------|---------|
@@ -865,7 +838,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | E2E-A11Y-005 | コントラスト比が十分である | 主要テキストのコントラスト比がWCAG AA基準を満たす |
 | E2E-A11Y-006 | SNSリンクにaria-labelが設定されている | 各SNSリンクに適切なaria-labelが存在する |
 
-### 6.7 SEOメタデータテスト
+### 6.6 SEOメタデータテスト
 
 実装: `e2e/seo.spec.ts`。期待値を開発者の `.env.local` に左右されないよう、`playwright.config.ts` の
 `webServer.env` で `SITE_URL` を正規オリジンに固定している（`next start` は本番モードでも `.env.local` を読むため）。
@@ -885,7 +858,7 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 > canonical は `https://introtechkkplus.com`、sitemap の `<loc>` は `https://introtechkkplus.com/` と表記が異なる。
 > ルート URL としては同一リソースを指す。
 
-### 6.8 サーバーサイドレンダリングテスト
+### 6.7 サーバーサイドレンダリングテスト
 
 実装: `e2e/seo.spec.ts`。Playwright の `request` フィクスチャは JavaScript を実行しないため、
 **ブラウザが JS を動かす前の生の HTML** を検証できる。JS を実行しない SNS のクローラが
@@ -893,14 +866,14 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 
 | テストID | 分類 | テストケース | 検証内容 |
 |----------|------|------------|---------|
-| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Skills` / `Contact` を含む |
+| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Contact` を含む |
 | E2E-SSR-002 | 準正常系 | 退行の検出 | `animate-spin` を含まず、タグ除去後の本文が 300 文字超 |
 
 > **閾値の根拠**: 300 は E2E シードデータ基準（現状 973 文字）。データ取得が `useEffect` に
 > 戻ると本文は 10 文字程度（`Loading...` のみ）まで落ちるため、桁で区別できる値にしている。
 > 本番のデータ量とは無関係である点に注意。
 
-### 6.9 データ取得失敗テスト
+### 6.8 データ取得失敗テスト
 
 実装: `e2e/error.spec.ts`。**専用の webServer（ポート 3001）** で実行する。
 
@@ -931,7 +904,7 @@ projects: [
 > サーバー側で GCS を叩くため、`globalSetup`（エミュレータ起動）より先に走る
 > ヘルスチェックでは必ず失敗する。
 
-### 6.10 セキュリティヘッダー・CSP テスト
+### 6.9 セキュリティヘッダー・CSP テスト
 
 `e2e/security.spec.ts`。CSP は「ヘッダーが付いているか」だけでなく「ブラウザが違反を報告しないか」まで見ないと、実質無効な設定を通してしまう。
 
@@ -942,9 +915,9 @@ projects: [
 | E2E-SEC-003 | nonce はリクエストごとに変わる | 2 回取得した nonce が一致しない |
 | E2E-SEC-004 | 静的プリレンダーされる 404 ページには CSP を付けない | `content-security-policy` が無く、`X-Frame-Options` は付く |
 | E2E-SEC-005 | 404 ページのスクリプトがブロックされない | CSP 違反のコンソール出力が 0 件 |
-| E2E-SEC-006 | CSP 違反なしでハイドレーションが完了する | 全 script に nonce、「and more...」クリックで表示件数が増える、違反 0 件 |
+| E2E-SEC-006 | CSP 違反なしでハイドレーションが完了する | 全 script に nonce、ヘッダーナビのクリックで `#contact` へスクロールする（onClick の scrollIntoView が動く＝ハイドレーション済み）、違反 0 件 |
 
-### 6.11 フォームアクセシビリティテスト
+### 6.10 フォームアクセシビリティテスト
 
 実装: `e2e/contact.spec.ts`。**属性の有無ではなく実際に機能するか**で検証する。`<label>` を
 描画していても `htmlFor` / `id` が無ければフォーカスは移らないため、クリックの結果で確かめる。
@@ -1007,12 +980,11 @@ handlers.ts で定義すべきハンドラー:
 
 | フィールド | 型 | モック値の要件 |
 |-----------|-----|--------------|
-| navbar_data | NavbarData | link_title, about_name, career_name, skills_name, contact_name が非空文字列 |
+| navbar_data | NavbarData | link_title, about_name, career_name, contact_name が非空文字列 |
 | hero_data | HeroData | hero_img_url が有効なURL形式 |
 | about_data | AboutData | about_name, about_img_url が非空、sns_list が1件以上、about_contents が1件以上 |
 | career_title_data | CareerTitleData | 全フィールドが非空文字列 |
 | career_data | CareerData[] | 1件以上のキャリアデータ（career_end='now' のケースを含む） |
-| skills_data | SkillsData | skills_cards が10件以上（ページネーションテスト用）、skills_more が非空文字列 |
 | contact_data | ContactData | 全フィールドが非空文字列 |
 | footer_data | FooterData | copyright が非空文字列 |
 
@@ -1069,7 +1041,7 @@ handlers.ts で定義すべきハンドラー:
 ### フェーズ2: コア機能テスト（優先度: 高）
 
 1. APIルートの統合テスト（portfolio, contact）
-2. Moleculesコンポーネントのユニットテスト（SkillCard, CareerCard, SocialLinks）
+2. Moleculesコンポーネントのユニットテスト（CareerCard, SocialLinks）
 3. データフェッチフローの統合テスト（portfolio, gcs, resend）
 
 ### フェーズ3: 画面テスト（優先度: 中）

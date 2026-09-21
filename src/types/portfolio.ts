@@ -17,8 +17,6 @@ export interface PortfolioData {
     career_title_data: CareerTitleData;
     /** 経歴一覧データ */
     career_data: CareerData[];
-    /** スキルセクションの表示データ */
-    skills_data: SkillsData;
     /** お問い合わせセクションの表示データ。現在の UI では未参照（`ContactData` 参照） */
     contact_data: ContactData;
     /** フッターの表示データ */
@@ -33,8 +31,6 @@ export interface NavbarData {
     about_name: string;
     /** Career セクションのナビリンク表示名 */
     career_name: string;
-    /** Skills セクションのナビリンク表示名 */
-    skills_name: string;
     /** Contact セクションのナビリンク表示名 */
     contact_name: string;
 }
@@ -110,24 +106,6 @@ export interface CareerData {
     career_skill_phase: string[];
     /** プロジェクトでの役割 */
     career_role: string;
-}
-
-/** スキルセクション全体の表示データ。 */
-export interface SkillsData {
-    /** スキルカード一覧。UI では初期 9 件を表示し、以降 6 件ずつ追加表示する */
-    skills_cards: SkillCard[];
-    /** 全スキルを表示し終えたあとに出すメッセージ */
-    skills_more: string;
-}
-
-/** スキルグリッドに並べるカード 1 件分のデータ。 */
-export interface SkillCard {
-    /** スキルアイコン画像の URL */
-    skills_card_icon: string;
-    /** スキル名（例: `React`） */
-    skills_card_name: string;
-    /** スキルの説明 / 経験詳細 */
-    skills_card_contents: string;
 }
 
 /**

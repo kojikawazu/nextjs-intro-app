@@ -41,7 +41,7 @@
 | 3 | Hero セクション実装 | 完了 | 高 | キャッチコピー、CTA、背景画像、ネオンエフェクト、フロートアニメーション |
 | 4 | About セクション実装 | 完了 | 高 | プロフィール画像、自己紹介テキスト、SNSリンク（X, GitHub, Zenn, Qiita） |
 | 5 | Career セクション実装 | 完了 | 高 | タイムライン表示、プロジェクト経歴カード、期間・チーム規模・技術スタック・フェーズ・役割表示 |
-| 6 | Skills セクション実装 | 完了 | 高 | グリッド表示、初期9件表示、6件ずつ追加読み込み、フェードインアニメーション |
+| 6 | Skills セクション実装 | 完了 | 高 | グリッド表示、初期9件表示、6件ずつ追加読み込み、フェードインアニメーション。**※ 掲載内容の見直しによりセクションごと削除した（issue #126 / タスク #68）** |
 | 7 | Contact セクション実装 | 完了 | 高 | React Hook Form + Zod バリデーション、Resend メール送信、送信完了画面 |
 | 8 | Footer セクション実装 | 完了 | 中 | コピーライト表示 |
 | 9 | ナビゲーション（Header）実装 | 完了 | 高 | 固定ヘッダー、スクロール時のグラスエフェクト、スムーズスクロール |
@@ -61,7 +61,7 @@
 
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
-| 21 | Skills セクション「and more...」アニメーション遅延バグ修正 | 完了 | 高 | PR #12。累積的な animationDelay が増加し続ける問題を修正。`prevVisibleCountRef` を導入し、新規追加分のみにアニメーション適用 |
+| 21 | Skills セクション「and more...」アニメーション遅延バグ修正 | 完了 | 高 | PR #12。累積的な animationDelay が増加し続ける問題を修正。`prevVisibleCountRef` を導入し、新規追加分のみにアニメーション適用。**※ 対象コードは issue #126 で削除済み** |
 | 22 | 日付表示バグ修正 | 完了 | 高 | Career セクションの期間表示に関する不具合修正。`custom-date.ts` の `toDateString()` 関数追加 |
 | 23 | GitHub Actions デプロイバグ修正（複数回） | 完了 | 高 | PR #2 - #6。CI/CD パイプラインの設定修正を複数回実施 |
 | 50 | お問い合わせ送信の Resend API エラーが成功扱いになる不具合修正 | 完了 | 高 | `resend.ts` が `emails.send()` の `result.error` を検査しておらず、Resend が HTTP エラー（非2xx）を返しても `success: true` を返していた。統合テストで検出し、`result.error` 検知時に `success: false` を返すよう修正（`/api/contact` が仕様どおり 500 を返すようになった） |
@@ -86,7 +86,7 @@
 |---|---------|-----------|--------|------|
 | 28 | テストフレームワーク導入（Vitest + Testing Library / Playwright） | 完了（Vitest） | 高 | Vitest 4 + Testing Library + jsdom を導入。`vitest.config.ts` / `src/__tests__/setup.ts` / `test`・`test:run`・`test:coverage` スクリプト整備。CI（`ci.yml`）で `pnpm test:run` を実行。Playwright（E2E）は #32 で未導入 |
 | 29 | ユニットテスト実装（ユーティリティ関数） | 完了 | 高 | `cn()`（`src/utils/cn.test.ts`）/ `toDateString()`（`src/lib/custom-date.test.ts`）/ `ContactFormSchema`（`src/schemas/contact.test.ts`）を実装。計 30 ケース（正常・準正常・異常、境界値含む）が PASS |
-| 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms / molecules / organisms の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
+| 30 | コンポーネントテスト実装 | 未着手 | 中 | atoms（Button / Input / TextArea / Badge）/ molecules（CareerCard / SocialLinks）/ organisms（Header / ContactForm）の描画テスト・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、JSX 変換設定の整備が前提 |
 | 31 | API Route / データフェッチ統合テスト実装 | 完了 | 中 | 統合テスト（`*.integration.test.ts`）を実装。GCS は `fsouza/fake-gcs-server` コンテナ（Testcontainers）で実データ経路を検証、Resend は MSW で HTTP モック。`GET /api/portfolio`（`route.integration.test.ts`）/ `POST /api/contact`（同）/ `gcs`（`gcs.integration.test.ts`）を対象、計 10 ケース（正常・準正常・異常）。`vitest.integration.config.ts` + `pnpm test:it`、CI（`ci.yml`）で実行 |
 | 32 | E2E テスト導入（Playwright） | 完了 | 低 | Playwright を導入し `e2e/` にシナリオテストを実装（`home` / `contact` / `error`、計 7 ケース、正常/準正常/異常）。ポートフォリオ表示は fake-gcs-server コンテナの実データ（`next start` を `GCS_API_ENDPOINT` で向ける）、送信・失敗系は `page.route` でスタブ。`playwright.config.ts` に retries/trace（flaky 対応）。専用ワークフロー `.github/workflows/e2e.yml`（PR）で実行 |
 | 51 | `/api/portfolio` がビルド時プリレンダーされ実行時に GCS を参照しない不具合修正 | 完了 | 中 | Route Handler に動的 API が無く静的プリレンダーされていたため、データがビルド時点で固定され（かつビルドに GCS 認証が必要）、実行時の GCS 取得・キャッシュ（docs/07 §5）が機能していなかった。E2E 導入時に検出し `export const dynamic = 'force-dynamic'` を追加。実行時に GCS を取得し、キャッシュは CDN 側の `Cache-Control` に委ねる |
@@ -122,6 +122,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | issue #84 で対応。`git mv` で `src/lib/custom-date.ts` へリネームし、`client.tsx` とテストの import を更新。docs 6 ファイルの記述も追随 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 68 | Skills セクションの削除 | 完了 | 中 | issue #126（親 #125）。掲載内容の見直しに伴いコード・型・データをすべて削除。`SkillCard.tsx`、`client.tsx` の段階表示ロジック、`SkillsData` / `SkillCard` 型、`navbar_data.skills_name`、E2E 2 ケースが対象。**削除により `client.tsx` 自身は状態を持たなくなった**が、`Header` / `ContactForm` を配置するため `'use client'` は維持（判断を JSDoc に記録）。ドキュメントは 12 ファイル・56 箇所を更新し、`02-cn-utility.md` の `cn()` 解説の題材を `Button` へ差し替え |
 | 67 | React 19 への移行 | 完了 | 中 | issue #104。`react` / `react-dom` / `@types/react` / `@types/react-dom` を 19.3.0 へ。`forwardRef` は**維持**（React 19 で ref は通常 props として渡せるが非推奨化はされておらず、書き換えると React 19 以降でしか動かなくなるため）。実ブラウザで react-hook-form の ref 透過・Zod 検証・`aria-invalid` 付与を検証し、非推奨警告 0 件を確認。`next@15.5.25` も `next@16.3.5` も React 18/19 の両方を許容するため、本移行は #88 の前提条件ではない |
 | 66 | markdownlint の CI 導入 | 完了 | 低 | issue #79。既定ルールでは 3,126 件の違反が出るため、件数の 93% を占める MD060 / MD013 / MD007 と、意図的な記法である MD036 を無効化し、MD024 は `siblings_only` に設定。残り 190 件のうち 91 件を `--fix` で自動解消し、99 件を手動修正した。導入過程で docs/09 のコードフェンス破損（7 領域がコードブロックに飲み込まれていた）・目次のリンク切れ 12 件・runbook の番号誤りを検出。Prettier は `.prettierignore` で Markdown を対象外にしており競合しない |
 | 65 | 鍵・`.env` の Git 混入を検出する Secret scan ジョブ | 完了 | 中 | issue #61。`.gitignore` は未追跡ファイルにしか効かず、Git 履歴は追記型のため、一度 push した秘匿ファイルは追跡除外しても残る（対処は鍵のローテーションのみ）。`.github/workflows/secret-scan.yml` で `git ls-files` をパスパターンと照合し、追跡された時点で CI を落とす。全履歴走査の結果、現時点の混入は 0 件。GitHub ネイティブの secret scanning / push protection は無効のままで、有効化は別途必要（docs/06 §11.3） |
@@ -142,7 +143,7 @@
 
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
-| 30 | コンポーネントテスト実装 | 未着手 | 中 | （再掲）atoms / molecules / organisms の描画・インタラクションテスト。`@vitejs/plugin-react` が TS 5.5.2 と非互換のため、TS 5.5 互換の JSX 変換設定の整備 or TypeScript 更新が前提 |
+| 30 | コンポーネントテスト実装 | 未着手 | 中 | （再掲・§2.1）`SkillCard` は issue #126 で削除済みのため対象外 |
 | 52 | テストカバレッジ閾値の有効化 | 未着手 | 中 | 現状 `vitest.config.ts` の coverage 閾値は未設定（docs/08 目標: statements 80% 等）。テスト拡充に合わせ `test:coverage` の閾値を有効化し、CI に組み込むか判断する |
 | 53 | 実行環境の Node バージョン整合 | 未着手 | 中 | **`@types/node` が 26.6.1 に上がったため優先度が上がった**（型定義は Node 26 相当だが、Docker ランタイムは node:18-alpine = v18.20.8）。CI は Node 24（testcontainers → undici@8 が Node>=22.19 を要求）、本番 Dockerfile は `node:18-alpine`。ランタイムと CI のバージョン差を解消するか（Dockerfile を 20/22 系へ更新）、現状維持とするか方針を決める |
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | （再掲・§2.4）issue #84 で対応 |
@@ -213,19 +214,19 @@
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 51 |
+| 完了 | 52 |
 | 未着手 | 11 |
 | 検討中 | 4 |
-| **合計** | **67** |
+| **合計** | **68** |
 
 | 優先度 | 件数 |
 |--------|------|
 | 最高 | 5 |
 | 高 | 25 |
-| 中 | 26 |
+| 中 | 27 |
 | 低 | 11 |
 
-> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#52（カバレッジ閾値）、#53（Node バージョン整合）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #30（コンポーネントテスト）、#44（Error Boundary）、#52（カバレッジ閾値）、#53（Node バージョン整合）。
 >
 > 件数は 2026-09-20 に実テーブルから再集計した（従来値 完了 33 / 合計 53 は追随漏れ）。再掲行（#30 / #47）は 1 件として数える。
 
@@ -235,6 +236,7 @@
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-21 | Skills セクションをコード・型・データごと削除。ドキュメント 12 ファイル・56 箇所を追随させ、`cn()` 解説の題材を差し替え（issue #126 / 親 #125） | - |
 | 2026-09-20 | React 19.3.0 へ移行。`forwardRef` は互換性が維持されるため据え置き、実ブラウザで ref 透過と非推奨警告 0 件を確認。dependabot の react メジャー除外を解除（issue #104） | - |
 | 2026-09-20 | markdownlint を CI に導入。ルールを取捨選択して違反 0 件にし、その過程で docs/09 のコードフェンス破損・目次リンク切れ 12 件・runbook の番号誤りを解消（issue #79） | - |
 | 2026-09-20 | 鍵・`.env` の Git 混入を検出する Secret scan ジョブを CI に追加。GitHub ネイティブの secret scanning が未有効であることを検出し、多層防御の位置づけを docs/06 §11 に整理（issue #61） | - |

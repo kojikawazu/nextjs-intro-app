@@ -19,8 +19,7 @@
     - [2.5 Badge](#25-badge)
 - [3. Molecules（分子コンポーネント）](#3-molecules分子コンポーネント)
     - [3.1 CareerCard](#31-careercard)
-    - [3.2 SkillCard](#32-skillcard)
-    - [3.3 SocialLinks](#33-sociallinks)
+    - [3.2 SocialLinks](#32-sociallinks)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
     - [4.1 Header](#41-header)
     - [4.2 ContactForm](#42-contactform)
@@ -47,7 +46,6 @@ src/components/
 │   └── TextArea.tsx
 ├── molecules/      ← Atoms を組み合わせた複合コンポーネント（3コンポーネント）
 │   ├── CareerCard.tsx
-│   ├── SkillCard.tsx
 │   └── SocialLinks.tsx
 └── organisms/      ← 独立した機能単位のコンポーネント（2コンポーネント）
     ├── ContactForm.tsx
@@ -193,27 +191,7 @@ CareerCard (glass-card + floating-card)
 - 下部のグラデーションラインが `group-hover:scale-x-100` で伸びる
 - タイトルが `group-hover:neon-text` で発光テキストに変化
 
-### 3.2 SkillCard
-
-**ファイル**: `src/components/molecules/SkillCard.tsx`
-
-**依存**: `next/image`（Next.js Image コンポーネント）
-
-| Props | 型 | 説明 |
-|-------|-----|------|
-| `name` | `string` | スキル名 |
-| `description` | `string` | 説明テキスト |
-| `iconUrl` | `string` | アイコン画像URL |
-| `className` | `string?` | 追加CSSクラス（アニメーション用） |
-| `style` | `CSSProperties?` | インラインスタイル（animationDelay 用） |
-
-**特徴**:
-
-- `className` と `style` Props を公開し、親コンポーネント（`page.tsx`）からアニメーション制御を注入可能
-- アイコンの背景にグラデーション（`from-primary-400 to-purple-400`）をオーバーレイ
-- CareerCard と同様の `floating-card` + 下部ホバーラインパターン
-
-### 3.3 SocialLinks
+### 3.2 SocialLinks
 
 **ファイル**: `src/components/molecules/SocialLinks.tsx`
 
@@ -349,9 +327,6 @@ page.tsx
 ├── Career Section（直接実装）
 │   └── CareerCard (molecule) × N件
 │       └── Badge (atom) ← 技術スタック・フェーズ表示
-├── Skills Section（直接実装）
-│   └── SkillCard (molecule) × 最大N件（段階表示）
-│       └── next/image ← スキルアイコン
 ├── Contact Section（直接実装）
 │   └── ContactForm (organism)
 │       ├── Input (atom) ← 名前・メール入力
@@ -366,8 +341,6 @@ page.tsx
 |-------------|-----|---------|
 | `portfolioData` | `useState<PortfolioData \| null>` | API取得データ |
 | `loading` | `useState<boolean>` | ローディング状態 |
-| `visibleSkillsCount` | `useState<number>` | スキル表示件数（初期値: 9） |
-| `prevVisibleCountRef` | `useRef<number>` | 前回表示件数（アニメーション制御用） |
 
 ### 5.3 Atomic Design の階層関係
 
@@ -382,7 +355,6 @@ page.tsx
 ├─────────────────────────────────────────────────────┤
 │              Molecules（複合表示部品）                 │
 │    CareerCard: Badge を使った経歴情報表示              │
-│    SkillCard: Image を使ったスキル情報表示             │
 │    SocialLinks: Image を使ったSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤
 │               Atoms（最小UIパーツ）                   │
@@ -401,7 +373,7 @@ page.tsx
 |---------|---------|------|
 | **バリアントマップ** | Button, Badge | `if/else` の乱立を防ぎ、バリアント追加を容易にする |
 | **サイズマップ** | Button, Badge, SocialLinks | サイズごとのスタイル定義を一箇所に集約 |
-| **グループホバー** | CareerCard, SkillCard | `group` + `group-hover:` でカード内要素のホバー連動を実現 |
+| **グループホバー** | CareerCard | `group` + `group-hover:` でカード内要素のホバー連動を実現 |
 | **条件付き cn()** | Header, Input, TextArea | 状態に応じたスタイル切替を宣言的に記述 |
 | **Props スプレッド** | 全 Atoms | `{...props}` で HTML ネイティブ属性をすべて透過 |
 | **displayName** | forwardRef 使用 Atoms | React DevTools でのデバッグ容易性を確保 |

@@ -98,7 +98,6 @@ React 19 では **`ref` を通常の props として関数コンポーネント�
 |--------------|------|
 | `Badge` | 表示専用。外部から DOM 要素にアクセスする必要がない |
 | `CareerCard` | 表示専用。フォーム要素を含まない |
-| `SkillCard` | 表示専用。フォーム要素を含まない |
 | `SocialLinks` | リンク表示専用。外部からの ref 制御不要 |
 | `Header` | Organism。内部で状態管理を完結している |
 | `ContactForm` | Organism。内部で React Hook Form を使用し、Atoms に ref を渡す側 |

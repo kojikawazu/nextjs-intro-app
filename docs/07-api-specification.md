@@ -118,7 +118,6 @@
     "link_title": "TechProfile",
     "about_name": "About",
     "career_name": "Career",
-    "skills_name": "Skills",
     "contact_name": "Contact"
   },
   "hero_data": {
@@ -160,16 +159,6 @@
       "career_role": "エンジニア"
     }
   ],
-  "skills_data": {
-    "skills_cards": [
-      {
-        "skills_card_icon": "https://storage.googleapis.com/.../react.svg",
-        "skills_card_name": "React",
-        "skills_card_contents": "スキルの説明"
-      }
-    ],
-    "skills_more": "全てのスキルを表示しました"
-  },
   "contact_data": {
     "contact_name": "Contact",
     "contact_email": "example@email.com",

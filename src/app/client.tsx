@@ -1,11 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useRef } from 'react';
 import { Header } from '@/components/organisms/Header';
 import { ContactForm } from '@/components/organisms/ContactForm';
 import { SocialLinks } from '@/components/molecules/SocialLinks';
-import { SkillCard } from '@/components/molecules/SkillCard';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { Button } from '@/components/atoms/Button';
 import { PortfolioData } from '@/types/portfolio';
@@ -37,9 +35,6 @@ function formatCareerPeriod(start: string, end: string): string {
     return `${startYear}年${startMonth}月 - ${endYear}年${endMonth}月`;
 }
 
-const INITIAL_SKILLS_COUNT = 9;
-const SKILLS_INCREMENT = 6;
-
 /** `HomeClient` の props。 */
 interface HomeClientProps {
     /** サーバー側で取得済みのポートフォリオ表示データ */
@@ -54,18 +49,14 @@ interface HomeClientProps {
  * 以前は本コンポーネントに相当する処理が `useEffect` で fetch していたため、
  * 初期 HTML にスピナーしか出力されていなかった。
  *
- * 保持する状態は Skills セクションの段階表示のみ。追加分だけをフェードインさせるため、
- * 直前の表示件数を `prevVisibleCountRef` に持つ（state にすると再描画のたびに
- * 既存カードまで再アニメーションしてしまう）。
+ * `'use client'` を維持しているのは、Header のモバイルメニュー・スクロール検知や
+ * ContactForm の入力状態など、子のクライアントコンポーネントを配置するため。
+ * 本コンポーネント自身は Skills セクションの削除（issue #126）により状態を持たなくなった。
  */
 export function HomeClient({ portfolioData }: HomeClientProps) {
-    const [visibleSkillsCount, setVisibleSkillsCount] = useState(INITIAL_SKILLS_COUNT);
-    const prevVisibleCountRef = useRef(0);
-
     const navItems = [
         { name: portfolioData.navbar_data.about_name, href: '#about' },
         { name: portfolioData.navbar_data.career_name, href: '#career' },
-        { name: portfolioData.navbar_data.skills_name, href: '#skills' },
         { name: portfolioData.navbar_data.contact_name, href: '#contact' },
     ];
 
@@ -75,14 +66,6 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
     };
-
-    const showMoreSkills = () => {
-        prevVisibleCountRef.current = visibleSkillsCount;
-        setVisibleSkillsCount((prev) => prev + SKILLS_INCREMENT);
-    };
-
-    const visibleSkills = portfolioData.skills_data.skills_cards.slice(0, visibleSkillsCount);
-    const hasMoreSkills = visibleSkillsCount < portfolioData.skills_data.skills_cards.length;
 
     return (
         <div className="min-h-screen">
@@ -198,55 +181,6 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Skills Section */}
-            <section id="skills" className="section-padding relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary-900 to-secondary-800" />
-                <div className="absolute inset-0 mesh-background opacity-30" />
-
-                <div className="container relative z-10">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl lg:text-4xl font-bold neon-text mb-4">Skills</h2>
-                        <p className="text-lg text-secondary-300 max-w-2xl mx-auto">
-                            技術スキル・経験
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {visibleSkills.map((skill, index) => {
-                            const isNew = index >= prevVisibleCountRef.current;
-                            return (
-                                <SkillCard
-                                    key={index}
-                                    name={skill.skills_card_name}
-                                    description={skill.skills_card_contents}
-                                    iconUrl={skill.skills_card_icon}
-                                    className={isNew ? 'animate-fade-in-up' : ''}
-                                    style={
-                                        isNew
-                                            ? ({
-                                                  animationDelay: `${(index - prevVisibleCountRef.current) * 0.1}s`,
-                                              } as React.CSSProperties)
-                                            : undefined
-                                    }
-                                />
-                            );
-                        })}
-                    </div>
-
-                    <div className="text-center mt-8">
-                        {hasMoreSkills ? (
-                            <Button variant="outline" onClick={showMoreSkills} className="mx-auto">
-                                and more...
-                            </Button>
-                        ) : (
-                            <p className="text-secondary-300">
-                                {portfolioData.skills_data.skills_more}
-                            </p>
-                        )}
                     </div>
                 </div>
             </section>

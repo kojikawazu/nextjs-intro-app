@@ -94,10 +94,9 @@ cn('px-4', 'px-6')    // → 'px-6'（後のクラスが優先される）
 | `atoms/TextArea.tsx` | 1 | ベース + エラー状態条件 + className |
 | `atoms/Badge.tsx` | 1 | ベース + バリアント + サイズ + className |
 | `molecules/CareerCard.tsx` | 1 | ベース + className |
-| `molecules/SkillCard.tsx` | 1 | ベース + className |
 | `molecules/SocialLinks.tsx` | 2 | コンテナレイアウト + アイコンサイズ |
 | `organisms/Header.tsx` | 4 | スクロール状態に応じた動的スタイル切替 |
-| **合計** | **12** | |
+| **合計** | **11** | |
 
 ### 2.2 パターン別分類
 
@@ -143,14 +142,16 @@ cn(
 
 #### パターン C: 固定ベース + className 透過
 
-**使用箇所**: CareerCard, SkillCard
+**使用箇所**: CareerCard
 
 ```typescript
 // CareerCard.tsx
 cn('glass-card floating-card overflow-hidden ...', className)
 ```
 
-**特徴**: コンポーネント固有のベーススタイルを定義しつつ、`className` Props でアニメーションクラス等を外部から注入できるようにしている。SkillCard では `animate-fade-in-up` をこの方式で注入している。
+**特徴**: コンポーネント固有のベーススタイルを定義しつつ、`className` Props でアニメーションクラス等を外部から注入できるようにしている。
+
+> 以前は `SkillCard` が `animate-fade-in-up` をこの方式で注入していたが、Skills セクションの削除（issue #126）に伴い無くなった。現在 `CareerCard` に外部から `className` を渡している箇所は無く、透過の口だけが残っている状態である。
 
 #### パターン D: 複数インスタンスでの動的切替
 
@@ -231,14 +232,11 @@ cn(内部スタイル, ..., className)  // className は最後に渡す
 - `tailwind-merge` は後に記述されたクラスを優先する
 - 外部から渡されたクラスが内部のデフォルトスタイルを確実に上書きできる
 
-**実例（page.tsx → SkillCard）**:
+**実例（client.tsx → Button）**:
 
 ```tsx
-// page.tsx
-<SkillCard
-    className={isNew ? 'animate-fade-in-up' : ''}  // アニメーション注入
-    style={isNew ? { animationDelay: `${(index - prev) * 0.1}s` } : undefined}
-/>
+// client.tsx（Hero セクションの CTA）
+<Button size="lg" onClick={scrollToContact} className="animate-float">
 ```
 
-SkillCard 内部の `cn('glass-card floating-card ...', className)` により、`animate-fade-in-up` が追加クラスとして適用される。
+Button 内部の `cn(baseStyles, variants[variant], sizes[size], className)` により、`animate-float` が追加クラスとして適用される。`className` を最後に渡しているため、ベーススタイルと競合した場合も外部指定が優先される。

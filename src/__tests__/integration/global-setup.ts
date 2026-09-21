@@ -20,7 +20,6 @@ const seededPortfolio = {
         link_title: 'IT-Portfolio',
         about_name: 'About',
         career_name: 'Career',
-        skills_name: 'Skills',
         contact_name: 'Contact',
     },
     footer_data: { copyright: '(C) IT Test' },
