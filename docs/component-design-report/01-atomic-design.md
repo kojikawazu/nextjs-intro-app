@@ -5,6 +5,11 @@
 | プロジェクト名 | TechProfile Pro |
 | ドキュメント種別 | コンポーネント設計レポート |
 | 作成日 | 2026-03-20 |
+| 最終更新 | 2026-09-22（issue #147） |
+
+> **2026-09-22 全面改訂。** デザイン刷新（issue #136 / #137 / #138）でコンポーネントの
+> 見た目・Props・内部状態が入れ替わったが、本レポートは旧デザイン（グラスモーフィズム +
+> ネオン）の記述のまま残っていた。現在の実装へ同期している（issue #147）。
 
 ---
 
@@ -17,13 +22,14 @@
     - [2.3 Input](#23-input)
     - [2.4 TextArea](#24-textarea)
     - [2.5 Badge](#25-badge)
+    - [2.6 ThemeToggle](#26-themetoggle)
 - [3. Molecules（分子コンポーネント）](#3-molecules分子コンポーネント)
     - [3.1 CareerCard](#31-careercard)
     - [3.2 SocialLinks](#32-sociallinks)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
     - [4.1 Header](#41-header)
     - [4.2 ContactForm](#42-contactform)
-- [5. ページレベルの組み立て（page.tsx）](#5-ページレベルの組み立てpagetsx)
+- [5. ページレベルの組み立て](#5-ページレベルの組み立て)
     - [5.1 コンポーネント依存ツリー](#51-コンポーネント依存ツリー)
     - [5.2 状態管理](#52-状態管理)
     - [5.3 Atomic Design の階層関係](#53-atomic-design-の階層関係)
@@ -72,10 +78,18 @@ Atoms は **単一の HTML 要素をラップ** し、プロジェクト固有�
 
 | 原則 | 実装方法 |
 |------|---------|
-| Props 拡張 | 対応する HTML 要素の属性型を `extends` して継承（例: `ButtonHTMLAttributes<HTMLButtonElement>`） |
+| Props 拡張 | 対応する HTML 要素の属性型を `extends` して継承（例: `ButtonHTMLAttributes<HTMLButtonElement>`）。`ThemeToggle` のみ Props を持たない |
 | スタイル合成 | `cn()` ユーティリティでベーススタイル + バリアント + カスタムクラスを結合 |
 | ref 転送 | フォーム要素（Button, Input, TextArea）は `React.forwardRef` で ref を外部公開 |
-| className 拡張 | 全コンポーネントで `className` Props を受け取り、外部からのスタイル追加を許容 |
+| className 拡張 | `cn()` を使う 4 つは `className` Props を受け取り、外部からのスタイル追加を許容する |
+| 配色 | 固定色を書かず、CSS 変数由来の Tailwind クラス（`bg-acc` / `text-ink` / `border-field` 等）だけを使う。トークンの一覧は `docs/03-functional-specification.md` §5.4 |
+
+**バリアント / サイズのマップは module スコープの `const` に置く。** 以前はコンポーネント関数の中で
+`const variants = {...}` を組み立てていたが、呼ばれるたびにオブジェクトを作り直す必要がない。
+命名は `VARIANT_CLASSES` / `SIZE_CLASSES`（`coding-standards.md`「定数は `UPPER_SNAKE_CASE`」）。
+
+**透過度の修飾子（`text-ink/50` 等）は使えない。** Tailwind が `rgb(var(--x) / <alpha-value>)` の形を
+要求するのに対し、トークンは hex / oklch の完成した色だからである。濃淡が要る箇所は専用トークンを足す。
 
 ### 2.2 Button
 
@@ -83,7 +97,7 @@ Atoms は **単一の HTML 要素をラップ** し、プロジェクト固有�
 
 | Props | 型 | デフォルト | 説明 |
 |-------|-----|----------|------|
-| `variant` | `'primary' \| 'secondary' \| 'outline' \| 'ghost'` | `'primary'` | 外観バリアント |
+| `variant` | `'primary' \| 'outline' \| 'ghost'` | `'primary'` | 外観バリアント |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | サイズ |
 | `isLoading` | `boolean` | `false` | ローディング状態（スピナー表示 + disabled） |
 | `children` | `ReactNode` | - | ボタンテキスト |
@@ -91,20 +105,33 @@ Atoms は **単一の HTML 要素をラップ** し、プロジェクト固有�
 **バリアント定義（オブジェクトマップ方式）**:
 
 ```typescript
-const variants = {
-    primary: 'glass-card bg-gradient-to-r from-primary-500 to-purple-500 ...',
-    secondary: 'glass-effect text-white ...',
-    outline: 'glass-effect border-2 border-primary-400/50 ...',
-    ghost: 'text-secondary-300 hover:bg-white/10 ...',
+const VARIANT_CLASSES: Record<NonNullable<ButtonProps['variant']>, string> = {
+    primary: 'bg-acc text-acc-on hover:opacity-90',
+    outline: 'border border-field text-ink hover:bg-panel',
+    ghost: 'text-mute hover:text-ink',
+};
+
+const SIZE_CLASSES: Record<NonNullable<ButtonProps['size']>, string> = {
+    sm: 'h-8 px-3 text-xs',
+    md: 'h-10 px-5 text-sm',
+    lg: 'h-12 px-7 text-sm',
 };
 ```
 
-バリアントとサイズをオブジェクトマップで管理し、`cn()` で結合するパターンは、条件分岐の複雑化を防ぎ、新しいバリアント追加も容易にする。
+バリアントとサイズをオブジェクトマップで管理し、`cn()` で結合するパターンは、条件分岐の複雑化を防ぎ、新しいバリアント追加も容易にする。`Record<NonNullable<...>, string>` で型を付けているため、**バリアントを型に足してマップへ足し忘れると型エラーになる**。
+
+**共通スタイル**: `rounded-sm`（角丸 2px）、`font-bold`、`tracking-wide`、`disabled:opacity-50`
+
+角丸を 2px に抑えているのは、書類の質感に丸みが馴染まないため。旧デザインの `rounded-xl` から変更した。
+
+**フォーカスリング**: `focus-visible:ring-2 ring-acc` に加えて `ring-offset-2 ring-offset-paper` を挟む。
+`primary` はアクセント色で塗られているため、オフセットが無いとリングがボタン自身と同化して見えなくなる。
 
 **ローディング状態**:
 
-- `isLoading=true` 時、SVG スピナーアニメーション + `disabled` を自動適用
-- ボタンテキストの左にスピナーを配置（`animate-spin`）
+- `isLoading=true` 時、SVG スピナー（`animate-spin`）をラベルの左に表示
+- `disabled` は `disabled || isLoading` で評価するため、呼び出し側が `disabled` を渡さなくても処理中は押せない
+- スピナーは `aria-hidden="true"`。状態は `disabled` 属性が伝えるため、装飾を読み上げさせない
 
 **forwardRef**: あり — `React.forwardRef<HTMLButtonElement, ButtonProps>`
 
@@ -114,25 +141,40 @@ const variants = {
 
 | Props | 型 | 説明 |
 |-------|-----|------|
-| `label` | `string?` | ラベルテキスト（`required` 時に赤アスタリスク表示） |
-| `error` | `string?` | エラーメッセージ（赤テキスト、エラー時ボーダー赤） |
+| `label` | `string?` | ラベルテキスト（`required` 時にアクセント色のアスタリスク表示） |
+| `error` | `string?` | エラーメッセージ（`--warn`、エラー時は枠線も `--warn`） |
 | `hint` | `string?` | ヒントテキスト（エラー非表示時のみ表示） |
 
 **エラー状態のスタイル切替**:
 
 ```typescript
 const hasError = !!error;
-// cn() でエラー状態に応じてボーダー・フォーカスリングの色を切替
 cn(
-    'glass-effect rounded-xl ...',
-    hasError
-        ? 'border-red-400/50 focus:ring-red-400/50'
-        : 'border-white/20 focus:ring-primary-400/50',
+    'block w-full rounded-sm border bg-panel px-3 py-2.5 text-sm text-ink',
+    'focus:outline-none focus:ring-2 focus:ring-acc focus:ring-offset-0',
+    hasError ? 'border-warn focus:ring-warn' : 'border-field',
     className,
 )
 ```
 
-エラー状態を `boolean` フラグに変換し、`cn()` の条件分岐で赤系/通常系のスタイルを切り替えている。`error` と `hint` は排他表示（error 優先）。
+エラー状態を `boolean` フラグに変換し、`cn()` の条件分岐で警告色/通常のスタイルを切り替えている。`error` と `hint` は排他表示（error 優先）。
+
+**枠線に `--rule`（装飾罫線）ではなく `--field` を使う。** WCAG 1.4.11 は操作できる部品の境界に 3:1 を
+要求しており、装飾用の細い罫線ではこれを満たせない（`docs/04-non-functional-specification.md` §5.2）。
+
+**フォーカスリングは `focus-visible:` ではなく `focus:` で出す。** `focus-visible` はブラウザが
+「キーボード操作らしい」と判断したときだけ発火するため、クリックでフォーカスした入力欄にリングが出ない。
+いまどこに入力しているかは操作手段によらず示す必要がある。`Button` / `Header` / `SocialLinks` /
+`ThemeToggle` は逆に `focus-visible:` を使う（クリックした瞬間にリングが出ると煩わしいため）。
+
+**ラベルと支援技術への対応**:
+
+| 仕組み | 内容 |
+|--------|------|
+| `useId()` | 呼び出し側が `id` を指定していればそれを、なければ生成した id を使う |
+| `htmlFor` / `id` | `<label>` と `<input>` を関連付ける。**描画していることと関連付けていることは別**で、関連付けが無いとラベルをクリックしてもフォーカスが移らず、読み上げも対応を伝えない |
+| `aria-describedby` | エラー表示中は error、それ以外で `hint` があれば hint を指す（両方は指さない） |
+| `aria-invalid` | エラー時のみ `true` |
 
 **forwardRef**: あり — `React.forwardRef<HTMLInputElement, InputProps>`
 
@@ -140,7 +182,7 @@ cn(
 
 **ファイル**: `src/components/atoms/TextArea.tsx`
 
-Input と同一のインターフェース設計。追加で `min-h-[120px]` と `resize-y` を適用。エラー処理・ヒント表示のロジックも Input と同一パターンで実装されている。
+Input と同一のインターフェース設計。追加で `min-h-[120px]` と `resize-y` を適用。ラベルの関連付け・`aria-describedby` / `aria-invalid`・エラー処理・ヒント表示のロジックも Input と同一パターンで実装されている。
 
 **forwardRef**: あり — `React.forwardRef<HTMLTextAreaElement, TextAreaProps>`
 
@@ -150,10 +192,55 @@ Input と同一のインターフェース設計。追加で `min-h-[120px]` と
 
 | Props | 型 | デフォルト | 説明 |
 |-------|-----|----------|------|
-| `variant` | `'default' \| 'secondary' \| 'accent' \| 'outline'` | `'default'` | カラーバリアント |
-| `size` | `'sm' \| 'md'` | `'md'` | サイズ |
+| `variant` | `'accent' \| 'outline'` | `'accent'` | 外観バリアント |
 
-**特徴**: Badge は表示専用コンポーネントであるため、`forwardRef` は未使用。`HTMLDivElement` の属性を継承し、`div` 要素としてレンダリングする。`hover:scale-105` によるホバー効果と `glass-effect` ベースのスタイルを持つ。
+```typescript
+const VARIANT_CLASSES: Record<NonNullable<BadgeProps['variant']>, string> = {
+    accent: 'bg-acc text-acc-on',
+    outline: 'border border-rule text-mute',
+};
+```
+
+**用途は状態表示に限られる。** 旧デザインでは技術スタックの羅列にも使っていたが、分類集約
+（issue #137）とチップ表示へ置き換えたため、現在の使用箇所は `CareerCard` の「現在」バッジのみ。
+これに伴い `size` Props と `default` / `secondary` バリアントは廃止した。
+
+**`<div>` ではなく `<span>`。** 見出しやタイトルの行内に置くため、ブロック要素だと文章の途中に挟めない。
+Props も `HTMLAttributes<HTMLSpanElement>` を継承する。
+
+**共通スタイル**: `rounded-sm`、`font-mono text-[10px]`、`tracking-widest`、`font-bold`
+
+**forwardRef**: 未使用。表示専用で外部から DOM を触る必要がないため（判断基準は `03-forward-ref.md` §2.2）。
+
+### 2.6 ThemeToggle
+
+**ファイル**: `src/components/atoms/ThemeToggle.tsx`
+
+**Props**: なし。**依存フック**: `useTheme`（`src/hooks/useTheme.ts`）
+
+配色テーマ（ライト / ダーク）を切り替える。`'use client'` を持つ唯一の Atom。
+
+**選択中かどうかの表示は JS ではなく CSS が決める。** サーバーは Cookie 未設定時に `data-theme` を
+出力せず OS 設定へ委ねるため、選択状態を React の state で持つと**初期描画時点では正解が分からず**、
+ハイドレーション不一致か一瞬のちらつきのどちらかが必ず起きる。`globals.css` の `.theme-toggle-light` /
+`.theme-toggle-dark` を配色トークンと同じ 4 ブロックのカスケード（既定 → `prefers-color-scheme` →
+`[data-theme='light']` → `[data-theme='dark']`）で切り替えれば、その問題自体が消える。
+
+**トグル 1 個ではなくボタン 2 個。** 1 個にすると「いまどちらか」を `aria-pressed` で伝える必要があり、
+上と同じ理由で初期値を決められない。2 個なら各ボタンは単なる操作であり、状態属性を持たなくてよい。
+
+| 要素 | アクセシビリティ |
+|------|----------------|
+| 外枠 | `role="group"` / `aria-label="配色テーマ"` |
+| ライトボタン | `aria-label="ライトテーマに切り替える"` |
+| ダークボタン | `aria-label="ダークテーマに切り替える"` |
+| 記号（○ / ●） | `aria-hidden="true"`（装飾のため読み上げを汚さない） |
+
+**DOM と Cookie への書き込みは `useTheme` が持つ。** このコンポーネントは描画と `onClick` の
+割り当てに専念する（issue #144）。`useTheme` は**状態を返さない** — 返しても初期描画時点で
+正解が決まらないため。
+
+**forwardRef**: 未使用。`cn()` も使用しない（クラスが静的なため）。
 
 ---
 
@@ -165,69 +252,87 @@ Molecules は **Atoms や基本要素を組み合わせた複合コンポーネ�
 
 **ファイル**: `src/components/molecules/CareerCard.tsx`
 
-**依存 Atom**: `Badge`
+**依存 Atom**: `Badge`（進行中の印）
+**依存ロジック**: `groupTechStack`（`src/lib/group-tech-stack.ts`）
 
 | Props | 型 | 説明 |
 |-------|-----|------|
 | `title` | `string` | プロジェクトタイトル |
-| `period` | `string` | 期間（フォーマット済み） |
+| `period` | `string` | 期間（呼び出し側で整形済み） |
 | `teamSize` | `string` | チーム規模 |
 | `description` | `string` | 説明 |
-| `techStack` | `string[]` | 技術スタック（Badge で表示） |
-| `phases` | `string[]` | 担当フェーズ（Badge で表示） |
+| `techStack` | `string[]` | 技術スタック（分類ごとにまとめて表示） |
+| `phases` | `string[]` | 担当フェーズ |
 | `role` | `string` | 役割 |
-| `isCurrent` | `boolean?` | 現在進行中フラグ |
+| `isCurrent` | `boolean?` | 現在進行中フラグ（既定 `false`） |
+| `className` | `string?` | 追加クラス |
 
 **構造**:
 
 ```text
-CareerCard (glass-card + floating-card)
-├── ヘッダー部
-│   ├── タイトル（hover で neon-text）
-│   ├── 期間（SVG カレンダーアイコン付き）
-│   ├── チーム規模（SVG ユーザーアイコン付き）
-│   └── 「現在」Badge（isCurrent=true 時、animate-pulse）
-├── 区切り線（グラデーション）
+CareerCard (<article> + 左罫 2px)
+├── タイトル（h3）
+│   └── 「現在」Badge（isCurrent=true 時のみ）
+├── 期間 ・ チーム規模（等幅 1 行）
 ├── 説明文
-├── 技術スタック（Badge variant="secondary" の列挙）
-├── 担当フェーズ（Badge variant="outline" の列挙）
-├── 役割
-└── 下部ホバーライン（scaleX(0) → scaleX(100) アニメーション）
+├── 技術スタック（<dl>: 分類ラベル + チップ。中身のある分類のみ描画）
+├── 担当フェーズ（中黒区切りの 1 行。空なら節ごと描画しない）
+└── 役割
 ```
 
-**ホバーエフェクト**:
+**ルート要素は `<div>` ではなく `<article>`。** 経歴 1 件は独立して意味を持つ内容のため。
 
-- `floating-card` クラスによるカード全体の浮き上がり
-- 下部のグラデーションラインが `group-hover:scale-x-100` で伸びる
-- タイトルが `group-hover:neon-text` で発光テキストに変化
+**進行中と過去で重みを変える**（issue #135 の弱点(4)）:
+
+| 状態 | 左罫 | 補足 |
+|------|------|------|
+| 進行中（`career_end === 'now'`） | `border-acc` | タイトル横に「現在」Badge |
+| 過去 | `border-rule` | バッジなし |
+
+全 7 件が等価に並ぶと、直近の案件と 2015 年の業務が同じ重さで読まれてしまう。
+
+**技術スタックの表示**:
+
+- 1 案件あたり最大 30 件をフラットに並べると、読み手が信号（言語・フレームワーク・テスト）と
+  ノイズ（協働ツール）を自力で分離するほかなかった。`groupTechStack` で 9 区分へ束ねる（issue #137）
+- 技術名は読点で連ねず 1 件ずつチップにする。読点区切りは「文章」として読まれ、個々の技術を拾い読みできない
+- チップは等幅にしない。`C言語` `グラフィックMW` のように日本語を含む技術名があり、等幅フォントに
+  グリフが無いと字形が混ざるため
+- チップは枠線ではなく地色（`--panel`）で塗る。30 個並んだときに線が主張しすぎるため
+
+**ホバーエフェクトは持たない。** 旧デザインの浮き上がり（`floating-card`）・発光テキスト
+（`group-hover:neon-text`）・下部ラインの伸長はいずれも廃止した。拡大・浮き上がり・影の増減は
+書類として読ませる設計に馴染まない（`docs/03-functional-specification.md` §5.7）。
+
+**各項目のラベル（「技術スタック」「担当フェーズ」「役割」）はハードコードされており**、GCS の
+`career_title_data` は参照していない（詳細は `docs/05-data-specification.md` §2.6）。
 
 ### 3.2 SocialLinks
 
 **ファイル**: `src/components/molecules/SocialLinks.tsx`
 
-**依存**: `next/image`、`SNSItem` 型（`@/types/portfolio`）
+**依存**: `SNSItem` 型（`@/types/portfolio`）
 
-| Props | 型 | デフォルト | 説明 |
-|-------|-----|----------|------|
-| `links` | `SNSItem[]` | - | SNSリンクデータ配列 |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | アイコンサイズ |
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `links` | `SNSItem[]` | SNSリンクデータ配列。並び順がそのまま描画順 |
+| `className` | `string?` | 追加クラス |
 
-**サイズマッピング**:
+**アイコン画像ではなく `sns_name` のテキストチップで表示する。** `sns_img` が指す GCS 上の SVG は
+白一色（`github_original_white.svg` 等）で、紙のような明るい地の上では見えなくなる。データは
+変更しない方針（issue #135）のため、明るい地でも読める表現へ置き換えた。CSS フィルタで反転させる手も
+あるが、将来データ側が色付きアイコンに差し替わると破綻する。
 
-```typescript
-const sizes = {
-    sm: { container: 'w-6 h-6', width: 24, height: 24 },
-    md: { container: 'w-8 h-8', width: 32, height: 32 },
-    lg: { container: 'w-10 h-10', width: 40, height: 40 },
-};
-```
+その結果 **`next/image` への依存と `size` Props は廃止**され、`sns_img` は画面から参照されなくなった
+（`career_title_data` / `contact_data` と同じ状態）。表示は `sns_name` をそのまま使う。データ上は
+小文字（`github` / `zenn`）だが、等幅で組むと表記として成立するため大文字化などの加工はしない。
 
 **セキュリティ対策**:
 
 - 全外部リンクに `target="_blank"` + `rel="noopener noreferrer"` を適用
-- `aria-label` に「{SNS名}のプロフィールを開く」を設定（アクセシビリティ）
+- `aria-label` に「{SNS名}のプロフィールを開く」を設定（リンク文字だけでは行き先が伝わりにくいため）
 
-**ホバーエフェクト**: 白色オーバーレイ（`absolute inset-0 bg-white opacity-0 → opacity-20`）+ `scale-110`
+**ホバー**: 枠線を `--rule` から `--field` へ、文字色を `--mute` から `--ink` へ。拡大やオーバーレイは使わない。
 
 ---
 
@@ -239,7 +344,7 @@ Organisms は **独自の状態管理・イベント処理・API通信を持つ*
 
 **ファイル**: `src/components/organisms/Header.tsx`
 
-**依存 Atom**: なし（純粋な HTML 要素のみ）
+**依存 Atom**: `ThemeToggle`
 
 | Props | 型 | 説明 |
 |-------|-----|------|
@@ -250,29 +355,23 @@ Organisms は **独自の状態管理・イベント処理・API通信を持つ*
 
 | State | 型 | 用途 |
 |-------|-----|------|
-| `isScrolled` | `boolean` | スクロール位置に応じたスタイル切替 |
 | `isMobileMenuOpen` | `boolean` | モバイルメニューの開閉制御 |
 
-**cn() の活用（4箇所）**:
+**スクロール追従をやめ、地の流れに置いた。** 旧デザインは `fixed` ヘッダーにガラス調の背景を敷き、
+`useEffect` でスクロール量を監視して見た目を切り替えていた。書類として読ませる設計では本文に被る
+要素が邪魔になるため、`border-b border-rule` で区切るだけの通常フローに変えた。
 
-Header コンポーネントは `cn()` を最も多用するコンポーネントであり、スクロール状態に応じた動的なスタイル切替に活用している。
+これに伴い **`isScrolled` 状態・`scroll` イベントリスナー・条件分岐する `cn()` 3 箇所が消えた**。
+現在 `cn()` は 1 箇所（モバイルメニューの静的クラス）のみで、条件分岐を含まない。
 
-```typescript
-// ヘッダー全体: スクロール状態でガラスエフェクト or 透明
-cn('fixed top-0 ...', isScrolled ? 'glass-effect shadow-glass' : 'bg-transparent')
+**ナビは `<button>` のまま維持している。** `e2e/home.spec.ts` と `e2e/security.spec.ts` が
+`getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、`<a>` へ変えると
+JS を実行しなくても遷移してしまい、確認の意味が失われる（issue #131 で一度壊した箇所）。
 
-// ロゴ: スクロール状態でテキストスタイル変化
-cn('font-bold ...', isScrolled ? 'text-primary-400' : 'neon-text')
+**デスクトップナビは 6 項目前提で組んでいる。** 掲載セクションの追加（#127〜#129）で 3 → 6 に
+倍増しても収まる幅を確認済み（issue #135）。
 
-// ナビ項目: スクロール状態で文字色変化
-cn('transition-all ...', isScrolled ? 'text-white ...' : 'text-secondary-200 ...')
-```
-
-**スクロール検知**:
-
-- `useEffect` で `scroll` イベントリスナーを登録
-- 閾値 `10px` を超えた場合に `isScrolled` を `true` に設定
-- クリーンアップ関数でリスナーを解除
+**forwardRef**: 未使用。内部で状態管理を完結しており、外部から DOM を触る必要がない。
 
 ### 4.2 ContactForm
 
@@ -310,6 +409,10 @@ const { register, handleSubmit, formState: { errors }, reset } = useForm<Contact
 
 この統合が成立するために、Input / TextArea / Button の各 Atom が `React.forwardRef` を使用している。
 
+**送信結果の通知**: 完了画面はフォームと差し替わるため `role="status"`（polite 相当）、送信エラーは
+利用者の対応を要するため `role="alert"`（assertive 相当）を使い分ける。各フィールドのエラーは
+Input / TextArea 側の `aria-describedby` / `aria-invalid` が担う。
+
 **画面遷移（3状態）**:
 
 ```text
@@ -317,58 +420,80 @@ const { register, handleSubmit, formState: { errors }, reset } = useForm<Contact
                                                   → 失敗 → [エラー表示 + フォーム]
 ```
 
+> **既知の逸脱**: `fetch('/api/contact')` をコンポーネント内から直接呼んでいる。`frontend.md` は
+> 「`fetch` を書いてよいのは `repositories/` だけ」「クライアントコンポーネントのロジックは
+> カスタムフックへ切り出す」と定めており、現状はいずれにも従っていない。送信処理を差し替える際は
+> 呼び出し口がここ 1 箇所であることに注意。
+
+**forwardRef**: 未使用。Atoms に ref を渡す側であるため。
+
 ---
 
-## 5. ページレベルの組み立て（page.tsx）
+## 5. ページレベルの組み立て
 
-`src/app/page.tsx` は `'use client'` ディレクティブによるクライアントコンポーネントであり、全ての Atoms / Molecules / Organisms を組み合わせてポートフォリオサイト全体を構成する。
+トップページは **server-first** で組む。`src/app/page.tsx` が Server Component としてデータを取得し、
+描画と対話を `src/app/client.tsx` の `HomeClient` へ委譲する。
+
+以前はページ全体が Client Component で `useEffect` から `/api/portfolio` を fetch していたため、
+初期 HTML にはローディングスピナーしか出力されていなかった（JS を実行しない SNS のクローラからは
+本文が一切見えない状態だった）。
 
 ### 5.1 コンポーネント依存ツリー
 
 ```text
-page.tsx
-├── Header (organism)
-│   └── [navItems, logo] ← portfolioData.navbar_data から生成
-├── Hero Section（直接実装）
-│   └── Button (atom) ← CTA ボタン
-├── About Section（直接実装）
-│   ├── SocialLinks (molecule) ← portfolioData.about_data.sns_list
-│   └── next/image ← プロフィール画像
-├── Career Section（直接実装）
-│   └── CareerCard (molecule) × N件
-│       └── Badge (atom) ← 技術スタック・フェーズ表示
-├── Contact Section（直接実装）
-│   └── ContactForm (organism)
-│       ├── Input (atom) ← 名前・メール入力
-│       ├── TextArea (atom) ← メッセージ入力
-│       └── Button (atom) ← 送信ボタン
-└── Footer（直接実装）
+page.tsx（Server Component / force-dynamic）
+└── HomeClient（client.tsx）
+    ├── Header (organism) ← portfolioData.navbar_data から navItems を生成
+    │   └── ThemeToggle (atom)
+    ├── Hero Section（直接実装）
+    │   └── about_contents[1] の引用パネル + summarizeCareers の数値帯
+    ├── About Section（直接実装）
+    │   ├── next/image ← about_data.about_img_url
+    │   └── SocialLinks (molecule) ← about_data.sns_list
+    ├── Career Section（直接実装）
+    │   └── CareerCard (molecule) × N件
+    │       └── Badge (atom) ← 進行中の案件のみ
+    ├── Contact Section（直接実装）
+    │   └── ContactForm (organism)
+    │       ├── Input (atom) × 2 ← 名前・メール入力
+    │       ├── TextArea (atom) ← メッセージ入力
+    │       └── Button (atom) × 2 ← 送信ボタン / 送信完了画面の「新しいお問い合わせ」
+    └── Footer（直接実装）
 ```
+
+**Hero に Button は無い。** 旧デザインの「お問い合わせ」CTA は issue #138 で削除した。書類として
+読ませる設計にマーケ的な CTA が馴染まず、Contact へはヘッダーと末尾の 2 箇所から到達できるため。
 
 ### 5.2 状態管理
 
-| State / Ref | 型 | 管理対象 |
-|-------------|-----|---------|
-| `portfolioData` | `useState<PortfolioData \| null>` | API取得データ |
-| `loading` | `useState<boolean>` | ローディング状態 |
+| コンポーネント | 状態 | 備考 |
+|---------------|------|------|
+| `page.tsx` | なし | `async` でデータを取得し props へ渡すだけ |
+| `HomeClient` | なし | `'use client'` は子（Header / ContactForm / ThemeToggle）を配置するために維持している |
+| `Header` | `isMobileMenuOpen` | |
+| `ContactForm` | `isSubmitting` / `isSubmitted` / `submitError` + `useForm` | |
+| `ThemeToggle` | なし | `useTheme` は状態を返さない（§2.6） |
+
+**データ取得の状態（`loading` / `portfolioData`）はどこにも無い。** server-first への移行で
+クライアント側の取得処理ごと消えたため。
 
 ### 5.3 Atomic Design の階層関係
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│                    Page (page.tsx)                    │
-│    データ取得 / 状態管理 / セクションレイアウト          │
+│              Page (page.tsx / client.tsx)            │
+│    Server: データ取得 / Client: セクションレイアウト     │
 ├─────────────────────────────────────────────────────┤
 │              Organisms（独立機能単位）                 │
-│    Header: スクロール検知 + ナビゲーション制御          │
+│    Header: ナビゲーション + モバイルメニュー            │
 │    ContactForm: フォーム管理 + API通信                │
 ├─────────────────────────────────────────────────────┤
 │              Molecules（複合表示部品）                 │
-│    CareerCard: Badge を使った経歴情報表示              │
-│    SocialLinks: Image を使ったSNSリンク一覧           │
+│    CareerCard: 分類チップ + Badge で経歴を表示          │
+│    SocialLinks: テキストチップでSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤
 │               Atoms（最小UIパーツ）                   │
-│    Button / Input / TextArea / Badge                │
+│    Button / Input / TextArea / Badge / ThemeToggle   │
 │    → forwardRef / cn() / variant パターン            │
 └─────────────────────────────────────────────────────┘
 ```
@@ -382,19 +507,26 @@ page.tsx
 | パターン | 実装箇所 | 効果 |
 |---------|---------|------|
 | **バリアントマップ** | Button, Badge | `if/else` の乱立を防ぎ、バリアント追加を容易にする |
-| **サイズマップ** | Button, Badge, SocialLinks | サイズごとのスタイル定義を一箇所に集約 |
-| **グループホバー** | CareerCard | `group` + `group-hover:` でカード内要素のホバー連動を実現 |
-| **条件付き cn()** | Header, Input, TextArea | 状態に応じたスタイル切替を宣言的に記述 |
-| **Props スプレッド** | 全 Atoms | `{...props}` で HTML ネイティブ属性をすべて透過 |
+| **サイズマップ** | Button | サイズごとのスタイル定義を一箇所に集約 |
+| **条件付き cn()** | Input, TextArea | エラー状態に応じたスタイル切替を宣言的に記述 |
+| **Props スプレッド** | Button, Input, TextArea, Badge | `{...props}` で HTML ネイティブ属性をすべて透過 |
 | **displayName** | forwardRef 使用 Atoms | React DevTools でのデバッグ容易性を確保 |
+| **配色トークン** | 全コンポーネント | 固定色を書かず `bg-acc` / `text-ink` 等を使い、テーマ切替を CSS 側へ寄せる |
+| **ロジックのフック切り出し** | ThemeToggle → `useTheme` | DOM / Cookie 操作をコンポーネントから分離（issue #144） |
+
+> **廃止したパターン**: グループホバー（`CareerCard` の `group-hover:`）、サイズマップの
+> Badge / SocialLinks への適用、`Header` のスクロール状態による条件付き `cn()`。
+> いずれもデザイン刷新（#138）で対象の実装ごと無くなった。
 
 ### 6.2 階層間の責務分離
 
 | 階層 | 責務 | 状態管理 | 外部通信 |
 |------|------|---------|---------|
-| Atoms | 単一要素のスタイル・インタラクション | なし | なし |
+| Atoms | 単一要素のスタイル・インタラクション | なし（ThemeToggle も持たない） | なし |
 | Molecules | 複数要素の組み合わせ表示 | なし | なし |
-| Organisms | 機能ロジック（フォーム、ナビ） | あり（useState, useEffect） | あり（API通信） |
-| Page | 全体レイアウト + データ取得 | あり（useState, useRef） | あり（fetch） |
+| Organisms | 機能ロジック（フォーム、ナビ） | あり（useState） | あり（ContactForm のみ） |
+| Page (client.tsx) | 全体レイアウト | なし | なし |
+| Page (page.tsx) | データ取得 | なし | あり（`repositories/` 経由） |
 
-この分離により、Atoms / Molecules はステートレスで再利用性が高く、ビジネスロジックは Organisms / Page に集約されている。
+この分離により、Atoms / Molecules はステートレスで再利用性が高く、**外部 I/O は `page.tsx` の
+`repositories/` 呼び出しと `ContactForm` の送信の 2 箇所に閉じている**。

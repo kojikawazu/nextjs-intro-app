@@ -46,7 +46,6 @@
     - [6.2 レイアウト対応](#62-レイアウト対応)
         - [ナビゲーション](#ナビゲーション)
         - [Aboutセクション](#aboutセクション)
-        - [Skillsセクション](#skillsセクション)
         - [Careerセクション](#careerセクション)
         - [コンテナ](#コンテナ)
         - [セクション間の余白](#セクション間の余白)
@@ -268,10 +267,14 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 |------|----------|
 | `<header>` | ページヘッダー (ナビゲーション) |
 | `<nav>` | デスクトップ・モバイルナビゲーション |
-| `<section>` | Hero, About, Career, Skills, Contact 各セクション |
+| `<section>` | Hero, About, Career, Contact 各セクション。`CareerCard` 内の技術スタック / 担当フェーズ / 役割にも使う |
+| `<article>` | 経歴カード (`CareerCard`)。経歴 1 件は独立して意味を持つ内容のため |
 | `<footer>` | ページフッター (コピーライト) |
-| `<h1>` | ヘッダーロゴ、ヒーローテキスト |
+| `<h1>` | ヒーロー見出し（ページ内に 1 つ）。**ヘッダーロゴは `<span>`**。見出しの階層を持たない装飾的なラベルであり、`<h1>` が 2 つになるのを避けるため |
 | `<h2>` | 各セクションタイトル |
+| `<h3>` | 経歴カードのタイトル、送信完了の見出し |
+| `<h4>` | 経歴カード内の項目見出し (技術スタック / 担当フェーズ / 役割) |
+| `<dl>` / `<dt>` / `<dd>` | Hero の数値帯（ラベルと値）、経歴カードの技術スタック（分類名と技術チップ） |
 
 ### 4.3 言語設定
 
@@ -323,20 +326,27 @@ WCAG 2.1 Level AA を目標基準として実装する。
 
 | コンポーネント | ARIA属性 | 設定値 |
 |----------------|----------|--------|
-| モバイルメニューボタン (`Header`) | `aria-label` | `メニューを開く` |
+| モバイルメニューボタン (`Header`) | `aria-label` / `aria-expanded` | `メニューを開く` / 開閉状態を反映 |
+| テーマトグル (`ThemeToggle`) | `role="group"` + `aria-label` | `配色テーマ`。各ボタンは `ライトテーマに切り替える` / `ダークテーマに切り替える`、記号 (○ / ●) は `aria-hidden="true"` |
 | SNSリンク (`SocialLinks`) | `aria-label` | `{SNS名}のプロフィールを開く` |
+| 入力欄 (`Input` / `TextArea`) | `aria-invalid` / `aria-describedby` | エラー時に `true` / エラーまたはヒントの id（同時には指さない） |
+| 送信完了 (`ContactForm`) | `role="status"` + `aria-live="polite"` | フォームと差し替わるため polite |
+| 送信エラー (`ContactForm`) | `role="alert"` | 利用者の対応を要するため assertive 相当 |
+| ローディングスピナー (`Button`) | `aria-hidden="true"` | 状態は `disabled` 属性が伝えるため、装飾を読み上げさせない |
 
 #### キーボードアクセシビリティ
 
-- **フォーカスインジケーター**: `Button` コンポーネントに `focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2` を適用
-- **フォーム要素**: `Input`, `TextArea` コンポーネントに `focus:ring-2 focus:ring-primary-400` を適用
+- **フォーカスインジケーター**: `Button` に `focus-visible:ring-2 focus-visible:ring-acc focus-visible:ring-offset-2 focus-visible:ring-offset-paper` を適用。`primary` バリアントは地が `--acc` で塗られているため、オフセットが無いとリングが同化する
+- **操作部品**: `Header` のナビ / メニューボタン、`SocialLinks`、`ThemeToggle`（`ring-inset`）も `focus-visible:ring-2 focus-visible:ring-acc`
+- **フォーム要素**: `Input`, `TextArea` は `focus:ring-2 focus:ring-acc`（エラー時は `focus:ring-warn`）。`focus-visible` ではなく `focus` を使う理由は §7.2
 - **ナビゲーションボタン**: `<button>` 要素を使用しており、キーボード操作 (Tab/Enter/Space) に対応
 - **スムーススクロール**: CSS `scroll-behavior: smooth` により、ページ内リンクのスクロールがスムーズに動作
 
 #### フォームアクセシビリティ
 
-- **必須フィールド表示**: 必須項目に赤いアスタリスク (`*`) を表示 (`<span className="ml-1 text-red-400">*</span>`)
-- **エラーメッセージ**: フォーム要素直下に赤色テキストでバリデーションエラーを表示
+- **必須フィールド表示**: 必須項目にアクセント色のアスタリスク (`*`) を表示 (`<span className="ml-1 text-acc">*</span>`)
+- **ラベルの関連付け**: `useId()` で生成した id を `htmlFor` / `id` で結ぶ（呼び出し側が `id` を指定した場合はそちらを優先）。ラベルを描画していることと関連付けていることは別で、関連付けが無いとクリックでフォーカスが移らず読み上げも対応を伝えない
+- **エラーメッセージ**: フォーム要素直下に `--warn` のテキストで表示し、枠線も `--warn` に変える
 - **ローディング状態**: 送信中はボタンが `disabled` となり、スピナーアニメーションを表示
 - **`<label>` 要素**: 各フォーム入力に `htmlFor` / `id` で関連付けたラベルを配置。ラベルのクリックでフォーカスが移り、スクリーンリーダーも対応を読み上げる。id は呼び出し側指定が無ければ `useId()` で生成する
 - **エラーの関連付け**: `aria-describedby` でエラー文・補助説明を入力欄に紐付け、エラー時は `aria-invalid` を付与
@@ -344,10 +354,10 @@ WCAG 2.1 Level AA を目標基準として実装する。
 
 #### 色コントラスト
 
-- ダーク背景 (`#0f172a` 〜 `#1e293b`) に対して白色系テキストを使用
-- エラー状態は `text-red-400` / `border-red-400` により視覚的に区別
+- 地 (`--paper`) に対する文字色はすべてトークンで定義し、固定色を直接書かない
+- エラー状態は `text-warn` / `border-warn` により視覚的に区別する（ライト 5.52:1 / ダーク 7.52:1）
 
-デザイン刷新 (issue #135) に向けて定義した配色トークン (issue #136) は、以下の実測値で WCAG 2.1 AA を満たす。**この表は `src/app/design-tokens.test.ts` が機械的に検証している。** 色を少し調整しただけで基準を割り込むが、その差は人の目では判別できないため、コメントではなくテストで固定している。
+配色トークン (issue #136) は、以下の実測値で WCAG 2.1 AA を満たす。**この表は `src/app/design-tokens.test.ts` が機械的に検証している。** 色を少し調整しただけで基準を割り込むが、その差は人の目では判別できないため、コメントではなくテストで固定している。
 
 | トークン | 用途 | ライト | ダーク | 必要値 |
 |----------|------|--------|--------|--------|
@@ -376,11 +386,16 @@ WCAG 2.1 Level AA を目標基準として実装する。
 | 項目 | 推奨内容 |
 |------|----------|
 | スキップリンク | メインコンテンツへのスキップナビゲーションの追加 |
-| alt属性 | スキルカードアイコンのalt属性の充実化 |
-| aria-expanded | モバイルメニューボタンへの `aria-expanded` 属性の追加 |
 | aria-current | アクティブなナビゲーション項目への `aria-current` 属性の追加 |
-| prefers-reduced-motion | アニメーション無効化の対応 |
-| 色だけに依存しない情報伝達 | エラー状態をアイコン等でも示す |
+| 色だけに依存しない情報伝達 | エラー状態をアイコン等でも示す（現状はテキストのエラーメッセージで補っている） |
+
+**対応済みとなった項目**（issue #147 で棚卸し）:
+
+| 項目 | 対応 |
+|------|------|
+| `aria-expanded` | `Header` のモバイルメニューボタンに付与済み（issue #138） |
+| `prefers-reduced-motion` | `globals.css` でアニメーション・トランジション・スムーススクロールを無効化（issue #136） |
+| alt属性（スキルカードアイコン） | **項目ごと消滅**。Skills は issue #126 で削除され、`SocialLinks` も画像をやめてテキスト表示になった（issue #138）。現在ページ内の画像は About のプロフィール画像 1 点のみで、`alt` に `about_name` を設定している |
 
 ---
 
@@ -411,24 +426,19 @@ Tailwind CSS のデフォルトブレークポイントを採用。
 
 | 画面サイズ | レイアウト |
 |-----------|----------|
-| モバイル | 1カラム (縦並び、中央揃え) |
-| デスクトップ (>= 1024px) | 2カラムグリッド (プロフィール画像 + テキスト) |
-
-#### Skillsセクション
-
-| 画面サイズ | グリッドカラム数 |
-|-----------|---------------|
-| モバイル | 1カラム |
-| タブレット (>= 768px) | 2カラム |
-| デスクトップ (>= 1024px) | 3カラム |
-| ワイドデスクトップ (>= 1280px) | 4カラム |
+| モバイル (< 640px) | 1カラム (縦並び) |
+| sm 以上 (>= 640px) | 2カラムグリッド (`grid-cols-[8rem_1fr]`: プロフィール画像 128px + テキスト) |
 
 #### Careerセクション
 
 | 画面サイズ | レイアウト |
 |-----------|----------|
-| モバイル | カードのみ (タイムラインの縦線・ドットは非表示) |
-| デスクトップ (>= 768px) | 左側にタイムライン縦線・ドット + 右側にカード |
+| 全サイズ共通 | カードを縦に並べる（`flex flex-col gap-10`）。ブレークポイントによる分岐は持たない |
+
+経歴の位置づけ（進行中 / 過去）は、旧デザインのタイムライン縦線・ドットではなく**カード左罫の色**で
+表す（`border-acc` / `border-rule`）。線の描き分けに画面幅の条件が要らないため、分岐が消えた。
+
+> Skills セクションの 1 / 2 / 3 / 4 カラム表は issue #126 の削除に伴い除いた。
 
 #### コンテナ
 
@@ -472,13 +482,22 @@ Tailwind CSS のデフォルトブレークポイントを採用。
 
 | CSS機能 | 使用箇所 | 互換性リスク |
 |---------|---------|------------|
-| `backdrop-filter: blur()` | `glass-effect`, `glass-card` | Safari では `-webkit-backdrop-filter` が必要 (Tailwind CSSが自動プレフィックス付与) |
-| CSS Grid | スキルカード、Aboutレイアウト | 主要ブラウザで対応済み |
+| CSS Custom Properties | 配色トークン (`--paper` / `--ink` 等)。`tailwind.config.js` の色はすべて `var(--*)` を指す | 主要ブラウザで対応済み |
+| `oklch()` | アクセント色 `--acc` (`oklch(0.45 0.09 255)` / ダークは `oklch(0.74 0.11 255)`) | Safari 15.4 / Chrome 111 / Firefox 113 以降。**フォールバックを置いていない**。カスタムプロパティ自体はどのブラウザでも解析できるが、`var(--acc)` を参照した側が**計算値の時点で無効**になり、継承プロパティ (`color`) は継承値、非継承プロパティ (`background-color` / `border-color`) は初期値 (`transparent` / `currentColor`) に化ける |
+| CSS Grid | About レイアウト、Hero の数値帯、`CareerCard` の技術スタック (`dl`) | 主要ブラウザで対応済み |
 | `scroll-behavior: smooth` | ページ内ナビゲーション | 主要ブラウザで対応済み |
-| `mask-composite: exclude` | `gradient-border` | ブラウザ間で挙動差あり |
-| `focus-visible` | Button, Input | 主要ブラウザで対応済み |
-| CSS Custom Properties | Tailwind CSS内部 | 主要ブラウザで対応済み |
-| CSS Animations / Keyframes | 各種アニメーション | 主要ブラウザで対応済み |
+| `focus-visible` | Button, Header, SocialLinks, ThemeToggle | 主要ブラウザで対応済み |
+| `focus` (擬似クラス) | Input, TextArea | 入力欄は `focus-visible` ではなく `focus` を使う。`focus-visible` はブラウザが「キーボード操作らしい」と判断したときだけリングを出すため、クリックでフォーカスした入力欄にリングが出ない。どこに入力しているかは操作手段によらず示す必要がある |
+| `prefers-color-scheme` | 配色トークンの既定値 (OS 設定への追従) | 主要ブラウザで対応済み |
+| CSS Animations / Keyframes | `fade-in-up` (Hero の初回表示のみ) | 主要ブラウザで対応済み |
+
+> **`light-dark()` は使っていない。** 1 行で書けるが、未対応ブラウザではカスタムプロパティが
+> **計算値の時点で無効**になり、`var()` を参照した側のプロパティごと落ちる。閲覧環境を選べない
+> 相手に出す画面では危険なため、`--light-*` / `--dark-*` を定義して 4 ブロックで写像する方式を採った
+> （`globals.css`）。
+>
+> **旧デザインで使っていた `backdrop-filter: blur()`（`glass-effect` / `glass-card`）と
+> `mask-composite: exclude`（`gradient-border`）は、issue #138 でクラスごと廃止した。**
 
 ### 7.3 JavaScript互換性
 

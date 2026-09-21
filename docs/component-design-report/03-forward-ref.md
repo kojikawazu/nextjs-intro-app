@@ -5,6 +5,7 @@
 | プロジェクト名 | TechProfile Pro |
 | ドキュメント種別 | React.forwardRef 設計レポート |
 | 作成日 | 2026-03-20 |
+| 最終更新 | 2026-09-22（issue #147） |
 
 ---
 
@@ -97,6 +98,7 @@ React 19 では **`ref` を通常の props として関数コンポーネント�
 | コンポーネント | 理由 |
 |--------------|------|
 | `Badge` | 表示専用。外部から DOM 要素にアクセスする必要がない |
+| `ThemeToggle` | ボタンを描画するが、フォーム部品ではない。`register()` の対象にならず、外部からフォーカス制御する必要もない |
 | `CareerCard` | 表示専用。フォーム要素を含まない |
 | `SocialLinks` | リンク表示専用。外部からの ref 制御不要 |
 | `Header` | Organism。内部で状態管理を完結している |
@@ -122,8 +124,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 // ② forwardRef でコンポーネントを定義
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ label, error, hint, className, required, ...props }, ref) => {
-        //       ↑ カスタム Props を分割代入        ↑ ref は第2引数
+    ({ className, label, error, hint, type = 'text', ...props }, ref) => {
+        //       ↑ カスタム Props を分割代入              ↑ ref は第2引数
 
         return (
             <div>
@@ -178,13 +180,18 @@ React.forwardRef<HTMLButtonElement, ButtonProps>(...)
 #### ④ Props のスプレッド
 
 ```typescript
-const { label, error, hint, className, required, ...props } = props;
+const { className, label, error, hint, type = 'text', ...props } = props;
 // カスタム Props を取り出し、残り（HTML ネイティブ属性）を ...props に集約
 <input {...props} />
 // ネイティブ属性をすべて DOM 要素に透過
 ```
 
 **重要**: カスタム Props（`label`, `error` 等）を分割代入で取り出さないと、`<input label="..." error="...">` のように無効な HTML 属性が DOM に渡されてしまう。
+
+**`required` は分割代入しない。** ラベルのアスタリスク表示に使うため値は読むが、取り出しは
+`props.required` で行い、`...props` の中に残したまま `<input>` へ透過させる。分割代入すると
+`required` 属性が DOM に届かず、**ブラウザ標準の必須検証が効かなくなる**。「読む」ことと
+「消費する（DOM から取り除く）」ことは別であり、透過させたい属性は分割代入の左辺に書かない。
 
 #### ⑤ displayName の設定
 
