@@ -498,6 +498,52 @@ HTMLメール本文への出力エスケープ（docs/06 §8.1）。正常系2 :
 | UT-MH-014 | 制御文字のみの入力は空文字 | `'\r\n\t\u0000'` | `''` |
 | UT-MH-015 | 空文字は空文字を返す | `''` | `''` |
 
+#### 4.1.9 theme (`src/lib/theme.ts`)
+
+配色テーマの Cookie 解釈（docs/09 §6.7）。正常系4 : 準正常系+異常系10。
+
+Cookie は利用者が自由に書き換えられる外部入力のため、想定外の値で例外を投げず `null`（未選択＝OS 設定に従う）へ倒すことを固定する。
+
+| テストID | テストケース | 入力 | 期待出力 |
+|----------|------------|------|---------|
+| UT-TH-001 | `'light'` を返す | `'light'` | `'light'` |
+| UT-TH-002 | `'dark'` を返す | `'dark'` | `'dark'` |
+| UT-TH-003 | Cookie 未設定は null | `undefined` | `null` |
+| UT-TH-004 | 空文字は null | `''` | `null` |
+| UT-TH-005 | 未知の値は null | `'sepia'` | `null` |
+| UT-TH-006 | 大文字は受け付けない | `'Dark'` / `'DARK'` | `null` |
+| UT-TH-007 | 前後の空白付きは受け付けない | `' dark'` / `'dark '` | `null` |
+| UT-TH-008 | プロトタイプ汚染狙いの値は null | `'__proto__'` ほか | `null` |
+| UT-TH-009 | 属性注入狙いの値は null | `'dark; Path=/; Domain=…'` | `null` |
+| UT-TH-010 | 極端に長い値は null | `'d'.repeat(10000)` | `null` |
+| UT-TH-011 | Cookie 名と値を先頭に置く | `'dark'` | `'theme=dark; …'` で始まる |
+| UT-TH-012 | Path と Max-Age を付ける | `'dark'` | `Path=/` / `Max-Age=31536000` |
+| UT-TH-013 | SameSite=Lax を付ける | `'dark'` | `SameSite=Lax` |
+| UT-TH-014 | HttpOnly を付けない | `'dark'` | 属性なし（クライアントが書くため） |
+| UT-TH-015 | Secure を付けない | `'dark'` | 属性なし（`http://localhost` で黙って失敗するのを避ける） |
+| UT-TH-016 | 書き出した値を読み戻せる | 両テーマ | `parseTheme` が同じ値を返す |
+| UT-TH-017 | 値に Cookie 区切り文字を含めない | 両テーマ | `/^[a-z]+$/` に一致 |
+
+#### 4.1.10 配色トークン (`src/app/globals.css`)
+
+**CSS を読んで検証する例外的なテスト**（`src/app/design-tokens.test.ts`）。
+
+トークンの写像は「既定」「OS ダーク」「明示ライト」「明示ダーク」の 4 ブロックに分かれており、トークンを 1 つ増やしたときに 1 ブロックだけ書き忘れても**ビルドも lint も通り、特定のテーマでだけ色が壊れる**。人間のレビューで 4 ブロックを突き合わせるのは現実的でないため機械で守る。コントラスト比も、色を少し調整しただけで基準を割り込むが人の目では判別できない。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-DT-001 | ライトとダークが同じトークン集合を定義 | 11 トークンが両方に存在 |
+| UT-DT-002 | `:root` の既定がライト値を指す | 全トークンが `var(--light-*)` |
+| UT-DT-003 | OS ダークがダーク値を指す | 全トークンが `var(--dark-*)` |
+| UT-DT-004 | 明示ライトがライト値を指す | 全トークンが `var(--light-*)` |
+| UT-DT-005 | 明示ダークがダーク値を指す | 全トークンが `var(--dark-*)` |
+| UT-DT-006 | 明示指定が OS 設定より後に書かれている | 詳細度が同じため後勝ちが唯一の上書き手段 |
+| UT-DT-007 | 文字色 9 組が 4.5:1 以上（各テーマ） | WCAG 2.1 AA |
+| UT-DT-008 | `--field` が `--paper` / `--panel` に対し 3:1 以上 | WCAG 1.4.11 |
+| UT-DT-009 | `--rule` が文字色として使える水準に達しない | 装飾用トークンの誤用検出 |
+
+**導入時に、意図的に壊して落ちることを確認済み。** 写像を 1 行削除 / 色をわずかに変更 / ブロックの順序入れ替えの 3 変異をいずれも検出した。
+
 ### 4.2 バリデーションロジック
 
 #### 4.2.1 ContactFormSchema (`src/schemas/contact.ts`)
@@ -932,6 +978,21 @@ projects: [
 > **`getByRole('alert')` の注意**: Next.js はルート遷移の読み上げ用に `role="alert"` の要素
 > （`#__next-route-announcer__`）を body 直下へ注入する。`getByRole('alert')` だけでは 2 件に
 > マッチして strict mode violation になるため、`page.locator('form')` でスコープを限定している。
+
+### 6.11 配色テーマ解決テスト
+
+`e2e/theme.spec.ts`。テーマは Cookie を読んで**サーバー側で**解決し、初期 HTML に `data-theme` を載せる（docs/09 §6.7）。クライアントで適用すると「一度ライトで描画してからダークへ切り替わる」ちらつきが出るため、**JS を実行しない `request` 経由で HTML を取得**して属性の有無を確かめる。これがちらつかないことの根拠になる。
+
+| テストID | テストケース | 操作手順 | 期待結果 |
+|----------|------------|---------|---------|
+| E2E-TH-001 | dark が初期 HTML に載る | `Cookie: theme=dark` で取得 | `data-theme="dark"` を含む |
+| E2E-TH-002 | light が初期 HTML に載る | `Cookie: theme=light` で取得 | `data-theme="light"` を含む |
+| E2E-TH-003 | Cookie 無しは属性を出さない | Cookie なしで取得 | `data-theme=` を含まない（OS 設定へ委ねる） |
+| E2E-TH-004 | 未知の値は無視する | `theme=sepia` | `data-theme=` を含まない |
+| E2E-TH-005 | 大文字は受け付けない | `theme=Dark` | `data-theme=` を含まない |
+| E2E-TH-006 | 属性注入を無力化する | `theme=dark" onload="alert(1)` | `onload` も `data-theme=` も含まない |
+| E2E-TH-007 | 他の Cookie が混ざっても theme だけ読む | `other=dark; theme=light; another=dark` | `data-theme="light"` |
+| E2E-TH-008 | ハイドレーション後も値が変わらない | ブラウザで開いて描画完了を待つ | `data-theme` が `dark` のまま |
 
 ---
 
