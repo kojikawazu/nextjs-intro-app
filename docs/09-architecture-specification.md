@@ -254,6 +254,7 @@ src/
 ├── lib/                        # 純粋ユーティリティ（通信しない）
 │   ├── client-ip.ts            # クライアント IP の解決 (レートリミットのキー。docs/06 §10.2)
 │   ├── custom-date.ts          # 日付ユーティリティ (「YYYY年MM月」→「YYYY/MM/01」変換)
+│   ├── group-tech-stack.ts     # 技術スタックを 9 区分へ分類 (docs/05 §5.4)
 │   ├── html-escape.ts          # HTML 出力エスケープ (HTMLメール本文への埋め込み用。docs/06 §8.1)
 │   ├── logger.ts               # ログ出力方針の集約 (logError / logWarn / logDebug。docs/07 §7.2)
 │   ├── mail-header.ts          # メールヘッダー値の無害化 (ヘッダーインジェクション対策。docs/06 §8.3)
@@ -262,10 +263,12 @@ src/
 │   └── theme.ts                # 配色テーマ Cookie の検証と組み立て (§6.7)
 │
 ├── constants/                  # 全環境で不変な値（環境変数は置かない）
+│   ├── tech-categories.ts      # 技術名→分類の対応表と表示名 (docs/05 §5.4)
 │   └── theme.ts                # 配色テーマ Cookie 名 (§6.7)
 │
 ├── types/
 │   ├── api-error.ts            # ApiErrorResponse (Route Handler の統一エラーレスポンス)
+│   ├── tech-category.ts        # TechCategory と TECH_CATEGORIES (分類の union。docs/05 §5.4)
 │   ├── theme.ts                # Theme と THEMES (配色テーマの union。§6.7)
 │   └── portfolio.ts            # ポートフォリオデータ型定義
 │                                 - PortfolioData (ルート型)
