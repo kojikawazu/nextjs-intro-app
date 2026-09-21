@@ -258,7 +258,10 @@ export const ContactFormSchema = z.object({
 | `noopener` | リンク先ページが `window.opener` を介して元ページを操作することを防止 |
 | `noreferrer` | リンク先にリファラー情報を送信しないことでプライバシーを保護 |
 
-**実装箇所**: `src/components/molecules/SocialLinks.tsx`
+**実装箇所**: `src/components/molecules/SocialLinks.tsx` / `src/components/molecules/ProductCard.tsx`
+
+`ProductCard` の `site` / `repo` リンクは**掲載データ（GCS の JSON）由来の URL** を開く。
+データは手書きのため、`rel` の付与はコンポーネント側で固定し、データに依存させない。
 
 ### 5.2 Node.jsモジュールのクライアントバンドル除外
 

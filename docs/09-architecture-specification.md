@@ -238,6 +238,7 @@ src/
 │   │   └── ThemeToggle.tsx     # 配色テーマ切り替え (ボタン 2 個。§6.7)
 │   ├── molecules/              # Atoms を組み合わせた複合部品
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
+│   │   ├── ProductCard.tsx     # 個人開発カード (概要, 技術スタック, site / repo リンク)
 │   │   └── SocialLinks.tsx     # SNS リンク群 (名前のテキスト + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
@@ -317,6 +318,11 @@ src/
 │  │  │   - Badge       │ │   - テキストチップ│            │  │
 │  │  │   - 分類チップ   │ │   - 外部リンク   │            │  │
 │  │  └─────────────────┘ └─────────────────┘            │  │
+│  │  ┌─────────────────┐                                │  │
+│  │  │   ProductCard   │                                │  │
+│  │  │   - 技術チップ   │                                │  │
+│  │  │   - 外部リンク   │                                │  │
+│  │  └─────────────────┘                                │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -335,27 +341,35 @@ src/
 ### 4.2 コンポーネント依存関係
 
 ```text
-page.tsx
-├── Header (organism)
-│   └── cn (util)
-├── ContactForm (organism)
-│   ├── Button (atom)
-│   ├── Input (atom)
-│   ├── TextArea (atom)
-│   ├── ContactFormSchema (util/validation)
-│   └── cn (util)
-│   ├── next/image
-│   └── cn (util)
-├── CareerCard (molecule)
-│   ├── Badge (atom)
-│   └── cn (util)
-├── SocialLinks (molecule)
-│   ├── next/image
-│   └── cn (util)
-├── Button (atom)
-├── toDateString (lib/custom-date)
-└── PortfolioData (types/portfolio)
+page.tsx (Server Component)
+└── HomeClient (client.tsx)
+    ├── Header (organism)
+    │   ├── ThemeToggle (atom)
+    │   │   └── useTheme (hooks)
+    │   └── cn (util)
+    ├── CareerCard (molecule)
+    │   ├── Badge (atom)
+    │   ├── groupTechStack (lib)
+    │   └── cn (util)
+    ├── ProductCard (molecule)
+    │   └── cn (util)
+    ├── SocialLinks (molecule)
+    │   └── cn (util)
+    ├── ContactForm (organism)
+    │   ├── Button (atom)
+    │   ├── Input (atom)
+    │   ├── TextArea (atom)
+    │   ├── ContactFormSchema (schemas/contact)
+    │   └── logDebug (lib/logger)
+    ├── next/image
+    ├── summarizeCareers (lib/career-summary)
+    ├── toDateString (lib/custom-date)
+    └── PortfolioData (types/portfolio)
 ```
+
+> 本ツリーは issue #128 で実装から取り直した。`page.tsx` を頂点にした旧ツリーは server-first 化
+> （issue #76）と刷新（issue #138）に追随しておらず、削除済みの Hero の `Button`、`SocialLinks` の
+> `next/image` 依存、`ContactForm` 配下の重複行が残っていた。
 
 ### 4.3 コンポーネント設計原則
 
@@ -958,7 +972,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 | XSS 対策 | React デフォルト | React の JSX エスケープ機能による自動対策 |
 | CSRF 対策 | Next.js デフォルト | API Routes の SameSite Cookie によるデフォルト保護 |
 | Node.js モジュール除外 | next.config.js | クライアントバンドルからサーバー専用モジュールを除外 |
-| 外部リンク安全性 | SocialLinks | `rel="noopener noreferrer"` の設定 |
+| 外部リンク安全性 | SocialLinks / ProductCard | `rel="noopener noreferrer"` の設定 |
 | 開発環境ログ制限 | resend.ts, contact/route.ts | `NODE_ENV === 'development'` の場合のみ詳細ログを出力 |
 
 ### 9.2 入力バリデーション層
@@ -1015,6 +1029,15 @@ PortfolioData
 │   ├── career_title_stack: string
 │   ├── career_title_phase: string
 │   └── career_title_role: string
+│
+├── product_data: ProductData
+│   ├── product_description: string
+│   └── product_items: ProductItem[]
+│       ├── product_title: string
+│       ├── product_contents: string
+│       ├── product_site_url: string      ※ 空文字ならリンクを描画しない
+│       ├── product_repo_url: string      ※ 空文字ならリンクを描画しない
+│       └── product_skill_stack: string[]
 │
 ├── career_data: CareerData[]
 │   ├── career_title: string

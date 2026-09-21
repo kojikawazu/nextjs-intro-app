@@ -16,6 +16,7 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         ).toBeVisible();
         await expect(page.getByRole('heading', { name: 'About', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Product', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Contact', exact: true })).toBeVisible();
 
         // フッターの著作権（データ駆動）
@@ -50,6 +51,34 @@ test.describe('経歴の技術スタック（正常系）', () => {
 
         // 未分類を黙って隠すとデータ追加時の取りこぼしに気づけないため、あえて表に出す設計。
         await expect(page.getByText('その他', { exact: true }).first()).toBeVisible();
+    });
+});
+
+test.describe('個人開発のリンク出し分け（準正常系）', () => {
+    /**
+     * サイト未公開・リポジトリ非公開のプロダクトが実在するため、
+     * 「URL が空ならそのリンクを出さない」は表示仕様そのものになる。
+     * `sample.example.json` は片方だけ欠けた 2 件を意図的に含んでいる。
+     */
+    test('URL が空のプロダクトには、そのリンクだけを出さない', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Product', exact: true })).toBeVisible();
+
+        // リポジトリ非公開: site は出るが repo は出ない
+        await expect(
+            page.getByRole('link', { name: 'タスク管理ツールのサイトを開く' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'タスク管理ツールのリポジトリを開く' }),
+        ).toHaveCount(0);
+
+        // サイト未公開: repo は出るが site は出ない
+        await expect(
+            page.getByRole('link', { name: '静的サイトジェネレータの実験のリポジトリを開く' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: '静的サイトジェネレータの実験のサイトを開く' }),
+        ).toHaveCount(0);
     });
 });
 

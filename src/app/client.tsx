@@ -5,6 +5,7 @@ import { Header } from '@/components/organisms/Header';
 import { ContactForm } from '@/components/organisms/ContactForm';
 import { SocialLinks } from '@/components/molecules/SocialLinks';
 import { CareerCard } from '@/components/molecules/CareerCard';
+import { ProductCard } from '@/components/molecules/ProductCard';
 import { summarizeCareers } from '@/lib/career-summary';
 import { PortfolioData } from '@/types/portfolio';
 import { toDateString } from '@/lib/custom-date';
@@ -68,6 +69,7 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
     const navItems = [
         { name: portfolioData.navbar_data.about_name, href: '#about' },
         { name: portfolioData.navbar_data.career_name, href: '#career' },
+        { name: portfolioData.navbar_data.product_name, href: '#product' },
         { name: portfolioData.navbar_data.contact_name, href: '#contact' },
     ];
 
@@ -195,6 +197,38 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
                             phases={career.career_skill_phase}
                             role={career.career_role}
                             isCurrent={career.career_end === 'now'}
+                        />
+                    ))}
+                </div>
+            </section>
+
+            {/*
+             * Product: 実務経歴（Career）の直後に置く。採用担当者はまず実務を見るため、
+             * 「何ができる人か」への到達を遅らせない位置に個人開発を差し込む（issue #135 の評価軸 1）。
+             */}
+            <section id="product" className="container section-padding">
+                <div className="section-heading">
+                    <h2 className="font-serif text-lg font-bold tracking-widest text-ink">
+                        {portfolioData.navbar_data.product_name}
+                    </h2>
+                    <hr />
+                    <span className="font-mono text-[10px] text-mute">
+                        {portfolioData.product_data.product_items.length}
+                    </span>
+                </div>
+                <p className="mb-8 text-xs text-mute">
+                    {portfolioData.product_data.product_description}
+                </p>
+
+                <div className="flex flex-col gap-10">
+                    {portfolioData.product_data.product_items.map((product, index) => (
+                        <ProductCard
+                            key={index}
+                            title={product.product_title}
+                            description={product.product_contents}
+                            siteUrl={product.product_site_url}
+                            repoUrl={product.product_repo_url}
+                            techStack={product.product_skill_stack}
                         />
                     ))}
                 </div>

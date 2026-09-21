@@ -50,7 +50,13 @@ test.describe('サーバーサイドレンダリング（正常系）', () => {
         // 生の HTML を検証できる。JS を実行しない SNS のクローラが見るものと同じ。
         const html = await (await request.get('/')).text();
 
-        for (const keyword of ['Solving Problems with Technology', 'About', 'Career', 'Contact']) {
+        for (const keyword of [
+            'Solving Problems with Technology',
+            'About',
+            'Career',
+            'Product',
+            'Contact',
+        ]) {
             expect(html).toContain(keyword);
         }
     });

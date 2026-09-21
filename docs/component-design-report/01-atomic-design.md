@@ -25,7 +25,8 @@
     - [2.6 ThemeToggle](#26-themetoggle)
 - [3. Molecules（分子コンポーネント）](#3-molecules分子コンポーネント)
     - [3.1 CareerCard](#31-careercard)
-    - [3.2 SocialLinks](#32-sociallinks)
+    - [3.2 ProductCard](#32-productcard)
+    - [3.3 SocialLinks](#33-sociallinks)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
     - [4.1 Header](#41-header)
     - [4.2 ContactForm](#42-contactform)
@@ -51,8 +52,9 @@ src/components/
 │   ├── Input.tsx
 │   ├── TextArea.tsx
 │   └── ThemeToggle.tsx
-├── molecules/      ← Atoms を組み合わせた複合コンポーネント（2コンポーネント）
+├── molecules/      ← Atoms を組み合わせた複合コンポーネント（3コンポーネント）
 │   ├── CareerCard.tsx
+│   ├── ProductCard.tsx
 │   └── SocialLinks.tsx
 └── organisms/      ← 独立した機能単位のコンポーネント（2コンポーネント）
     ├── ContactForm.tsx
@@ -64,6 +66,7 @@ src/components/
 （`frontend.md`「クライアントコンポーネントのロジックはカスタムフックに切り出す」）。
 現在は `useTheme`（`ThemeToggle` が使用）の 1 件。
 
+> molecules は issue #128 の `ProductCard` 追加で 3 件になった。
 > 階層の件数は 2026-09-22（issue #141）に実ファイルから数え直した。
 > 以前は atoms 4 / molecules 3 と記載されていたが、`ThemeToggle` の追加（#138）と
 > `SkillCard` の削除（#126）に追随していなかった。
@@ -307,7 +310,54 @@ CareerCard (<article> + 左罫 2px)
 **各項目のラベル（「技術スタック」「担当フェーズ」「役割」）はハードコードされており**、GCS の
 `career_title_data` は参照していない（詳細は `docs/05-data-specification.md` §2.6）。
 
-### 3.2 SocialLinks
+### 3.2 ProductCard
+
+**ファイル**: `src/components/molecules/ProductCard.tsx`
+
+**依存 Atom**: なし（`Badge` も使わない）
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | プロダクト名 |
+| `description` | `string` | 概要説明 |
+| `siteUrl` | `string` | 公開サイト URL。空文字ならリンクを描画しない |
+| `repoUrl` | `string` | リポジトリ URL。空文字ならリンクを描画しない |
+| `techStack` | `string[]` | 使用技術。分類せずそのまま並べる |
+| `className` | `string?` | 追加クラス |
+
+**構造**:
+
+```text
+ProductCard (<article> + 左罫 2px)
+├── プロダクト名（h3）
+├── 概要説明
+├── 技術スタック（チップ。空なら見出しごと描画しない）
+└── リンク（site / repo。両方空なら行ごと描画しない）
+```
+
+**`CareerCard` と同じ体裁で組む。** 経歴とプロダクトは「何を作ったか」を示す点で並びの性格が
+同じであり、別の見せ方にすると読み手が切り替えを強いられる。
+
+**`CareerCard` と違う 3 点:**
+
+| 項目 | ProductCard | 理由 |
+|------|-------------|------|
+| 進行中バッジ | 持たない | 個人開発は「いま動いているか」より「何を作ったか」が主題。掲載順で意図を表せる |
+| 技術スタックの分類 | しない（フラットなチップ） | `groupTechStack` は 1 案件 30 件を捌く仕組み。数件では分類ラベルの方が場所を取る |
+| 左罫の色 | 常に `--rule` | 色分けする軸（進行中 / 過去）を持たないため |
+
+**リンクの出し分け**: `site` / `repo` は URL が空文字、**および空白のみ**なら描画しない。
+GCS の JSON は手書きのため、消したつもりのフィールドに空白が残りうる。空白を URL として
+扱うと、押しても何も起きないリンクが画面に出る。
+
+ラベルは `site` / `repo` の 2 語しかなく複数のカードに同じ文字が並ぶため、`aria-label` に
+プロダクト名を含める（`{プロダクト名}のサイトを開く`）。リンク文字だけではどのプロダクトの
+ものか伝わらないため。
+
+**スクリーンショットは表示しない。** `next.config.js` が `images: { unoptimized: true }` のため
+画像最適化が効かず原寸で配信される。判断の詳細は `docs/05-data-specification.md` §2.9。
+
+### 3.3 SocialLinks
 
 **ファイル**: `src/components/molecules/SocialLinks.tsx`
 
@@ -453,6 +503,8 @@ page.tsx（Server Component / force-dynamic）
     ├── Career Section（直接実装）
     │   └── CareerCard (molecule) × N件
     │       └── Badge (atom) ← 進行中の案件のみ
+    ├── Product Section（直接実装）
+    │   └── ProductCard (molecule) × N件
     ├── Contact Section（直接実装）
     │   └── ContactForm (organism)
     │       ├── Input (atom) × 2 ← 名前・メール入力
@@ -490,6 +542,7 @@ page.tsx（Server Component / force-dynamic）
 ├─────────────────────────────────────────────────────┤
 │              Molecules（複合表示部品）                 │
 │    CareerCard: 分類チップ + Badge で経歴を表示          │
+│    ProductCard: 個人開発プロダクトを表示               │
 │    SocialLinks: テキストチップでSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤
 │               Atoms（最小UIパーツ）                   │

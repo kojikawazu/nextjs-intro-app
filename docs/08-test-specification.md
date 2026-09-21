@@ -43,6 +43,7 @@
         - [4.7.8 Header (`src/components/organisms/Header.tsx`)](#478-header-srccomponentsorganismsheadertsx)
         - [4.7.9 ContactForm (`src/components/organisms/ContactForm.tsx`)](#479-contactform-srccomponentsorganismscontactformtsx)
         - [4.7.10 useTheme (`src/hooks/useTheme.ts`)](#4710-usetheme-srchooksusethemets)
+        - [4.7.11 ProductCard (`src/components/molecules/ProductCard.tsx`)](#4711-productcard-srccomponentsmoleculesproductcardtsx)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -62,6 +63,9 @@
     - [6.8 データ取得失敗テスト](#68-データ取得失敗テスト)
     - [6.9 セキュリティヘッダー・CSP テスト](#69-セキュリティヘッダーcsp-テスト)
     - [6.10 フォームアクセシビリティテスト](#610-フォームアクセシビリティテスト)
+    - [6.11 配色テーマ解決テスト](#611-配色テーマ解決テスト)
+    - [6.12 経歴の技術スタック表示](#612-経歴の技術スタック表示)
+    - [6.13 個人開発のリンク出し分け](#613-個人開発のリンク出し分け)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -664,7 +668,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 | 階層 | コンポーネント | テスト仕様 |
 |------|--------------|-----------|
 | Atoms | `Button` / `Input` / `TextArea` / `Badge` / `ThemeToggle` | §4.7.2〜§4.7.6 |
-| Molecules | `CareerCard` / `SocialLinks` | §4.7.1 / §4.7.7 |
+| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` | §4.7.1 / §4.7.7 / §4.7.11 |
 | Organisms | `Header` / `ContactForm` | §4.7.8 / §4.7.9 |
 | Hooks | `useTheme` | §4.7.10 |
 
@@ -711,7 +715,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 
 **issue #138 で `src/components/` に初めてユニットテストを追加し、issue #141 で全コンポーネントへ広げた。** JSX の変換は `vitest.config.ts` の `oxc: { jsx: { runtime: 'automatic' } }` で行う（Vite 8 のトランスフォーマは esbuild ではなく oxc のため、`esbuild: { jsx }` や `@vitejs/plugin-react` は効かない）。
 
-合計 正常系 10 : 準正常系 + 異常系 48（`testing.md` の目安 1 : 2 以上を満たす）。
+合計 正常系 12 : 準正常系 + 異常系 53（`testing.md` の目安 1 : 2 以上を満たす）。
 
 **検証の対象は見た目ではなく振る舞いと契約**とする。クラス名を期待値に書くのは、`variant` / `size` のようにクラスとしてしか観測できない props に限る。それ以外はロール・アクセシブルネーム・`aria-*`・`disabled` など、利用者と支援技術から見える性質で検証する。
 
@@ -867,6 +871,29 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 
 **issue #141 でも変異注入で検出力を確認した**（`disabled` の解除 / `describedby` の付け替え / `id` 優先の無視 / `aria-invalid` の無効化 / `rel` の削除 / メニュー閉じ条件の緩和 / `useCallback` の除去 / `finally` の削除 / `variant` の統合 の 9 変異）。いずれも落ちることを確認済み。
 
+#### 4.7.11 ProductCard (`src/components/molecules/ProductCard.tsx`)
+
+正常系2 : 準正常系+異常系5（issue #128）。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-PC-001 | タイトル・概要・技術スタック・両方のリンクを表示 | — |
+| UT-PC-002 | 外部リンクが別タブで開き、遷移先から操作されない | `target="_blank"` と `rel` の `noopener` / `noreferrer` を個別に確認 |
+| UT-PC-003 | サイト URL が空なら site リンクを描画しない | repo リンクは残る |
+| UT-PC-004 | リポジトリ URL が空なら repo リンクを描画しない | site リンクは残る |
+| UT-PC-005 | 両方の URL が空ならリンクを 1 つも描画しない | リンク行ごと消える |
+| UT-PC-006 | 技術スタックが空なら見出しごと描画しない | — |
+| UT-PC-007 | 空白のみの URL は未設定として扱う | `"   "` / `"\t\n"` でリンクを出さない |
+
+**`rel` を 2 語まとめて検証しない理由**: `noopener` が `window.opener` を切り、`noreferrer` が
+Referer を落とす。役割が違うため、片方だけ消える退行を拾えるよう個別に確認する。
+
+**空白のみの URL を異常系に置く理由**: GCS の JSON は手書きのため、消したつもりのフィールドに
+空白が残りうる。空白を URL として扱うと、押しても何も起きないリンクが画面に出る。
+
+**導入時に、意図的に壊して落ちることを確認済み**（`trim()` の除去 / `rel` から `noreferrer` を
+削除 の 2 変異。いずれも該当テストのみが落ちた）。
+
 ---
 
 ## 5. 統合テスト仕様
@@ -946,8 +973,12 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 | E2E-HOME-003 | Heroセクションが表示される | ページロード完了を待機 | 「Solving Problems with Technology」見出しが表示される |
 | E2E-HOME-004 | Aboutセクションが表示される | #about にスクロール | About見出しと紹介文が表示される |
 | E2E-HOME-005 | Careerセクションが表示される | #career にスクロール | Career見出しと経歴カードが表示される |
+| E2E-HOME-009 | Productセクションが表示される | ページロード完了を待機 | Product見出しが表示される |
 | E2E-HOME-007 | Contactセクションが表示される | #contact にスクロール | Contact見出しとフォームが表示される |
 | E2E-HOME-008 | フッターが表示される | ページ最下部にスクロール | コピーライト文が表示される |
+
+> **ID は採番順であり表示順ではない。** 行は表示順に並べている。E2E-HOME-006 は Skills
+> セクションのもので、issue #126 の削除に伴い欠番になっている（別の用途へ再利用しない）。
 
 ### 6.2 ナビゲーションテスト
 
@@ -1022,7 +1053,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 
 | テストID | 分類 | テストケース | 検証内容 |
 |----------|------|------------|---------|
-| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Contact` を含む |
+| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Product` / `Contact` を含む |
 | E2E-SSR-002 | 準正常系 | 退行の検出 | `animate-spin` を含まず、タグ除去後の本文が 300 文字超 |
 
 > **閾値の根拠**: 300 は E2E シードデータ基準（現状 973 文字）。データ取得が `useEffect` に
@@ -1115,6 +1146,23 @@ projects: [
 |----------|------------|---------|
 | E2E-TS-001 | 技術を分類ごとにまとめて表示する | 分類見出し（言語）と技術が出る |
 | E2E-TS-002 | 対応表に無い技術は「その他」として出る | 未分類を黙って隠さない設計の確認 |
+
+---
+
+### 6.13 個人開発のリンク出し分け
+
+`e2e/home.spec.ts`（issue #128）。サイト未公開・リポジトリ非公開のプロダクトが実在するため、
+**URL の有無による出し分けは表示仕様そのもの**になる。`sample.example.json` は片方だけ欠けた
+2 件を意図的に含んでおり、シードデータがこのテストの前提になっている。
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| E2E-PROD-001 | 準正常系 | リポジトリ非公開のプロダクト | site リンクは出るが repo リンクは出ない |
+| E2E-PROD-002 | 準正常系 | サイト未公開のプロダクト | repo リンクは出るが site リンクは出ない |
+
+UT（§4.7.11）と重なるが、**UT はコンポーネント単体の契約**、**E2E は実データ経路で同じ結果に
+なること**を見ている。GCS から読んだ値が `client.tsx` を経て `ProductCard` へ正しく渡っているかは
+UT では確認できない。
 
 ---
 

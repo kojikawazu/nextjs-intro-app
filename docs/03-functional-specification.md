@@ -33,18 +33,23 @@
         - [CareerCard コンポーネント仕様](#careercard-コンポーネント仕様)
         - [技術スタックの表示](#技術スタックの表示)
         - [日付フォーマットロジック (`formatCareerPeriod`)](#日付フォーマットロジック-formatcareerperiod)
-    - [3.5 Contact Section](#35-contact-section)
+    - [3.5 Product Section](#35-product-section)
         - [機能概要](#機能概要-4)
         - [仕様詳細](#仕様詳細-4)
+        - [ProductCard コンポーネント仕様](#productcard-コンポーネント仕様)
+        - [リンクの出し分け](#リンクの出し分け)
+    - [3.6 Contact Section](#36-contact-section)
+        - [機能概要](#機能概要-5)
+        - [仕様詳細](#仕様詳細-5)
         - [フォームフィールド](#フォームフィールド)
         - [バリデーションルール (Zod スキーマ)](#バリデーションルール-zod-スキーマ)
         - [サーバーサイドバリデーション (`POST /api/contact`)](#サーバーサイドバリデーション-post-apicontact)
         - [送信フロー](#送信フロー)
         - [送信完了画面](#送信完了画面)
         - [メール送信仕様](#メール送信仕様)
-    - [3.6 Footer](#36-footer)
-        - [機能概要](#機能概要-5)
-        - [仕様詳細](#仕様詳細-5)
+    - [3.7 Footer](#37-footer)
+        - [機能概要](#機能概要-6)
+        - [仕様詳細](#仕様詳細-6)
 - [4. ユーザーフロー](#4-ユーザーフロー)
     - [4.1 ページ読み込みフロー](#41-ページ読み込みフロー)
     - [4.2 ナビゲーションフロー](#42-ナビゲーションフロー)
@@ -111,16 +116,20 @@
 
 ### 2.1 ページ構成
 
-本アプリケーションはシングルページアプリケーション (SPA) として構成され、全セクションが `src/app/page.tsx` 内に配置されたクライアントコンポーネント (`'use client'`) である。
+本アプリケーションは単一ページのアンカー構成であり、全セクションが 1 つのページに並ぶ。
+データ取得は `src/app/page.tsx`（Server Component）が行い、描画を `src/app/client.tsx` の
+`HomeClient`（Client Component）へ委譲する（issue #76 の server-first 化）。
 
 ```text
-page.tsx (クライアントコンポーネント)
-  +-- Header (固定ヘッダー)
-  +-- Hero Section
-  +-- About Section
-  +-- Career Section
-  +-- Contact Section
-  +-- Footer
+page.tsx (Server Component: データ取得)
+  +-- client.tsx / HomeClient (Client Component: 描画)
+        +-- Header (通常フロー)
+        +-- Hero Section
+        +-- About Section
+        +-- Career Section
+        +-- Product Section
+        +-- Contact Section
+        +-- Footer
 ```
 
 ### 2.2 データフロー
@@ -157,7 +166,7 @@ page.tsx (クライアントコンポーネント)
 
 #### デスクトップナビゲーション (md以上)
 
-- ナビ項目: About, Career, Contact（`navbar_data` から取得）
+- ナビ項目: About, Career, Product, Contact（`navbar_data` から取得）
 - **`<button>` を維持する。** `e2e/home.spec.ts` と `e2e/security.spec.ts` が `getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、`<a>` に変えると JS を実行しなくても遷移してしまい確認の意味が失われる（issue #131 で一度壊した箇所）
 - クリック時: 対応セクションへスムーズスクロール（`prefers-reduced-motion` 時は即時）
 - ホバー: 文字色を `--mute` から `--ink` へ
@@ -290,7 +299,7 @@ page.tsx (クライアントコンポーネント)
 
 1 案件あたり最大 30 件がフラットに並ぶと、読み手が信号（言語・フレームワーク・テスト）とノイズ（協働ツール）を自力で分離しなければならない。最新案件の 29 件のうち 10 件は協働ツールだった。
 
-- **分類ごとにまとめる**（`groupTechStack`、issue #137）。分類の定義は `docs/05-data-specification.md` §5.4
+- **分類ごとにまとめる**（`groupTechStack`、issue #137）。分類の定義は `docs/05-data-specification.md` §5.5
 - **中身のある分類だけを出す。** 案件ごとに登場する分類が違う（最新案件には `OS・ミドルウェア` が 1 件しかなく、PC 基盤の案件には `テスト` と `設計` が 1 件も無い）
 - **技術は 1 件ずつチップにする。** 読点で連ねると「文章」として読まれ、個々の技術を拾い読みできない
 - チップは等幅にしない。`C言語` `グラフィックMW` のように日本語を含む技術名があり、等幅フォントにグリフが無いと字形が混ざる
@@ -310,7 +319,84 @@ page.tsx (クライアントコンポーネント)
 
 ---
 
-### 3.5 Contact Section
+### 3.5 Product Section
+
+#### 機能概要
+
+個人開発したプロダクトを紹介するセクション（issue #128 / 親 #125）。**Career の直後**に置く。
+採用担当者はまず実務経歴を読むため、「何ができる人か」への到達を遅らせない位置に差し込む
+（issue #135 の評価軸 1）。
+
+掲載データは GCS の JSON へ手書きする。GitHub API からのリポジトリ自動取得は行わない。
+**見せたいものだけを選び、説明文と見せ方を制御する**のが目的であり、リポジトリ一覧を
+そのまま出すのとは用途が違うため。
+
+#### 仕様詳細
+
+| 項目 | 仕様 |
+|------|------|
+| アンカー | `#product` |
+| 見出し | `navbar_data.product_name`（罫線 + 右端に件数） |
+| 説明文 | `product_data.product_description` |
+| 一覧 | `product_data.product_items` を配列順に描画（`flex flex-col gap-10`） |
+| カード | `ProductCard`（`src/components/molecules/ProductCard.tsx`） |
+
+**件数の段階表示（「and more...」）は実装しない。** 段階表示は状態を持つため `'use client'` の
+役割が増える。掲載件数は GCS 側で絞る運用とし、画面は受け取った配列をそのまま描画する。
+
+#### ProductCard コンポーネント仕様
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | プロダクト名 |
+| `description` | `string` | 概要説明 |
+| `siteUrl` | `string` | 公開サイト URL。空文字ならリンクを描画しない |
+| `repoUrl` | `string` | リポジトリ URL。空文字ならリンクを描画しない |
+| `techStack` | `string[]` | 使用技術。分類せずそのままチップで並べる |
+| `className` | `string?` | 追加クラス |
+
+**カード内の構成:**
+
+1. プロダクト名
+2. 概要説明
+3. 技術スタック（チップ。空なら見出しごと描画しない）
+4. リンク（`site` / `repo`。両方空なら行ごと描画しない）
+
+`CareerCard` と同じ左罫 2px の `<article>` で組む。経歴とプロダクトは「何を作ったか」を示す点で
+並びの性格が同じであり、別の見せ方にすると読み手が切り替えを強いられる。
+
+**進行中バッジは持たない。** `CareerCard` の左罫の色分けは在籍中の案件を際立たせるためのものだが、
+個人開発は「いま動いているか」より「何を作ったか」が主題であり、掲載順で意図を表せる。
+
+**技術スタックは分類しない。** `groupTechStack`（issue #137）は 1 案件あたり最大 30 件を捌く
+仕組みで、数件しか並ばない個人開発では分類ラベルの方が場所を取る。
+
+**スクリーンショットは表示しない。** `next.config.js` が `images: { unoptimized: true }` のため
+画像最適化が効かず原寸で配信される。`docs/04` の LCP 目標 2.5 秒に対し、掲載件数分の画像が
+ページ転送量の大半を占めることになる。`siteUrl` から実物を見に行けるため情報は途切れない。
+
+#### リンクの出し分け
+
+サイト未公開・リポジトリ非公開のプロダクトが実在するため、**URL の有無による出し分けが表示仕様**になる。
+
+| 状態 | 表示 |
+|------|------|
+| 両方あり | `site` `repo` の 2 つ |
+| 片方が空文字 | 残った方だけ |
+| 両方空文字 | リンク行ごと描画しない |
+| 空白のみ（`"  "`） | 未設定として扱う |
+
+空白のみを未設定に含めるのは、**GCS の JSON が手書き**であり、消したつもりのフィールドに
+空白が残るケースが現実に起こりうるため。空白を URL として扱うと、押しても何も起きないリンクが
+画面に出る。
+
+リンクは `target="_blank"` + `rel="noopener noreferrer"`（docs/06 §5.1）。ラベルは `site` / `repo` の
+2 語しかなく複数のカードに同じ文字が並ぶため、`aria-label` に `{プロダクト名}のサイトを開く` /
+`{プロダクト名}のリポジトリを開く` を設定し、支援技術からどのプロダクトのリンクか分かるようにする。
+
+---
+
+### 3.6 Contact Section
 
 #### 機能概要
 
@@ -402,7 +488,7 @@ page.tsx (クライアントコンポーネント)
 
 ---
 
-### 3.6 Footer
+### 3.7 Footer
 
 #### 機能概要
 
@@ -624,6 +710,7 @@ src/components/
   |   +-- ThemeToggle.tsx
   +-- molecules/      ... Atoms を組み合わせた複合コンポーネント
   |   +-- CareerCard.tsx
+  |   +-- ProductCard.tsx
   |   +-- SocialLinks.tsx
   +-- organisms/      ... ページの主要セクションを構成するコンポーネント
       +-- Header.tsx
@@ -719,6 +806,13 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 6. 役割
 
 ルート要素は `<div>` ではなく **`<article>`**。経歴 1 件は独立して意味を持つ内容のため。
+
+#### ProductCard
+
+個人開発プロダクト 1 件分のカード。Props と構成は §3.5 を参照。
+
+ルート要素は `<article>`。`CareerCard` と同じく、プロダクト 1 件は独立して意味を持つ内容のため。
+表示専用で外部から DOM を触る必要がないため `forwardRef` は使わない。
 
 #### SocialLinks
 
@@ -859,7 +953,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 ```typescript
 PortfolioData
   +-- navbar_data: NavbarData
-  |     link_title, about_name, career_name, contact_name
+  |     link_title, about_name, career_name, product_name, contact_name
   +-- hero_data: HeroData
   |     hero_img_url
   +-- about_data: AboutData
@@ -870,6 +964,10 @@ PortfolioData
   +-- career_data: CareerData[]
   |     career_title, career_start, career_end, career_member,
   |     career_contents, career_skill_stack[], career_skill_phase[], career_role
+  +-- product_data: ProductData
+  |     product_description, product_items: ProductItem[]
+  |       product_title, product_contents, product_site_url,
+  |       product_repo_url, product_skill_stack[]
   +-- contact_data: ContactData           ※ 型定義のみ。UIでは未使用（文言はハードコード）
   |     contact_name, contact_email, contact_contents, contact_btn_name
   +-- footer_data: FooterData
