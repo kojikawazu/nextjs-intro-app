@@ -84,8 +84,12 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
         <div className="min-h-screen">
             <Header navItems={navItems} logo={portfolioData.navbar_data.link_title} />
 
-            {/* Hero: 見出し → 具体 → 数値帯 の 3 段のみ */}
-            <section className="container animate-fade-in-up py-16 lg:py-24">
+            {/*
+             * Hero: 見出し → 具体 → 数値帯 の 3 段のみ。
+             * 上下余白は他セクション（.section-padding）より 1 段広く取る。先頭であり、
+             * ヘッダーの罫線との間を詰めると見出しがヘッダーに貼り付いて見えるため。
+             */}
+            <section className="container animate-fade-in-up py-10 lg:py-14">
                 {/*
                  * 折り返しは <br /> ではなく幅で作る。<br /> を挟むとテキストノードが分かれ、
                  * 見出しのアクセシブル名が「Solving Problemswith Technology」になりうる。
