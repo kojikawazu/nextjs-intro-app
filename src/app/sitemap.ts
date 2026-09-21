@@ -4,7 +4,7 @@ import { getSiteUrl } from '@/lib/site-url';
 /**
  * `sitemap.xml` を生成する。
  *
- * 本サイトは単一ページ構成で、各セクション（About / Career / Skills / Contact）は
+ * 本サイトは単一ページ構成で、各セクション（About / Career / Contact）は
  * アンカーリンクのため独立した URL を持たない。したがってエントリはトップページ 1 件のみとする。
  *
  * apex と www の双方が Cloud Run にマッピングされているが、sitemap には正規オリジン側だけを
