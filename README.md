@@ -50,7 +50,7 @@
 
 ## 📋 必要条件
 
-- **Node.js** 18.0.0 以上
+- **Node.js** 24.0.0 以上（`package.json` の `engines.node` が正本。本番 Docker / CI とも 24 系）
 - **pnpm** 10.x（リポジトリは `pnpm@10.33.0` を `packageManager` でピン留め。`corepack enable` で自動的に揃います）
 
 ## ⚡ クイックスタート
@@ -120,7 +120,7 @@ nextjs-intro-app/
 ├── docs/                    # 仕様・設計ドキュメント（索引: docs/README.md）
 ├── terraform/               # Cloud Run / Artifact Registry の IaC
 ├── .github/workflows/       # GitHub Actions（Cloud Run 自動デプロイ）
-├── Dockerfile               # マルチステージビルド（pnpm / node:18-alpine）
+├── Dockerfile               # マルチステージビルド（pnpm / node:24-alpine）
 ├── sample.example.json      # 表示データのサンプル（cp して sample.json に）
 └── .env.example             # 環境変数テンプレート
 ```

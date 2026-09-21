@@ -21,7 +21,11 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v7
               with:
-                  # testcontainers（→ undici@8）が Node >= 22.19 を要求するため 24 を使用。
+                  # 本番（Dockerfile: node:24-alpine）と揃える。package.json の
+                  # engines.node が正本（issue #130）。
+                  #
+                  # 下限を決めているのは testcontainers（→ undici@8）の Node >= 22.19。
+                  # next@16 の >= 20.9 より厳しいため、こちらが効く。
                   node-version: 24
                   cache: pnpm
 

@@ -135,7 +135,7 @@
 | パッケージ | バージョン | 用途 |
 |-----------|-----------|------|
 | typescript | 5.5.2 | 型安全な JavaScript |
-| @types/node | 20.14.8 | Node.js 型定義 |
+| @types/node | 24.13.6 | Node.js 型定義（実行環境の Node メジャーに揃える） |
 | @types/react | 19.3.0 | React 型定義 |
 | @types/react-dom | 19.3.0 | React DOM 型定義 |
 | tailwindcss | 3.4.4 | ユーティリティファースト CSS フレームワーク |
@@ -595,6 +595,23 @@ BFF の公開 I/F として維持しており、仕様は `docs/07-api-specifica
 | `e2e.yml` | PR（main 宛） | Playwright（fake-gcs-server コンテナ） |
 | `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env` 系ファイルの追跡検出（docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
+
+#### Node バージョンの統一
+
+**`package.json` の `engines.node` を正本とする。**
+
+| 層 | バージョン | 定義箇所 |
+|---|---|---|
+| 本番ランタイム | **24**（`node:24-alpine`） | `Dockerfile`（builder / runtime の 2 箇所） |
+| CI / E2E | **24** | `.github/workflows/ci.yml` / `e2e.yml` |
+| 型定義 | **24 系**（`@types/node@24.x`） | `package.json` |
+| 宣言 | `>=24.0.0` | `package.json` の `engines.node` |
+
+以前は本番 v18 / CI 24 / 型定義 26 相当と 3 層で食い違っており、**型チェックは通るが本番に存在しない API** を書けてしまう状態だった。しかも CI（24）でも再現しないため、本番でのみ落ちる（issue #130）。
+
+下限を決めているのは **testcontainers（→ `undici@8`）の `node >= 22.19.0`** で、`next@16` の `>= 20.9.0` より厳しい。22 系でも要件は満たすが、CI が既に 24 で稼働していたため 24 に揃えた。
+
+`@types/node` のメジャー更新は Dependabot の対象外にしている。自動で上がると上記の不整合に戻るため、Dockerfile と `engines.node` を上げるときに手動で揃える。
 
 ```text
 ┌─────────────────────────────────────────────────────────┐

@@ -27,7 +27,9 @@ updates:
           - dependency-name: next
             update-types:
               - version-update:semver-major
-          # Node ランタイムのバージョン統一と揃える必要がある（docs/11 タスク #53）
+          # 型定義は実行環境の Node メジャーに追従させる（issue #130）。
+          # 自動でメジャーが上がると「本番に存在しない API を型が通す」状態に戻るため、
+          # Dockerfile / engines.node を上げるときに手動で揃える。
           - dependency-name: '@types/node'
             update-types:
               - version-update:semver-major
