@@ -88,11 +88,14 @@ test.describe('CSP 適用下の描画（正常系）', () => {
         expect(scriptCounts.total).toBeGreaterThan(0);
         expect(scriptCounts.withNonce).toBe(scriptCounts.total);
 
-        // クライアント state の更新が効く＝ハイドレーション済み。
-        const loadMore = page.getByRole('button', { name: 'and more...' });
-        const before = await page.locator('h3').count();
-        await loadMore.click();
-        await expect(page.locator('h3')).not.toHaveCount(before);
+        // クライアント側のイベントハンドラが動く＝ハイドレーション済み。
+        // ヘッダーのナビは onClick で scrollIntoView を呼ぶため、JS が動いていないと
+        // スクロールしない（href によるジャンプではない）。
+        //
+        // 以前は Skills の「and more...」で state 更新を確認していたが、
+        // セクションごと削除された（issue #126）ため、現存する対話へ差し替えた。
+        await page.locator('header').getByRole('button', { name: 'Contact' }).click();
+        await expect(page.locator('#contact')).toBeInViewport({ timeout: 10_000 });
 
         expect(violations).toEqual([]);
     });

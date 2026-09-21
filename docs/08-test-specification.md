@@ -915,7 +915,7 @@ projects: [
 | E2E-SEC-003 | nonce はリクエストごとに変わる | 2 回取得した nonce が一致しない |
 | E2E-SEC-004 | 静的プリレンダーされる 404 ページには CSP を付けない | `content-security-policy` が無く、`X-Frame-Options` は付く |
 | E2E-SEC-005 | 404 ページのスクリプトがブロックされない | CSP 違反のコンソール出力が 0 件 |
-| E2E-SEC-006 | CSP 違反なしでハイドレーションが完了する | 全 script に nonce、「and more...」クリックで表示件数が増える、違反 0 件 |
+| E2E-SEC-006 | CSP 違反なしでハイドレーションが完了する | 全 script に nonce、ヘッダーナビのクリックで `#contact` へスクロールする（onClick の scrollIntoView が動く＝ハイドレーション済み）、違反 0 件 |
 
 ### 6.10 フォームアクセシビリティテスト
 
