@@ -444,7 +444,7 @@ GitHub 側の Dependabot alerts（Settings → Code security）も有効化す�
 |---|---|---|
 | `next` | Node / ESLint の前提条件が絡む | #88 |
 | `react` / `react-dom` / `@types/react` | `forwardRef` を多用する atoms 全体に影響する | #104 |
-| `@types/node` | Node ランタイムのバージョン統一と揃える必要がある | docs/11 タスク #53 |
+| `@types/node` | 型定義は実行環境の Node メジャーに追従させる。自動でメジャーが上がると「本番に存在しない API を型が通す」状態に戻る | issue #130 |
 
 除外する理由は 2 つ。自動 PR には**何を確認すべきかが残らない**こと、そして**毎週再作成されて競合の温床になる**ことである。
 
