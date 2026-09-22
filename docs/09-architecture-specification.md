@@ -239,6 +239,7 @@ src/
 │   ├── molecules/              # Atoms を組み合わせた複合部品
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
 │   │   ├── ProductCard.tsx     # 個人開発カード (概要, 技術スタック, site / repo リンク)
+│   │   ├── ArticleEntry.tsx    # 執筆記事の行 (タイトルリンク, 媒体・公開年月, 概要)
 │   │   └── SocialLinks.tsx     # SNS リンク群 (名前のテキスト + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
@@ -318,11 +319,11 @@ src/
 │  │  │   - Badge       │ │   - テキストチップ│            │  │
 │  │  │   - 分類チップ   │ │   - 外部リンク   │            │  │
 │  │  └─────────────────┘ └─────────────────┘            │  │
-│  │  ┌─────────────────┐                                │  │
-│  │  │   ProductCard   │                                │  │
-│  │  │   - 技術チップ   │                                │  │
-│  │  │   - 外部リンク   │                                │  │
-│  │  └─────────────────┘                                │  │
+│  │  ┌─────────────────┐ ┌─────────────────┐            │  │
+│  │  │   ProductCard   │ │  ArticleEntry   │            │  │
+│  │  │   - 技術チップ   │ │   - 罫線区切り   │            │  │
+│  │  │   - 外部リンク   │ │   - 外部リンク   │            │  │
+│  │  └─────────────────┘ └─────────────────┘            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -352,6 +353,8 @@ page.tsx (Server Component)
     │   ├── groupTechStack (lib)
     │   └── cn (util)
     ├── ProductCard (molecule)
+    │   └── cn (util)
+    ├── ArticleEntry (molecule)
     │   └── cn (util)
     ├── SocialLinks (molecule)
     │   └── cn (util)
@@ -972,7 +975,7 @@ Cloud Run 側のドメインマッピングは削除済み。
 | XSS 対策 | React デフォルト | React の JSX エスケープ機能による自動対策 |
 | CSRF 対策 | Next.js デフォルト | API Routes の SameSite Cookie によるデフォルト保護 |
 | Node.js モジュール除外 | next.config.js | クライアントバンドルからサーバー専用モジュールを除外 |
-| 外部リンク安全性 | SocialLinks / ProductCard | `rel="noopener noreferrer"` の設定 |
+| 外部リンク安全性 | SocialLinks / ProductCard / ArticleEntry | `rel="noopener noreferrer"` の設定 |
 | 開発環境ログ制限 | resend.ts, contact/route.ts | `NODE_ENV === 'development'` の場合のみ詳細ログを出力 |
 
 ### 9.2 入力バリデーション層
@@ -1038,6 +1041,15 @@ PortfolioData
 │       ├── product_site_url: string      ※ 空文字ならリンクを描画しない
 │       ├── product_repo_url: string      ※ 空文字ならリンクを描画しない
 │       └── product_skill_stack: string[]
+│
+├── article_data: ArticleData
+│   ├── article_description: string
+│   └── article_items: ArticleItem[]
+│       ├── article_title: string
+│       ├── article_url: string            ※ 空文字ならリンクにしない
+│       ├── article_platform: string
+│       ├── article_published_at: string
+│       └── article_contents: string
 │
 ├── career_data: CareerData[]
 │   ├── career_title: string

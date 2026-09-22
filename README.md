@@ -210,13 +210,13 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | レスポンシブデザイン | ✅ | Mobile / Tablet / Desktop の 3 段階 |
 | スムーススクロールナビゲーション | ✅ | ヘッダー＋モバイルメニュー |
 | ライト / ダークテーマ切替 | ✅ | 既定は OS の `prefers-color-scheme`。選択は Cookie に保存し、サーバー側で初期 HTML に反映するためちらつかない |
-| Hero / About / Career / Product / Contact / Footer | ✅ | 1 ページ構成。個人開発（Product）は issue #128 で追加 |
+| Hero / About / Career / Product / Articles / Contact / Footer | ✅ | 1 ページ構成。個人開発（Product）は issue #128、執筆記事（Articles）は issue #127 で追加 |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
 | sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
 | アクセシビリティ | 🟡 | フォームは `htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role="status"` / `role="alert"` に対応。`prefers-reduced-motion: reduce` で動きを無効化。本文・見出しは WCAG 2.1 AA（4.5:1）を両テーマで満たす。スキップリンクは未対応 |
-| 自動テスト | ✅ | Vitest + Testing Library（ユニット 291 件・全コンポーネントを含む）／ Playwright（E2E・スモーク 44 件）。方針は [docs/08](./docs/08-test-specification.md) |
+| 自動テスト | ✅ | Vitest + Testing Library（ユニット 299 件・全コンポーネントを含む）／ Playwright（E2E・スモーク 45 件）。方針は [docs/08](./docs/08-test-specification.md) |
 | データ更新 UI（CMS / 管理画面） | 🔜 | 現状は GCS / `sample.json` を直接編集 |
 
 ## 🚀 デプロイ

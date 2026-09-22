@@ -6,6 +6,7 @@ import { ContactForm } from '@/components/organisms/ContactForm';
 import { SocialLinks } from '@/components/molecules/SocialLinks';
 import { CareerCard } from '@/components/molecules/CareerCard';
 import { ProductCard } from '@/components/molecules/ProductCard';
+import { ArticleEntry } from '@/components/molecules/ArticleEntry';
 import { summarizeCareers } from '@/lib/career-summary';
 import { PortfolioData } from '@/types/portfolio';
 import { toDateString } from '@/lib/custom-date';
@@ -70,6 +71,7 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
         { name: portfolioData.navbar_data.about_name, href: '#about' },
         { name: portfolioData.navbar_data.career_name, href: '#career' },
         { name: portfolioData.navbar_data.product_name, href: '#product' },
+        { name: portfolioData.navbar_data.article_name, href: '#articles' },
         { name: portfolioData.navbar_data.contact_name, href: '#contact' },
     ];
 
@@ -229,6 +231,41 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
                             siteUrl={product.product_site_url}
                             repoUrl={product.product_repo_url}
                             techStack={product.product_skill_stack}
+                        />
+                    ))}
+                </div>
+            </section>
+
+            {/*
+             * Articles: 実績（Career / Product）の後ろに置く。何を作ったかより先に
+             * 何を書いたかを見せる理由がないため。
+             *
+             * 見出しを `Blog` にしないのは、上の Product に自作のブログ基盤
+             * 「ブログWebアプリ」が並んでいるため（issue #127）。
+             */}
+            <section id="articles" className="container section-padding">
+                <div className="section-heading">
+                    <h2 className="font-serif text-lg font-bold tracking-widest text-ink">
+                        {portfolioData.navbar_data.article_name}
+                    </h2>
+                    <hr />
+                    <span className="font-mono text-[10px] text-mute">
+                        {portfolioData.article_data.article_items.length}
+                    </span>
+                </div>
+                <p className="mb-8 text-xs text-mute">
+                    {portfolioData.article_data.article_description}
+                </p>
+
+                <div>
+                    {portfolioData.article_data.article_items.map((article, index) => (
+                        <ArticleEntry
+                            key={index}
+                            title={article.article_title}
+                            url={article.article_url}
+                            platform={article.article_platform}
+                            publishedAt={article.article_published_at}
+                            description={article.article_contents}
                         />
                     ))}
                 </div>

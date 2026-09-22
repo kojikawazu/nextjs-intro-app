@@ -17,6 +17,7 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         await expect(page.getByRole('heading', { name: 'About', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Product', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Articles', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Contact', exact: true })).toBeVisible();
 
         // フッターの著作権（データ駆動）
@@ -79,6 +80,26 @@ test.describe('個人開発のリンク出し分け（準正常系）', () => {
         await expect(
             page.getByRole('link', { name: '静的サイトジェネレータの実験のサイトを開く' }),
         ).toHaveCount(0);
+    });
+});
+
+test.describe('執筆記事（正常系）', () => {
+    test('記事タイトルが外部リンクとして表示される', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Articles', exact: true })).toBeVisible();
+
+        // タイトル自体をアクセシブル名に使う（aria-label で上書きしない）設計のため、
+        // 表示テキストでリンクを引けることが仕様の一部になる。
+        const link = page.getByRole('link', {
+            name: 'Next.js の App Router を業務で使ってみた記録',
+        });
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', /noopener/);
+        await expect(link).toHaveAttribute('rel', /noreferrer/);
+
+        // 媒体と公開年月は中黒で連結して 1 行に出す。
+        await expect(page.getByText('Zenn ・ 2024年5月')).toBeVisible();
     });
 });
 

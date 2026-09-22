@@ -267,12 +267,12 @@ Cache-Control: public, s-maxage=300, stale-while-revalidate=86400
 |------|----------|
 | `<header>` | ページヘッダー (ナビゲーション) |
 | `<nav>` | デスクトップ・モバイルナビゲーション |
-| `<section>` | Hero, About, Career, Product, Contact 各セクション。`CareerCard` 内の技術スタック / 担当フェーズ / 役割にも使う |
-| `<article>` | 経歴カード (`CareerCard`) と個人開発カード (`ProductCard`)。1 件が独立して意味を持つ内容のため |
+| `<section>` | Hero, About, Career, Product, Articles, Contact 各セクション。`CareerCard` 内の技術スタック / 担当フェーズ / 役割にも使う |
+| `<article>` | 経歴カード (`CareerCard`)・個人開発カード (`ProductCard`)・記事の行 (`ArticleEntry`)。1 件が独立して意味を持つ内容のため |
 | `<footer>` | ページフッター (コピーライト) |
 | `<h1>` | ヒーロー見出し（ページ内に 1 つ）。**ヘッダーロゴは `<span>`**。見出しの階層を持たない装飾的なラベルであり、`<h1>` が 2 つになるのを避けるため |
 | `<h2>` | 各セクションタイトル |
-| `<h3>` | 経歴カードのタイトル、送信完了の見出し |
+| `<h3>` | 経歴カード・個人開発カードのタイトル、記事タイトル、送信完了の見出し |
 | `<h4>` | 経歴カード内の項目見出し (技術スタック / 担当フェーズ / 役割) |
 | `<dl>` / `<dt>` / `<dd>` | Hero の数値帯（ラベルと値）、経歴カードの技術スタック（分類名と技術チップ） |
 

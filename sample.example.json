@@ -4,6 +4,7 @@
         "about_name": "About",
         "career_name": "Career",
         "product_name": "Product",
+        "article_name": "Articles",
         "contact_name": "Contact"
     },
     "hero_data": {
@@ -88,6 +89,32 @@
                 "product_site_url": "",
                 "product_repo_url": "https://github.com/",
                 "product_skill_stack": ["Go", "Markdown"]
+            }
+        ]
+    },
+    "article_data": {
+        "article_description": "技術記事として公開しているもののうち、反響のあったものです。",
+        "article_items": [
+            {
+                "article_title": "Next.js の App Router を業務で使ってみた記録",
+                "article_url": "https://zenn.dev/",
+                "article_platform": "Zenn",
+                "article_published_at": "2024年5月",
+                "article_contents": "Server Component と Client Component の境界をどう引いたかを、実装の判断ごとに整理した記録。"
+            },
+            {
+                "article_title": "TypeScript の型で仕様を表現する",
+                "article_url": "https://zenn.dev/",
+                "article_platform": "Zenn",
+                "article_published_at": "2024年2月",
+                "article_contents": "ユニオン型と判別可能なタグで、取りうる状態を型に落とし込む手順をまとめた記録。"
+            },
+            {
+                "article_title": "Cloud Run へのデプロイを GitHub Actions で自動化する",
+                "article_url": "https://qiita.com/",
+                "article_platform": "Qiita",
+                "article_published_at": "2023年11月",
+                "article_contents": "ビルドから認証、デプロイまでの流れと、詰まった箇所の対処を残した記録。"
             }
         ]
     },

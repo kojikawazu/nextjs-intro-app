@@ -19,6 +19,8 @@ export interface PortfolioData {
     career_data: CareerData[];
     /** 個人開発セクションの表示データ */
     product_data: ProductData;
+    /** 執筆記事セクションの表示データ */
+    article_data: ArticleData;
     /** お問い合わせセクションの表示データ。現在の UI では未参照（`ContactData` 参照） */
     contact_data: ContactData;
     /** フッターの表示データ */
@@ -35,6 +37,8 @@ export interface NavbarData {
     career_name: string;
     /** 個人開発セクションのナビリンク表示名 */
     product_name: string;
+    /** 執筆記事セクションのナビリンク表示名 */
+    article_name: string;
     /** Contact セクションのナビリンク表示名 */
     contact_name: string;
 }
@@ -154,11 +158,53 @@ export interface ProductItem {
 }
 
 /**
+ * 執筆記事セクションの表示データ。
+ *
+ * 掲載内容は GCS の JSON へ手書きする（issue #127、親 #125 の共通前提 1）。
+ * Zenn / Qiita の API からの自動取得は行わない。取得を足すと `repositories/` の新規実装・
+ * キャッシュ・レート制限・障害時のフォールバックがすべて必要になる一方、掲載したいのは
+ * **反響のあった数本だけ**であり、全件を機械的に並べる用途ではないため。
+ *
+ * **セクション名は `Blog` ではなく `Articles`。** 個人開発セクション（issue #128）に
+ * 自作のブログ基盤「ブログWebアプリ」を掲載しており、`Blog` だと「作ったもの」と
+ * 「書いた記事」が同じ語で並んでしまう。
+ */
+export interface ArticleData {
+    /** セクションの見出し下に表示する説明文 */
+    article_description: string;
+    /** 掲載する記事の一覧。表示順は配列順に従う */
+    article_items: ArticleItem[];
+}
+
+/**
+ * 執筆記事 1 件分のデータ。
+ *
+ * フィールド名は `CareerData` / `ProductItem` の語彙（`*_title` / `*_contents`）へ揃えている。
+ *
+ * **いいね数やブックマーク数は持たない。** 掲載する記事を選ぶ基準としては使うが、
+ * GCS の JSON は手書きのため、載せると実際の数字とずれ続ける。更新し続ける前提の値を
+ * 手書きデータに置かない。
+ */
+export interface ArticleItem {
+    /** 記事タイトル。リンクの可視テキストになる */
+    article_title: string;
+    /** 記事の URL。外部サイトのため別タブで開く */
+    article_url: string;
+    /** 掲載媒体（例: `Zenn`） */
+    article_platform: string;
+    /** 公開年月。`YYYY年M月` 形式（`CareerData` と同じ表記） */
+    article_published_at: string;
+    /** 記事の概要。1 行で収まる長さにする */
+    article_contents: string;
+}
+
+/**
  * お問い合わせセクションの表示データ。
  *
  * **現在の UI では未使用。** GCS の JSON と `PortfolioData` には含まれるが、
  * セクション見出しやボタン文言は `page.tsx` / `ContactForm.tsx` にハードコードされており、
- * この型の値を参照していない。詳細は `docs/05-data-specification.md` §2.10。
+ * この型の値を参照していない。詳細は `docs/05-data-specification.md` の ContactData の節。
+ * （節番号ではなく名前で参照する。節の追加で番号がずれるたびに参照が壊れるため）
  */
 export interface ContactData {
     /** セクションの表示名 */

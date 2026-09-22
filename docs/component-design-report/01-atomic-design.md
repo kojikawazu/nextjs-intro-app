@@ -26,7 +26,8 @@
 - [3. Molecules（分子コンポーネント）](#3-molecules分子コンポーネント)
     - [3.1 CareerCard](#31-careercard)
     - [3.2 ProductCard](#32-productcard)
-    - [3.3 SocialLinks](#33-sociallinks)
+    - [3.3 ArticleEntry](#33-articleentry)
+    - [3.4 SocialLinks](#34-sociallinks)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
     - [4.1 Header](#41-header)
     - [4.2 ContactForm](#42-contactform)
@@ -52,7 +53,8 @@ src/components/
 │   ├── Input.tsx
 │   ├── TextArea.tsx
 │   └── ThemeToggle.tsx
-├── molecules/      ← Atoms を組み合わせた複合コンポーネント（3コンポーネント）
+├── molecules/      ← Atoms を組み合わせた複合コンポーネント（4コンポーネント）
+│   ├── ArticleEntry.tsx
 │   ├── CareerCard.tsx
 │   ├── ProductCard.tsx
 │   └── SocialLinks.tsx
@@ -66,7 +68,7 @@ src/components/
 （`frontend.md`「クライアントコンポーネントのロジックはカスタムフックに切り出す」）。
 現在は `useTheme`（`ThemeToggle` が使用）の 1 件。
 
-> molecules は issue #128 の `ProductCard` 追加で 3 件になった。
+> molecules は issue #128 の `ProductCard`、issue #127 の `ArticleEntry` 追加で 4 件になった。
 > 階層の件数は 2026-09-22（issue #141）に実ファイルから数え直した。
 > 以前は atoms 4 / molecules 3 と記載されていたが、`ThemeToggle` の追加（#138）と
 > `SkillCard` の削除（#126）に追随していなかった。
@@ -357,7 +359,46 @@ GCS の JSON は手書きのため、消したつもりのフィールドに空�
 **スクリーンショットは表示しない。** `next.config.js` が `images: { unoptimized: true }` のため
 画像最適化が効かず原寸で配信される。判断の詳細は `docs/05-data-specification.md` §2.9。
 
-### 3.3 SocialLinks
+### 3.3 ArticleEntry
+
+**ファイル**: `src/components/molecules/ArticleEntry.tsx`
+
+**依存 Atom**: なし
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | 記事タイトル。リンクの可視テキストになる |
+| `url` | `string` | 記事の URL。空文字ならリンクにしない |
+| `platform` | `string` | 掲載媒体（例: `Zenn`） |
+| `publishedAt` | `string` | 公開年月（`YYYY年M月`） |
+| `description` | `string` | 記事の概要 |
+| `className` | `string?` | 追加クラス |
+
+**構造**:
+
+```text
+ArticleEntry (<article> + 下罫)
+├── タイトル（h3・外部リンク） ─── 媒体 ・ 公開年月（等幅・右端）
+└── 概要
+```
+
+**カードではなく「行」で組む唯一の molecule。** `CareerCard` / `ProductCard` は左罫のカードだが、
+記事は件数が増えやすく 1 件あたりの情報量も小さい。同じカードにすると縦に間延びし、一覧として
+流し読みできなくなる。**同じ体裁を使うかどうかは「並びの性格」で決める**（`ProductCard` が
+`CareerCard` に揃えたのは、どちらも「作ったもの」を示す並びだったため）。
+
+**`aria-label` を付けない。** `ProductCard` の `site` / `repo` はラベルが非記述的なためアクセシブル名を
+補ったが、記事タイトルはそれ自体が行き先を説明している。`aria-label` を足すと可視テキストを
+上書きすることになり、読み上げと見た目がずれるだけで利得がない。**補うべきは非記述的なラベルだけ。**
+
+**欠損したフィールドは中黒ごと落とす。** GCS の JSON は手書きのため、媒体や公開年月が空のまま
+入りうる。素朴に `${platform} ・ ${publishedAt}` と組むと `・ 2024年5月` のように行き場のない
+区切り記号が残る。値のある分だけを中黒で連結する。
+
+**URL が空ならリンクにしない。** `<a href="">` は現在のページ自身を指すため、押すとページが
+再読み込みされる。「押せるのに何も起きない」より、押せない方が誤解が少ない。
+
+### 3.4 SocialLinks
 
 **ファイル**: `src/components/molecules/SocialLinks.tsx`
 
@@ -505,6 +546,8 @@ page.tsx（Server Component / force-dynamic）
     │       └── Badge (atom) ← 進行中の案件のみ
     ├── Product Section（直接実装）
     │   └── ProductCard (molecule) × N件
+    ├── Articles Section（直接実装）
+    │   └── ArticleEntry (molecule) × N件
     ├── Contact Section（直接実装）
     │   └── ContactForm (organism)
     │       ├── Input (atom) × 2 ← 名前・メール入力
@@ -543,6 +586,7 @@ page.tsx（Server Component / force-dynamic）
 │              Molecules（複合表示部品）                 │
 │    CareerCard: 分類チップ + Badge で経歴を表示          │
 │    ProductCard: 個人開発プロダクトを表示               │
+│    ArticleEntry: 執筆記事を罫線区切りの行で表示        │
 │    SocialLinks: テキストチップでSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤
 │               Atoms（最小UIパーツ）                   │
