@@ -44,6 +44,7 @@
         - [4.7.9 ContactForm (`src/components/organisms/ContactForm.tsx`)](#479-contactform-srccomponentsorganismscontactformtsx)
         - [4.7.10 useTheme (`src/hooks/useTheme.ts`)](#4710-usetheme-srchooksusethemets)
         - [4.7.11 ProductCard (`src/components/molecules/ProductCard.tsx`)](#4711-productcard-srccomponentsmoleculesproductcardtsx)
+        - [4.7.12 ArticleEntry (`src/components/molecules/ArticleEntry.tsx`)](#4712-articleentry-srccomponentsmoleculesarticleentrytsx)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -66,6 +67,7 @@
     - [6.11 配色テーマ解決テスト](#611-配色テーマ解決テスト)
     - [6.12 経歴の技術スタック表示](#612-経歴の技術スタック表示)
     - [6.13 個人開発のリンク出し分け](#613-個人開発のリンク出し分け)
+    - [6.14 執筆記事の表示](#614-執筆記事の表示)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -668,7 +670,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 | 階層 | コンポーネント | テスト仕様 |
 |------|--------------|-----------|
 | Atoms | `Button` / `Input` / `TextArea` / `Badge` / `ThemeToggle` | §4.7.2〜§4.7.6 |
-| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` | §4.7.1 / §4.7.7 / §4.7.11 |
+| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` / `ArticleEntry` | §4.7.1 / §4.7.7 / §4.7.11 / §4.7.12 |
 | Organisms | `Header` / `ContactForm` | §4.7.8 / §4.7.9 |
 | Hooks | `useTheme` | §4.7.10 |
 
@@ -715,7 +717,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 
 **issue #138 で `src/components/` に初めてユニットテストを追加し、issue #141 で全コンポーネントへ広げた。** JSX の変換は `vitest.config.ts` の `oxc: { jsx: { runtime: 'automatic' } }` で行う（Vite 8 のトランスフォーマは esbuild ではなく oxc のため、`esbuild: { jsx }` や `@vitejs/plugin-react` は効かない）。
 
-合計 正常系 12 : 準正常系 + 異常系 53（`testing.md` の目安 1 : 2 以上を満たす）。
+合計 正常系 14 : 準正常系 + 異常系 59（`testing.md` の目安 1 : 2 以上を満たす）。
 
 **検証の対象は見た目ではなく振る舞いと契約**とする。クラス名を期待値に書くのは、`variant` / `size` のようにクラスとしてしか観測できない props に限る。それ以外はロール・アクセシブルネーム・`aria-*`・`disabled` など、利用者と支援技術から見える性質で検証する。
 
@@ -894,6 +896,29 @@ Referer を落とす。役割が違うため、片方だけ消える退行を拾
 **導入時に、意図的に壊して落ちることを確認済み**（`trim()` の除去 / `rel` から `noreferrer` を
 削除 の 2 変異。いずれも該当テストのみが落ちた）。
 
+#### 4.7.12 ArticleEntry (`src/components/molecules/ArticleEntry.tsx`)
+
+正常系2 : 準正常系+異常系6（issue #127）。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-AE-001 | タイトル・媒体・公開年月・概要を表示し、タイトルをリンクにする | アクセシブル名は可視テキストのまま（`aria-label` で上書きしない） |
+| UT-AE-002 | 外部リンクが別タブで開き、遷移先から操作されない | `target="_blank"` と `rel` の `noopener` / `noreferrer` を個別に確認 |
+| UT-AE-003 | 媒体が空なら中黒を出さず公開年月だけを表示 | `・ 2024年5月` にならない |
+| UT-AE-004 | 公開年月が空なら中黒を出さず媒体だけを表示 | `Zenn ・` にならない |
+| UT-AE-005 | 媒体と公開年月がどちらも空ならメタ行ごと描画しない | タイトルと概要は残る |
+| UT-AE-006 | 概要が空なら概要の段落を描画しない | — |
+| UT-AE-007 | URL が空ならリンクにせず、タイトルを見出しとして残す | `<a>` 要素が 0 件 |
+| UT-AE-008 | 空白のみの値は未設定として扱う | — |
+
+**UT-AE-007 はロールではなく要素数で検証する。** `<a href="">` は**アクセシビリティツリー上で
+link ロールを持たない**（href が空のため）。`queryAllByRole('link')` で書くと、リンク化のガードを
+外しても 0 件のままで通ってしまい、**テストが何も守らない状態**になる。変異注入で実際に素通りする
+ことを確認したうえで `container.querySelectorAll('a')` に改めた。
+
+**導入時に、意図的に壊して落ちることを確認済み**（`trim()` の除去 / リンク化ガードの無効化 /
+`rel` から `noreferrer` を削除 の 3 変異。いずれも該当テストが落ちた）。
+
 ---
 
 ## 5. 統合テスト仕様
@@ -974,6 +999,7 @@ Referer を落とす。役割が違うため、片方だけ消える退行を拾
 | E2E-HOME-004 | Aboutセクションが表示される | #about にスクロール | About見出しと紹介文が表示される |
 | E2E-HOME-005 | Careerセクションが表示される | #career にスクロール | Career見出しと経歴カードが表示される |
 | E2E-HOME-009 | Productセクションが表示される | ページロード完了を待機 | Product見出しが表示される |
+| E2E-HOME-010 | Articlesセクションが表示される | ページロード完了を待機 | Articles見出しが表示される |
 | E2E-HOME-007 | Contactセクションが表示される | #contact にスクロール | Contact見出しとフォームが表示される |
 | E2E-HOME-008 | フッターが表示される | ページ最下部にスクロール | コピーライト文が表示される |
 
@@ -1053,7 +1079,7 @@ Referer を落とす。役割が違うため、片方だけ消える退行を拾
 
 | テストID | 分類 | テストケース | 検証内容 |
 |----------|------|------------|---------|
-| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Product` / `Contact` を含む |
+| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Product` / `Articles` / `Contact` を含む |
 | E2E-SSR-002 | 準正常系 | 退行の検出 | `animate-spin` を含まず、タグ除去後の本文が 300 文字超 |
 
 > **閾値の根拠**: 300 は E2E シードデータ基準（現状 973 文字）。データ取得が `useEffect` に
@@ -1163,6 +1189,17 @@ projects: [
 UT（§4.7.11）と重なるが、**UT はコンポーネント単体の契約**、**E2E は実データ経路で同じ結果に
 なること**を見ている。GCS から読んだ値が `client.tsx` を経て `ProductCard` へ正しく渡っているかは
 UT では確認できない。
+
+### 6.14 執筆記事の表示
+
+`e2e/home.spec.ts`（issue #127）。
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| E2E-ART-001 | 正常系 | 記事タイトルが外部リンクとして表示される | タイトルの表示テキストでリンクを引ける。`target="_blank"` と `rel` の `noopener` / `noreferrer` が付く。媒体と公開年月が `Zenn ・ 2024年5月` の形で 1 行に出る |
+
+**表示テキストでリンクを引けること自体が仕様**である。`ArticleEntry` は `aria-label` を付けない設計
+（タイトルが行き先を説明しているため）なので、`aria-label` を足す変更が入ると本テストが落ちる。
 
 ---
 

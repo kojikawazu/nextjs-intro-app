@@ -55,6 +55,7 @@ test.describe('サーバーサイドレンダリング（正常系）', () => {
             'About',
             'Career',
             'Product',
+            'Articles',
             'Contact',
         ]) {
             expect(html).toContain(keyword);

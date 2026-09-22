@@ -38,18 +38,23 @@
         - [仕様詳細](#仕様詳細-4)
         - [ProductCard コンポーネント仕様](#productcard-コンポーネント仕様)
         - [リンクの出し分け](#リンクの出し分け)
-    - [3.6 Contact Section](#36-contact-section)
+    - [3.6 Articles Section](#36-articles-section)
         - [機能概要](#機能概要-5)
         - [仕様詳細](#仕様詳細-5)
+        - [ArticleEntry コンポーネント仕様](#articleentry-コンポーネント仕様)
+        - [欠損したフィールドの扱い](#欠損したフィールドの扱い)
+    - [3.7 Contact Section](#37-contact-section)
+        - [機能概要](#機能概要-6)
+        - [仕様詳細](#仕様詳細-6)
         - [フォームフィールド](#フォームフィールド)
         - [バリデーションルール (Zod スキーマ)](#バリデーションルール-zod-スキーマ)
         - [サーバーサイドバリデーション (`POST /api/contact`)](#サーバーサイドバリデーション-post-apicontact)
         - [送信フロー](#送信フロー)
         - [送信完了画面](#送信完了画面)
         - [メール送信仕様](#メール送信仕様)
-    - [3.7 Footer](#37-footer)
-        - [機能概要](#機能概要-6)
-        - [仕様詳細](#仕様詳細-6)
+    - [3.8 Footer](#38-footer)
+        - [機能概要](#機能概要-7)
+        - [仕様詳細](#仕様詳細-7)
 - [4. ユーザーフロー](#4-ユーザーフロー)
     - [4.1 ページ読み込みフロー](#41-ページ読み込みフロー)
     - [4.2 ナビゲーションフロー](#42-ナビゲーションフロー)
@@ -128,6 +133,7 @@ page.tsx (Server Component: データ取得)
         +-- About Section
         +-- Career Section
         +-- Product Section
+        +-- Articles Section
         +-- Contact Section
         +-- Footer
 ```
@@ -166,7 +172,7 @@ page.tsx (Server Component: データ取得)
 
 #### デスクトップナビゲーション (md以上)
 
-- ナビ項目: About, Career, Product, Contact（`navbar_data` から取得）
+- ナビ項目: About, Career, Product, Articles, Contact（`navbar_data` から取得）
 - **`<button>` を維持する。** `e2e/home.spec.ts` と `e2e/security.spec.ts` が `getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、`<a>` に変えると JS を実行しなくても遷移してしまい確認の意味が失われる（issue #131 で一度壊した箇所）
 - クリック時: 対応セクションへスムーズスクロール（`prefers-reduced-motion` 時は即時）
 - ホバー: 文字色を `--mute` から `--ink` へ
@@ -396,7 +402,79 @@ page.tsx (Server Component: データ取得)
 
 ---
 
-### 3.6 Contact Section
+### 3.6 Articles Section
+
+#### 機能概要
+
+執筆した技術記事を紹介するセクション（issue #127 / 親 #125）。実績（Career / Product）の後ろに置く。
+何を作ったかより先に何を書いたかを見せる理由がないため。
+
+**見出しは `Blog` ではなく `Articles`。** §3.5 の Product に自作のブログ基盤「ブログWebアプリ」を
+掲載しているため、`Blog` だと「作ったもの」と「書いた記事」が同じ語で並んでしまう。
+
+掲載データは GCS の JSON へ手書きする。Zenn / Qiita の API からの自動取得は行わない。
+取得を足すと `repositories/` の新規実装・キャッシュ・レート制限・障害時のフォールバックが
+すべて必要になる一方、掲載したいのは**反響のあった数本だけ**であり、全件を機械的に並べる
+用途ではないため。
+
+#### 仕様詳細
+
+| 項目 | 仕様 |
+|------|------|
+| アンカー | `#articles` |
+| 見出し | `navbar_data.article_name`（罫線 + 右端に件数） |
+| 説明文 | `article_data.article_description` |
+| 一覧 | `article_data.article_items` を配列順に描画 |
+| 1 件の描画 | `ArticleEntry`（`src/components/molecules/ArticleEntry.tsx`） |
+
+**いいね数・ブックマーク数は持たない。** 掲載する記事を選ぶ基準としては使うが、GCS の JSON は
+手書きのため、載せると実際の数字とずれ続ける。更新し続ける前提の値を手書きデータに置かない。
+
+**タグ / カテゴリも持たない。** 数件では分類の意味が薄く、必要になってから足す方が安い。
+
+#### ArticleEntry コンポーネント仕様
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | 記事タイトル。リンクの可視テキストになる |
+| `url` | `string` | 記事の URL。空文字ならリンクにしない |
+| `platform` | `string` | 掲載媒体（例: `Zenn`） |
+| `publishedAt` | `string` | 公開年月（`YYYY年M月`） |
+| `description` | `string` | 記事の概要 |
+| `className` | `string?` | 追加クラス |
+
+**カードではなく罫線区切りの「行」で組む。** 記事は件数が増えやすく、1 件あたりの情報量も
+小さい。`CareerCard` / `ProductCard` と同じ左罫のカードにすると縦に間延びし、一覧として
+流し読みできなくなる。
+
+```text
+ArticleEntry (<article> + 下罫)
+├── タイトル（h3・外部リンク） ────── 媒体 ・ 公開年月（等幅・右端）
+└── 概要
+```
+
+**`aria-label` を付けない。** `ProductCard` の `site` / `repo` はラベルが非記述的なため
+アクセシブル名を補ったが、記事タイトルはそれ自体が行き先を説明している。`aria-label` を足すと
+可視テキストを上書きすることになり、読み上げと見た目がずれるだけで利得がない。
+
+外部リンクには `target="_blank"` + `rel="noopener noreferrer"`（docs/06 §5.1）。
+
+#### 欠損したフィールドの扱い
+
+GCS の JSON は手書きのため、値が空のまま入りうる。
+
+| 欠損 | 挙動 | 理由 |
+|------|------|------|
+| `platform` または `publishedAt` | 空でない方だけを表示し、**中黒を出さない** | 素朴に連結すると `・ 2024年5月` のように行き場のない区切り記号が残る |
+| 両方 | メタ行ごと描画しない | |
+| `description` | 概要の段落を描画しない | |
+| `url` | **リンクにせず、タイトルを素のテキストで残す** | `<a href="">` は現在のページ自身を指し、押すとページが再読み込みされる。「押せるのに何も起きない」より押せない方が誤解が少ない |
+
+空白のみの値も未設定として扱う（`trim()` 後に判定）。
+
+---
+
+### 3.7 Contact Section
 
 #### 機能概要
 
@@ -488,7 +566,7 @@ page.tsx (Server Component: データ取得)
 
 ---
 
-### 3.7 Footer
+### 3.8 Footer
 
 #### 機能概要
 
@@ -711,6 +789,7 @@ src/components/
   +-- molecules/      ... Atoms を組み合わせた複合コンポーネント
   |   +-- CareerCard.tsx
   |   +-- ProductCard.tsx
+  |   +-- ArticleEntry.tsx
   |   +-- SocialLinks.tsx
   +-- organisms/      ... ページの主要セクションを構成するコンポーネント
       +-- Header.tsx
@@ -814,6 +893,13 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 ルート要素は `<article>`。`CareerCard` と同じく、プロダクト 1 件は独立して意味を持つ内容のため。
 表示専用で外部から DOM を触る必要がないため `forwardRef` は使わない。
 
+#### ArticleEntry
+
+執筆記事 1 件分の行。Props と構成は §3.6 を参照。
+
+ルート要素は `<article>`。記事 1 件は独立して意味を持つ内容のため（`CareerCard` / `ProductCard` と同じ）。
+表示専用のため `forwardRef` は使わない。
+
 #### SocialLinks
 
 | Props | 型 | 説明 |
@@ -835,7 +921,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 #### ContactForm
 
-フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.5 節参照)。
+フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.7 節参照)。
 
 ---
 
@@ -953,7 +1039,7 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 ```typescript
 PortfolioData
   +-- navbar_data: NavbarData
-  |     link_title, about_name, career_name, product_name, contact_name
+  |     link_title, about_name, career_name, product_name, article_name, contact_name
   +-- hero_data: HeroData
   |     hero_img_url
   +-- about_data: AboutData
@@ -968,6 +1054,10 @@ PortfolioData
   |     product_description, product_items: ProductItem[]
   |       product_title, product_contents, product_site_url,
   |       product_repo_url, product_skill_stack[]
+  +-- article_data: ArticleData
+  |     article_description, article_items: ArticleItem[]
+  |       article_title, article_url, article_platform,
+  |       article_published_at, article_contents
   +-- contact_data: ContactData           ※ 型定義のみ。UIでは未使用（文言はハードコード）
   |     contact_name, contact_email, contact_contents, contact_btn_name
   +-- footer_data: FooterData
