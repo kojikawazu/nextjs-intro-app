@@ -11,10 +11,12 @@
     - [2.5 SNSItem（SNSリンクデータ）](#25-snsitemsnsリンクデータ)
     - [2.6 CareerTitleData（経歴テーブルタイトルデータ）](#26-careertitledata経歴テーブルタイトルデータ)
     - [2.7 CareerData（経歴データ）](#27-careerdata経歴データ)
-    - [2.8 ContactData（お問い合わせセクションデータ）](#28-contactdataお問い合わせセクションデータ)
-    - [2.9 FooterData（フッターデータ）](#29-footerdataフッターデータ)
-    - [2.10 ContactFormData（問い合わせフォームデータ）](#210-contactformdata問い合わせフォームデータ)
-    - [2.11 ContactFormErrors（フォームバリデーションエラー）](#211-contactformerrorsフォームバリデーションエラー)
+    - [2.8 ProductData（個人開発データ）](#28-productdata個人開発データ)
+    - [2.9 ProductItem（個人開発プロダクト）](#29-productitem個人開発プロダクト)
+    - [2.10 ContactData（お問い合わせセクションデータ）](#210-contactdataお問い合わせセクションデータ)
+    - [2.11 FooterData（フッターデータ）](#211-footerdataフッターデータ)
+    - [2.12 ContactFormData（問い合わせフォームデータ）](#212-contactformdata問い合わせフォームデータ)
+    - [2.13 ContactFormErrors（フォームバリデーションエラー）](#213-contactformerrorsフォームバリデーションエラー)
 - [3. データソースとストレージ](#3-データソースとストレージ)
     - [3.1 Google Cloud Storage（GCS）](#31-google-cloud-storagegcs)
         - [接続設定](#接続設定)
@@ -62,6 +64,7 @@
 | `about_data` | `AboutData` | Yes | 自己紹介セクションの表示データ |
 | `career_title_data` | `CareerTitleData` | Yes | 経歴セクションのカラムタイトルデータ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`CareerCard.tsx`）ではラベルがハードコードされており、このデータは画面に反映されていない |
 | `career_data` | `CareerData[]` | Yes | 経歴一覧データ（配列） |
+| `product_data` | `ProductData` | Yes | 個人開発セクションの表示データ |
 | `contact_data` | `ContactData` | Yes | お問い合わせセクションの表示データ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`page.tsx`, `ContactForm.tsx`）ではセクション見出し・ボタン文言がハードコードされており、このデータは画面に反映されていない |
 | `footer_data` | `FooterData` | Yes | フッターの表示データ |
 
@@ -72,6 +75,7 @@
 | `link_title` | `string` | Yes | サイトのロゴ / タイトルテキスト | `"TechProfile"` |
 | `about_name` | `string` | Yes | Aboutセクションのナビリンク表示名 | `"About"` |
 | `career_name` | `string` | Yes | Careerセクションのナビリンク表示名 | `"Career"` |
+| `product_name` | `string` | Yes | 個人開発セクションのナビリンク表示名 | `"Product"` |
 | `contact_name` | `string` | Yes | Contactセクションのナビリンク表示名 | `"Contact"` |
 
 ### 2.3 HeroData（ヒーローデータ）
@@ -126,7 +130,53 @@
 | `career_skill_phase` | `string[]` | Yes | 担当フェーズ一覧（配列） | `["設計", "開発", "テスト"]` |
 | `career_role` | `string` | Yes | プロジェクトでの役割 | `"バックエンドエンジニア"` |
 
-### 2.8 ContactData（お問い合わせセクションデータ）
+### 2.8 ProductData（個人開発データ）
+
+個人開発セクション全体の表示データ（issue #128 / 親 #125）。
+
+| フィールド名 | 型 | 必須 | 説明 | 例 |
+|---|---|---|---|---|
+| `product_description` | `string` | Yes | セクションの見出し下に表示する説明文 | `"業務外で設計から運用まで一人で回しているプロダクト。"` |
+| `product_items` | `ProductItem[]` | Yes | 掲載するプロダクト一覧。**表示順は配列順に従う** | §2.9 参照 |
+
+**掲載データは GCS の JSON へ手書きする。** GitHub API からのリポジトリ自動取得は行わない。
+見せたいものだけを選び、説明文と見せ方を制御するのが目的であり、リポジトリ一覧をそのまま
+出すのとは用途が違うため（親 #125 の共通前提 1）。
+
+**件数の絞り込みはデータ側で行う。** 画面は受け取った配列をそのまま全件描画する
+（段階表示は状態を持つため実装しない。docs/03 §3.5）。
+
+### 2.9 ProductItem（個人開発プロダクト）
+
+| フィールド名 | 型 | 必須 | 説明 | 例 |
+|---|---|---|---|---|
+| `product_title` | `string` | Yes | プロダクト名 | `"家計簿アプリ kakeibo"` |
+| `product_contents` | `string` | Yes | 概要説明 | `"レシートの写真から品目と金額を抽出して記録する個人用の家計簿。"` |
+| `product_site_url` | `string` | Yes | 公開サイト URL。**未公開なら空文字**（リンクを描画しない） | `"https://example.com/kakeibo"` / `""` |
+| `product_repo_url` | `string` | Yes | リポジトリ URL。**非公開なら空文字**（リンクを描画しない） | `"https://github.com/user/repo"` / `""` |
+| `product_skill_stack` | `string[]` | Yes | 使用技術一覧。**分類はせず**そのままチップで並べる | `["Next.js", "TypeScript", "Supabase"]` |
+
+#### 命名が `CareerData` に寄せてある理由
+
+`product_title` / `product_contents` / `product_skill_stack` は、いずれも `CareerData` の
+`career_title` / `career_contents` / `career_skill_stack` に倣った名前である。
+
+とくに**プロダクト名が `product_name` でないのは、`NavbarData.product_name`（ナビの表示名）と
+衝突するため**。`NavbarData` は `about_name` / `career_name` / `contact_name` という確立した規則を
+持つため、衝突はアイテム側の改名で解消している（issue #128）。
+
+#### スクリーンショット URL を持たない理由
+
+`next.config.js` が `images: { unoptimized: true }` のため画像最適化が効かず、置いた画像が
+原寸で配信される。`docs/04` の LCP 目標 2.5 秒に対し、掲載件数分の画像がページ転送量の
+大半を占めることになる。`product_site_url` から実物を見に行けるため情報は途切れない。
+
+**後からフィールドを足すのは安いが、GCS に投入済みのフィールドを消すのは高い**（実データと
+コードの両方から削除が必要になる）ため、足さない側に倒している。`career_title_data` /
+`contact_data` が「GCS にあるが画面から参照されていない」状態で残っているのが、この非対称性の
+実例である（§2.6 / §2.10）。
+
+### 2.10 ContactData（お問い合わせセクションデータ）
 
 > **未使用**: この型はGCSのJSONデータに含まれ、`PortfolioData` の型定義にも存在するが、**現在のUI（`page.tsx:274` のセクション見出し「Contact」、`ContactForm.tsx:127` のボタン文言「上記内容で送信する」等）ではハードコードされており、このデータは参照されていない**。将来的にデータ駆動の表示に切り替える場合に使用可能。
 
@@ -137,13 +187,13 @@
 | `contact_contents` | `string` | Yes | セクションの説明テキスト | `"お気軽にお問い合わせください"` |
 | `contact_btn_name` | `string` | Yes | 送信ボタンの表示テキスト | `"送信"` |
 
-### 2.9 FooterData（フッターデータ）
+### 2.11 FooterData（フッターデータ）
 
 | フィールド名 | 型 | 必須 | 説明 | 例 |
 |---|---|---|---|---|
 | `copyright` | `string` | Yes | コピーライト表記 | `"(C) 2025 TechProfile Pro"` |
 
-### 2.10 ContactFormData（問い合わせフォームデータ）
+### 2.12 ContactFormData（問い合わせフォームデータ）
 
 ユーザーが問い合わせフォームから送信するデータ。PortfolioData には含まれず、フォーム入力から生成される。
 
@@ -153,7 +203,7 @@
 | `email` | `string` | Yes | 送信者のメールアドレス | `"taro@example.com"` |
 | `message` | `string` | Yes | 問い合わせメッセージ本文 | `"サービスについて詳しく知りたいです"` |
 
-### 2.11 ContactFormErrors（フォームバリデーションエラー）
+### 2.13 ContactFormErrors（フォームバリデーションエラー）
 
 クライアント側のバリデーション結果を保持する。各フィールドはオプショナルで、エラーがある場合のみ値が設定される。
 

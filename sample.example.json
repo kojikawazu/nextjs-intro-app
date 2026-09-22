@@ -3,6 +3,7 @@
         "link_title": "TechProfile Pro",
         "about_name": "About",
         "career_name": "Career",
+        "product_name": "Product",
         "contact_name": "Contact"
     },
     "hero_data": {
@@ -64,6 +65,32 @@
             "career_role": "バックエンドエンジニア"
         }
     ],
+    "product_data": {
+        "product_description": "業務外で設計から運用まで一人で回しているプロダクト。",
+        "product_items": [
+            {
+                "product_title": "家計簿アプリ kakeibo",
+                "product_contents": "レシートの写真から品目と金額を抽出して記録する個人用の家計簿。月次の集計をダッシュボードで確認できる。",
+                "product_site_url": "https://example.com/kakeibo",
+                "product_repo_url": "https://github.com/",
+                "product_skill_stack": ["Next.js", "TypeScript", "Supabase", "Vercel"]
+            },
+            {
+                "product_title": "タスク管理ツール",
+                "product_contents": "個人のタスクを日次で積み上げて可視化するツール。リポジトリは非公開で運用している。",
+                "product_site_url": "https://example.com/tasks",
+                "product_repo_url": "",
+                "product_skill_stack": ["React", "Hono", "Cloudflare Workers"]
+            },
+            {
+                "product_title": "静的サイトジェネレータの実験",
+                "product_contents": "Markdown から静的サイトを生成する仕組みを理解するために書いた実装。公開サイトは持たない。",
+                "product_site_url": "",
+                "product_repo_url": "https://github.com/",
+                "product_skill_stack": ["Go", "Markdown"]
+            }
+        ]
+    },
     "contact_data": {
         "contact_name": "Contact",
         "contact_email": "your@email.com",

@@ -17,6 +17,8 @@ export interface PortfolioData {
     career_title_data: CareerTitleData;
     /** 経歴一覧データ */
     career_data: CareerData[];
+    /** 個人開発セクションの表示データ */
+    product_data: ProductData;
     /** お問い合わせセクションの表示データ。現在の UI では未参照（`ContactData` 参照） */
     contact_data: ContactData;
     /** フッターの表示データ */
@@ -31,6 +33,8 @@ export interface NavbarData {
     about_name: string;
     /** Career セクションのナビリンク表示名 */
     career_name: string;
+    /** 個人開発セクションのナビリンク表示名 */
+    product_name: string;
     /** Contact セクションのナビリンク表示名 */
     contact_name: string;
 }
@@ -106,6 +110,47 @@ export interface CareerData {
     career_skill_phase: string[];
     /** プロジェクトでの役割 */
     career_role: string;
+}
+
+/**
+ * 個人開発セクションの表示データ。
+ *
+ * 掲載内容は GCS の JSON へ手書きする（issue #128、親 #125 の共通前提 1）。
+ * GitHub API からのリポジトリ自動取得は行わない。**見せたいものだけを選び、説明文と
+ * 見せ方を制御する**のが目的であり、リポジトリ一覧をそのまま出すのとは用途が違うため。
+ */
+export interface ProductData {
+    /** セクションの見出し下に表示する説明文 */
+    product_description: string;
+    /** 掲載するプロダクトの一覧。表示順は配列順に従う */
+    product_items: ProductItem[];
+}
+
+/**
+ * 個人開発プロダクト 1 件分のデータ。
+ *
+ * フィールド名は既存の `CareerData` の語彙（`career_title` / `career_contents` /
+ * `career_skill_stack`）へ揃えている。とくに**プロダクト名が `product_name` でないのは、
+ * `NavbarData.product_name`（ナビの表示名）と衝突するため**。`NavbarData` 側は
+ * `about_name` / `career_name` / `contact_name` という確立した規則を持つので、
+ * 衝突はアイテム側の改名で解消している（issue #128）。
+ *
+ * **スクリーンショットの URL は持たない。** `next.config.js` が `images: { unoptimized: true }`
+ * のため画像最適化が効かず原寸で配信される。`docs/04` の LCP 目標 2.5 秒に対し、
+ * 掲載件数分の画像がページ転送量の大半を占めることになる。`product_site_url` から
+ * 実物を見に行けるため情報は途切れない。
+ */
+export interface ProductItem {
+    /** プロダクト名 */
+    product_title: string;
+    /** 概要説明 */
+    product_contents: string;
+    /** 公開中のサイト URL。未公開なら空文字（リンクを描画しない） */
+    product_site_url: string;
+    /** リポジトリ URL。非公開なら空文字（リンクを描画しない） */
+    product_repo_url: string;
+    /** 使用技術一覧。分類はせずそのままチップで並べる */
+    product_skill_stack: string[];
 }
 
 /**
