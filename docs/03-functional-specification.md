@@ -125,6 +125,10 @@
 データ取得は `src/app/page.tsx`（Server Component）が行い、描画を `src/app/client.tsx` の
 `HomeClient`（Client Component）へ委譲する（issue #76 の server-first 化）。
 
+**`HomeClient` はマークアップを持たない合成ルート**であり、各セクションの実装は
+`src/components/organisms/` にある（issue #153）。以前は 7 セクションすべてを
+`client.tsx` にインラインで実装しており 296 行あった。
+
 ```text
 page.tsx (Server Component: データ取得)
   +-- client.tsx / HomeClient (Client Component: 描画)
@@ -790,10 +794,18 @@ src/components/
   |   +-- CareerCard.tsx
   |   +-- ProductCard.tsx
   |   +-- ArticleEntry.tsx
+  |   +-- SectionHeading.tsx
   |   +-- SocialLinks.tsx
-  +-- organisms/      ... ページの主要セクションを構成するコンポーネント
+  +-- organisms/      ... インターフェース上の独立した区画
       +-- Header.tsx
       +-- ContactForm.tsx
+      +-- HeroSection.tsx
+      +-- AboutSection.tsx
+      +-- CareerSection.tsx
+      +-- ProductSection.tsx
+      +-- ArticlesSection.tsx
+      +-- ContactSection.tsx
+      +-- SiteFooter.tsx
 ```
 
 ### 6.2 Atoms
@@ -900,6 +912,19 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 ルート要素は `<article>`。記事 1 件は独立して意味を持つ内容のため（`CareerCard` / `ProductCard` と同じ）。
 表示専用のため `forwardRef` は使わない。
 
+#### SectionHeading
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | セクションの見出し文字列 |
+| `count` | `number?` | 右端に出す件数。`undefined` なら描画しない |
+
+見出し（`h2`）+ 罫線 + 件数の組。**この罫線がセクションの区切りを兼ねる**（§5.3）。
+issue #153 で 5 箇所の重複から抽出した。
+
+**件数は 0 のときも `0` と出す。** `count &&` で握りつぶすと「0 件」と「件数の概念が無い」が
+区別できなくなるため、`undefined` かどうかで出し分ける。
+
 #### SocialLinks
 
 | Props | 型 | 説明 |
@@ -922,6 +947,15 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 #### ContactForm
 
 フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.7 節参照)。
+
+#### セクション organisms
+
+`HeroSection` / `AboutSection` / `CareerSection` / `ProductSection` / `ArticlesSection` /
+`ContactSection` / `SiteFooter` の 7 つ（issue #153）。**いずれも状態を持たず**、渡された
+データを描画する。各セクションの仕様は §3.2〜§3.8 を参照。
+
+`client.tsx` からは**必要なデータだけを渡す**（`PortfolioData` 全体を渡さない）。依存が
+props に現れ、セクション単体でテストできる。
 
 ---
 

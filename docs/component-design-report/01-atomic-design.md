@@ -27,10 +27,13 @@
     - [3.1 CareerCard](#31-careercard)
     - [3.2 ProductCard](#32-productcard)
     - [3.3 ArticleEntry](#33-articleentry)
-    - [3.4 SocialLinks](#34-sociallinks)
+    - [3.4 SectionHeading](#34-sectionheading)
+    - [3.5 SocialLinks](#35-sociallinks)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
-    - [4.1 Header](#41-header)
-    - [4.2 ContactForm](#42-contactform)
+    - [4.1 Organisms の定義](#41-organisms-の定義)
+    - [4.2 Header](#42-header)
+    - [4.3 ContactForm](#43-contactform)
+    - [4.4 セクション organisms](#44-セクション-organisms)
 - [5. ページレベルの組み立て](#5-ページレベルの組み立て)
     - [5.1 コンポーネント依存ツリー](#51-コンポーネント依存ツリー)
     - [5.2 状態管理](#52-状態管理)
@@ -53,14 +56,22 @@ src/components/
 │   ├── Input.tsx
 │   ├── TextArea.tsx
 │   └── ThemeToggle.tsx
-├── molecules/      ← Atoms を組み合わせた複合コンポーネント（4コンポーネント）
+├── molecules/      ← Atoms を組み合わせた複合コンポーネント（5コンポーネント）
 │   ├── ArticleEntry.tsx
 │   ├── CareerCard.tsx
 │   ├── ProductCard.tsx
+│   ├── SectionHeading.tsx
 │   └── SocialLinks.tsx
-└── organisms/      ← 独立した機能単位のコンポーネント（2コンポーネント）
+└── organisms/      ← インターフェース上の独立した区画（9コンポーネント）
+    ├── AboutSection.tsx
+    ├── ArticlesSection.tsx
+    ├── CareerSection.tsx
     ├── ContactForm.tsx
-    └── Header.tsx
+    ├── ContactSection.tsx
+    ├── Header.tsx
+    ├── HeroSection.tsx
+    ├── ProductSection.tsx
+    └── SiteFooter.tsx
 ```
 
 **ロジックは階層の外に置く。** クライアントコンポーネントの振る舞い（DOM 操作・保存など）は
@@ -68,7 +79,10 @@ src/components/
 （`frontend.md`「クライアントコンポーネントのロジックはカスタムフックに切り出す」）。
 現在は `useTheme`（`ThemeToggle` が使用）の 1 件。
 
-> molecules は issue #128 の `ProductCard`、issue #127 の `ArticleEntry` 追加で 4 件になった。
+> organisms は issue #153 で 2 件 → 9 件になった。それまで 7 つのセクションは
+> `client.tsx` にインラインで実装されており（296 行）、Atomic Design の階層に載っていなかった。
+> molecules は issue #128 の `ProductCard`、issue #127 の `ArticleEntry`、issue #153 の
+> `SectionHeading` 追加で 5 件になった。
 > 階層の件数は 2026-09-22（issue #141）に実ファイルから数え直した。
 > 以前は atoms 4 / molecules 3 と記載されていたが、`ThemeToggle` の追加（#138）と
 > `SkillCard` の削除（#126）に追随していなかった。
@@ -398,7 +412,29 @@ ArticleEntry (<article> + 下罫)
 **URL が空ならリンクにしない。** `<a href="">` は現在のページ自身を指すため、押すとページが
 再読み込みされる。「押せるのに何も起きない」より、押せない方が誤解が少ない。
 
-### 3.4 SocialLinks
+### 3.4 SectionHeading
+
+**ファイル**: `src/components/molecules/SectionHeading.tsx`
+
+**依存 Atom**: なし
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | セクションの見出し文字列 |
+| `count` | `number?` | 右端に出す件数。`undefined` なら描画しない |
+
+issue #153 で抽出した。About / Career / Product / Articles / Contact の **5 箇所**が同じ
+マークアップ（`h2` + 罫線 + 件数）を繰り返しており、見出しの体裁を変えるたびに 5 箇所を
+直す必要があった。
+
+**この罫線がセクションの区切りを兼ねる**（`globals.css` の `.section-heading`）。`<section>` 側に
+`border-t` を足すと、余白を挟んで横罫が 2 本並び、どちらが区切りなのか読めなくなる。
+
+**件数は「0 件のときに 0 を出す」。** `count` を渡すかどうかで出し分ける設計にしてあり、
+件数の概念があるセクション（Career / Product / Articles）では 0 件でも `0` と出る。
+`count && ...` のように falsy で握りつぶすと、**「0 件」と「件数の概念が無い」が区別できなくなる**。
+
+### 3.5 SocialLinks
 
 **ファイル**: `src/components/molecules/SocialLinks.tsx`
 
@@ -429,9 +465,28 @@ ArticleEntry (<article> + 下罫)
 
 ## 4. Organisms（生体コンポーネント）
 
-Organisms は **独自の状態管理・イベント処理・API通信を持つ** 複合的な機能コンポーネントである。
+### 4.1 Organisms の定義
 
-### 4.1 Header
+Organisms は **molecules や atoms を組み合わせた、インターフェース上の比較的複雑で独立した区画**である。
+
+> **issue #153 で定義を改めた。** それまで本ドキュメントは「Organisms は**独自の状態管理・
+> イベント処理・API 通信を持つ**複合的な機能コンポーネント」と定義していた。しかし Atomic Design
+> （Brad Frost）の定義に**状態の有無は含まれない**。当時 organisms が `Header` と `ContactForm`
+> （どちらも状態を持つ）しか無かったため、**カテゴリではなく当時の実例を記述してしまっていた**。
+>
+> この定義のままでは、状態を持たないセクションを organisms へ置く説明がつかず、結果として
+> 7 つのセクションが `client.tsx` にインラインで残り続けていた。**定義が実装の形を縛っていた**例である。
+
+現在の organisms は 2 系統ある。
+
+| 系統 | コンポーネント | 状態 |
+|------|--------------|------|
+| **機能単位** | `Header` / `ContactForm` | あり |
+| **セクション** | `HeroSection` / `AboutSection` / `CareerSection` / `ProductSection` / `ArticlesSection` / `ContactSection` / `SiteFooter` | なし |
+
+どちらも「独立した区画」である点で同じカテゴリに属する。
+
+### 4.2 Header
 
 **ファイル**: `src/components/organisms/Header.tsx`
 
@@ -464,7 +519,7 @@ JS を実行しなくても遷移してしまい、確認の意味が失われ�
 
 **forwardRef**: 未使用。内部で状態管理を完結しており、外部から DOM を触る必要がない。
 
-### 4.2 ContactForm
+### 4.3 ContactForm
 
 **ファイル**: `src/components/organisms/ContactForm.tsx`
 
@@ -518,6 +573,34 @@ Input / TextArea 側の `aria-describedby` / `aria-invalid` が担う。
 
 **forwardRef**: 未使用。Atoms に ref を渡す側であるため。
 
+### 4.4 セクション organisms
+
+issue #153 で `client.tsx` から切り出した 7 つ。**いずれも状態を持たず**、渡されたデータを
+描画するだけである。
+
+| コンポーネント | アンカー | 依存 | 主な判断 |
+|--------------|---------|------|---------|
+| `HeroSection` | （なし） | — | リードが無ければ引用パネルごと落とす。`startYear` が `null` なら `—` |
+| `AboutSection` | `#about` | `SectionHeading` / `SocialLinks` / `next/image` | 氏名は画像の `alt` にのみ使う |
+| `CareerSection` | `#career` | `SectionHeading` / `CareerCard` / `formatCareerPeriod` | `career_end === 'now'` の解釈。**並べ替えない** |
+| `ProductSection` | `#product` | `SectionHeading` / `ProductCard` | — |
+| `ArticlesSection` | `#articles` | `SectionHeading` / `ArticleEntry` | カード間の `gap` を持たない（行として連続させる） |
+| `ContactSection` | `#contact` | `SectionHeading` / `ContactForm` | — |
+| `SiteFooter` | （なし） | — | 見出しを持たないため自前で上罫を引く |
+
+**`HeroSection` だけ `id` を持たない。** ナビゲーションの遷移先にならず、ページ先頭そのものが
+ヒーローの位置になるため。
+
+**`ContactSection` は organism が organism を含む形になる。** Atomic Design は階層の入れ子を
+禁じておらず、`ContactSection` は「セクションという区画」、`ContactForm` は「フォームという
+機能単位」で関心が違う。セクション側はフォームの状態を一切知らない。
+
+**`'now'` の解釈を `CareerCard` に持たせない。** `'now'` は GCS のデータ形式に属する約束であり、
+表示部品が知るべきことではない。`CareerSection` が `isCurrent: boolean` へ翻訳して渡す。
+
+**命名は `SiteFooter`**（`Footer` ではない）。`<footer>` 要素や将来のセクション内フッターと
+取り違えないため。
+
 ---
 
 ## 5. ページレベルの組み立て
@@ -533,28 +616,38 @@ Input / TextArea 側の `aria-describedby` / `aria-invalid` が担う。
 
 ```text
 page.tsx（Server Component / force-dynamic）
-└── HomeClient（client.tsx）
-    ├── Header (organism) ← portfolioData.navbar_data から navItems を生成
-    │   └── ThemeToggle (atom)
-    ├── Hero Section（直接実装）
-    │   └── about_contents[1] の引用パネル + summarizeCareers の数値帯
-    ├── About Section（直接実装）
-    │   ├── next/image ← about_data.about_img_url
-    │   └── SocialLinks (molecule) ← about_data.sns_list
-    ├── Career Section（直接実装）
-    │   └── CareerCard (molecule) × N件
-    │       └── Badge (atom) ← 進行中の案件のみ
-    ├── Product Section（直接実装）
+└── HomeClient（client.tsx）… 合成ルート。マークアップを持たない
+    ├── Header (organism)
+    │   └── ThemeToggle (atom) → useTheme (hooks)
+    ├── HeroSection (organism)
+    ├── AboutSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   ├── SocialLinks (molecule)
+    │   └── next/image
+    ├── CareerSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   ├── CareerCard (molecule) × N件
+    │   │   ├── Badge (atom) ← 進行中の案件のみ
+    │   │   └── groupTechStack (lib)
+    │   └── formatCareerPeriod (lib)
+    ├── ProductSection (organism)
+    │   ├── SectionHeading (molecule)
     │   └── ProductCard (molecule) × N件
-    ├── Articles Section（直接実装）
+    ├── ArticlesSection (organism)
+    │   ├── SectionHeading (molecule)
     │   └── ArticleEntry (molecule) × N件
-    ├── Contact Section（直接実装）
+    ├── ContactSection (organism)
+    │   ├── SectionHeading (molecule)
     │   └── ContactForm (organism)
-    │       ├── Input (atom) × 2 ← 名前・メール入力
-    │       ├── TextArea (atom) ← メッセージ入力
-    │       └── Button (atom) × 2 ← 送信ボタン / 送信完了画面の「新しいお問い合わせ」
-    └── Footer（直接実装）
+    │       ├── Input (atom) × 2
+    │       ├── TextArea (atom)
+    │       └── Button (atom) × 2
+    └── SiteFooter (organism)
 ```
+
+`HomeClient` が呼ぶ lib は `summarizeCareers`（Hero の数値帯）と `splitAboutContents`
+（`about_contents` の再配置）の 2 つ。**どちらも「どのデータをどのセクションへ渡すか」を
+決める処理**であり、合成ルートの責務に属する。
 
 **Hero に Button は無い。** 旧デザインの「お問い合わせ」CTA は issue #138 で削除した。書類として
 読ませる設計にマーケ的な CTA が馴染まず、Contact へはヘッダーと末尾の 2 箇所から到達できるため。
@@ -565,6 +658,7 @@ page.tsx（Server Component / force-dynamic）
 |---------------|------|------|
 | `page.tsx` | なし | `async` でデータを取得し props へ渡すだけ |
 | `HomeClient` | なし | `'use client'` は子（Header / ContactForm / ThemeToggle）を配置するために維持している |
+| セクション organisms 7 件 | なし | 渡されたデータを描画するだけ |
 | `Header` | `isMobileMenuOpen` | |
 | `ContactForm` | `isSubmitting` / `isSubmitted` / `submitError` + `useForm` | |
 | `ThemeToggle` | なし | `useTheme` は状態を返さない（§2.6） |
@@ -577,16 +671,18 @@ page.tsx（Server Component / force-dynamic）
 ```text
 ┌─────────────────────────────────────────────────────┐
 │              Page (page.tsx / client.tsx)            │
-│    Server: データ取得 / Client: セクションレイアウト     │
+│    Server: データ取得 / Client: セクションの合成         │
 ├─────────────────────────────────────────────────────┤
-│              Organisms（独立機能単位）                 │
+│            Organisms（独立した区画）                   │
 │    Header: ナビゲーション + モバイルメニュー            │
 │    ContactForm: フォーム管理 + API通信                │
+│    〜Section 6 件 + SiteFooter: 各セクションの区画       │
 ├─────────────────────────────────────────────────────┤
 │              Molecules（複合表示部品）                 │
 │    CareerCard: 分類チップ + Badge で経歴を表示          │
 │    ProductCard: 個人開発プロダクトを表示               │
 │    ArticleEntry: 執筆記事を罫線区切りの行で表示        │
+│    SectionHeading: 見出し + 罫線 + 件数                │
 │    SocialLinks: テキストチップでSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤
 │               Atoms（最小UIパーツ）                   │
@@ -610,6 +706,8 @@ page.tsx（Server Component / force-dynamic）
 | **displayName** | forwardRef 使用 Atoms | React DevTools でのデバッグ容易性を確保 |
 | **配色トークン** | 全コンポーネント | 固定色を書かず `bg-acc` / `text-ink` 等を使い、テーマ切替を CSS 側へ寄せる |
 | **ロジックのフック切り出し** | ThemeToggle → `useTheme` | DOM / Cookie 操作をコンポーネントから分離（issue #144） |
+| **ロジックの lib 切り出し** | CareerSection → `formatCareerPeriod` / HomeClient → `splitAboutContents` | コンポーネント内の private 関数はユニットテストが当たらない。`lib/` へ出すと単体で検証できる（issue #153） |
+| **合成ルート** | `client.tsx` | マークアップを持たず、どのセクションへどのデータを渡すかだけを決める。セクションが増えても行数が線形に増えない（issue #153） |
 
 > **廃止したパターン**: グループホバー（`CareerCard` の `group-hover:`）、サイズマップの
 > Badge / SocialLinks への適用、`Header` のスクロール状態による条件付き `cn()`。
@@ -621,8 +719,8 @@ page.tsx（Server Component / force-dynamic）
 |------|------|---------|---------|
 | Atoms | 単一要素のスタイル・インタラクション | なし（ThemeToggle も持たない） | なし |
 | Molecules | 複数要素の組み合わせ表示 | なし | なし |
-| Organisms | 機能ロジック（フォーム、ナビ） | あり（useState） | あり（ContactForm のみ） |
-| Page (client.tsx) | 全体レイアウト | なし | なし |
+| Organisms | 独立した区画（セクション・フォーム・ナビ） | 機能単位のみあり（useState） | あり（ContactForm のみ） |
+| Page (client.tsx) | セクションの合成とデータの振り分け | なし | なし |
 | Page (page.tsx) | データ取得 | なし | あり（`repositories/` 経由） |
 
 この分離により、Atoms / Molecules はステートレスで再利用性が高く、**外部 I/O は `page.tsx` の

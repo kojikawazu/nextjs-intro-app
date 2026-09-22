@@ -45,6 +45,8 @@
         - [4.7.10 useTheme (`src/hooks/useTheme.ts`)](#4710-usetheme-srchooksusethemets)
         - [4.7.11 ProductCard (`src/components/molecules/ProductCard.tsx`)](#4711-productcard-srccomponentsmoleculesproductcardtsx)
         - [4.7.12 ArticleEntry (`src/components/molecules/ArticleEntry.tsx`)](#4712-articleentry-srccomponentsmoleculesarticleentrytsx)
+        - [4.7.13 SectionHeading とセクション organisms](#4713-sectionheading-とセクション-organisms)
+        - [4.7.14 lib へ切り出したロジック](#4714-lib-へ切り出したロジック)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -670,8 +672,9 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 | 階層 | コンポーネント | テスト仕様 |
 |------|--------------|-----------|
 | Atoms | `Button` / `Input` / `TextArea` / `Badge` / `ThemeToggle` | §4.7.2〜§4.7.6 |
-| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` / `ArticleEntry` | §4.7.1 / §4.7.7 / §4.7.11 / §4.7.12 |
-| Organisms | `Header` / `ContactForm` | §4.7.8 / §4.7.9 |
+| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` / `ArticleEntry` / `SectionHeading` | §4.7.1 / §4.7.7 / §4.7.11 / §4.7.12 / §4.7.13 |
+| Organisms | `Header` / `ContactForm` / セクション 7 件 | §4.7.8 / §4.7.9 / §4.7.13 |
+| lib | `formatCareerPeriod` / `splitAboutContents` | §4.7.14 |
 | Hooks | `useTheme` | §4.7.10 |
 
 ### 4.6 サイトURL解決とクローラ向けルート
@@ -717,7 +720,7 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 
 **issue #138 で `src/components/` に初めてユニットテストを追加し、issue #141 で全コンポーネントへ広げた。** JSX の変換は `vitest.config.ts` の `oxc: { jsx: { runtime: 'automatic' } }` で行う（Vite 8 のトランスフォーマは esbuild ではなく oxc のため、`esbuild: { jsx }` や `@vitejs/plugin-react` は効かない）。
 
-合計 正常系 14 : 準正常系 + 異常系 59（`testing.md` の目安 1 : 2 以上を満たす）。
+合計 正常系 29 : 準正常系 + 異常系 89（`testing.md` の目安 1 : 2 以上を満たす）。
 
 **検証の対象は見た目ではなく振る舞いと契約**とする。クラス名を期待値に書くのは、`variant` / `size` のようにクラスとしてしか観測できない props に限る。それ以外はロール・アクセシブルネーム・`aria-*`・`disabled` など、利用者と支援技術から見える性質で検証する。
 
@@ -918,6 +921,47 @@ link ロールを持たない**（href が空のため）。`queryAllByRole('lin
 
 **導入時に、意図的に壊して落ちることを確認済み**（`trim()` の除去 / リンク化ガードの無効化 /
 `rel` から `noreferrer` を削除 の 3 変異。いずれも該当テストが落ちた）。
+
+#### 4.7.13 SectionHeading とセクション organisms
+
+issue #153 で `client.tsx`（296 行）から切り出したコンポーネント群。
+
+| コンポーネント | 正常系 | 準正常系+異常系 | 主に固定している挙動 |
+|--------------|:---:|:---:|---|
+| `SectionHeading` | 2 | 3 | 件数 `undefined` なら描画しない / **件数 0 なら `0` と出す** / 見出しが空でも罫線は残る |
+| `HeroSection` | 1 | 3 | リードが無ければ引用パネルごと落とす / `startYear` が `null` なら `—` / 件数 0 も表示 |
+| `AboutSection` | 2 | 3 | 氏名は `alt` にのみ使い本文に出さない / 段落 0 件・SNS 0 件でも崩れない / 件数を出さない |
+| `CareerSection` | 2 | 3 | **配列順をそのまま表示順にする** / `career_end === 'now'` の解釈 / 不正日付は例外を伝播 |
+| `ProductSection` | 1 | 3 | 0 件でも見出しと `0` / 説明文が空でも一覧は残る / 配列順を保つ |
+| `ArticlesSection` | 1 | 3 | 0 件でも見出しと `0` / URL 空の記事だけリンクにしない / 配列順を保つ |
+| `ContactSection` | 1 | 2 | 見出しが空でもフォームは描画する / 件数を出さない |
+| `SiteFooter` | 2 | 2 | ランドマーク `contentinfo` を出す / 値が空でも枠は残る |
+
+**「0 件のときに `0` と出す」を明示的に固定している。** `count && ...` のように falsy で
+握りつぶす実装に変えると落ちる。0 件であることと、件数の概念が無いことは別の状態である。
+
+**`CareerSection` の「配列順をそのまま表示順にする」も固定している。** GCS 側のデータは
+「主プロジェクト → その関連・兼任プロジェクト」でグルーピングされており時系列降順ではない。
+親切心で日付ソートを足すと、意図した並びが崩れる。
+
+**`CareerSection` の異常系は「例外を投げること」を期待値にしている。** ここで握りつぶすと
+「本文が無いのに 200 が返る」状態になるため、`page.tsx` まで伝播させ `error.tsx` に倒すのが
+既存の方針（`page.tsx` の JSDoc 参照）。
+
+#### 4.7.14 lib へ切り出したロジック
+
+**どちらも issue #153 まで `client.tsx` の内部にあり、ユニットテストが一度も当たっていなかった**
+（E2E 経由でしか踏まれていなかった）。
+
+| 関数 | 正常系 | 準正常系+異常系 | 主に固定している挙動 |
+|------|:---:|:---:|---|
+| `formatCareerPeriod` | 2 | 4 | ゼロ埋めを外す / `'now'` は「現在」 / **実行時刻が変わっても `'now'` の表示は変わらない**（時刻を固定して確認）/ 不正形式は例外 |
+| `splitAboutContents` | 1 | 4 | 2 番目の段落だけ Hero へ / 段落が足りなくても例外にしない / 文字列でない要素は落とす |
+
+**`formatCareerPeriod` の「月跨ぎで表示がぶれない」を `vi.useFakeTimers()` で確かめている。**
+`'now'` は `new Date()` として解釈されるが、その値は表示に使われない。コードを読めば分かる
+ことだが、**うっかり `endYear` を使う実装に変えると年末年始にだけ壊れる**類の退行であり、
+テストで固定する価値がある。
 
 ---
 
