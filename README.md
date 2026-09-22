@@ -216,7 +216,7 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |
 | sitemap.xml / robots.txt | ✅ | `src/app/sitemap.ts` / `src/app/robots.ts` でビルド時に静的生成 |
 | アクセシビリティ | 🟡 | フォームは `htmlFor` 関連付け・`aria-describedby` / `aria-invalid`・送信結果の `role="status"` / `role="alert"` に対応。`prefers-reduced-motion: reduce` で動きを無効化。本文・見出しは WCAG 2.1 AA（4.5:1）を両テーマで満たす。スキップリンクは未対応 |
-| 自動テスト | ✅ | Vitest + Testing Library（ユニット 299 件・全コンポーネントを含む）／ Playwright（E2E・スモーク 45 件）。方針は [docs/08](./docs/08-test-specification.md) |
+| 自動テスト | ✅ | Vitest + Testing Library（ユニット 344 件・全コンポーネントを含む）／ Playwright（E2E・スモーク 45 件）。方針は [docs/08](./docs/08-test-specification.md) |
 | データ更新 UI（CMS / 管理画面） | 🔜 | 現状は GCS / `sample.json` を直接編集 |
 
 ## 🚀 デプロイ

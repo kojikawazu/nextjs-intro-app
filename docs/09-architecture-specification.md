@@ -240,6 +240,7 @@ src/
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
 │   │   ├── ProductCard.tsx     # 個人開発カード (概要, 技術スタック, site / repo リンク)
 │   │   ├── ArticleEntry.tsx    # 執筆記事の行 (タイトルリンク, 媒体・公開年月, 概要)
+│   │   ├── SectionHeading.tsx  # セクション見出し (h2 + 罫線 + 件数)
 │   │   └── SocialLinks.tsx     # SNS リンク群 (名前のテキスト + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
@@ -324,6 +325,10 @@ src/
 │  │  │   - 技術チップ   │ │   - 罫線区切り   │            │  │
 │  │  │   - 外部リンク   │ │   - 外部リンク   │            │  │
 │  │  └─────────────────┘ └─────────────────┘            │  │
+│  │  ┌─────────────────┐                                │  │
+│  │  │  SectionHeading │                                │  │
+│  │  │   - 見出し+罫線  │                                │  │
+│  │  └─────────────────┘                                │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -343,34 +348,44 @@ src/
 
 ```text
 page.tsx (Server Component)
-└── HomeClient (client.tsx)
+└── HomeClient (client.tsx) … 合成ルート。マークアップを持たない
     ├── Header (organism)
-    │   ├── ThemeToggle (atom)
-    │   │   └── useTheme (hooks)
+    │   ├── ThemeToggle (atom) → useTheme (hooks)
     │   └── cn (util)
-    ├── CareerCard (molecule)
-    │   ├── Badge (atom)
-    │   ├── groupTechStack (lib)
-    │   └── cn (util)
-    ├── ProductCard (molecule)
-    │   └── cn (util)
-    ├── ArticleEntry (molecule)
-    │   └── cn (util)
-    ├── SocialLinks (molecule)
-    │   └── cn (util)
-    ├── ContactForm (organism)
-    │   ├── Button (atom)
-    │   ├── Input (atom)
-    │   ├── TextArea (atom)
-    │   ├── ContactFormSchema (schemas/contact)
-    │   └── logDebug (lib/logger)
-    ├── next/image
+    ├── HeroSection (organism)
+    ├── AboutSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   ├── SocialLinks (molecule) → cn
+    │   └── next/image
+    ├── CareerSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   ├── CareerCard (molecule) → Badge (atom) / groupTechStack (lib) / cn
+    │   └── formatCareerPeriod (lib/career-period) → toDateString (lib/custom-date)
+    ├── ProductSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   └── ProductCard (molecule) → cn
+    ├── ArticlesSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   └── ArticleEntry (molecule) → cn
+    ├── ContactSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   └── ContactForm (organism)
+    │       ├── Button (atom) / Input (atom) / TextArea (atom)
+    │       ├── ContactFormSchema (schemas/contact)
+    │       └── logDebug (lib/logger)
+    ├── SiteFooter (organism)
     ├── summarizeCareers (lib/career-summary)
-    ├── toDateString (lib/custom-date)
+    ├── splitAboutContents (lib/about-contents)
     └── PortfolioData (types/portfolio)
 ```
 
-> 本ツリーは issue #128 で実装から取り直した。`page.tsx` を頂点にした旧ツリーは server-first 化
+> **本ツリーは 2 度取り直している。**
+>
+> issue #153 では、7 つのセクションを organisms へ切り出した構造に合わせて書き直した。
+> それまでセクションは `client.tsx` にインラインで実装されており、このツリーには molecules が
+> `HomeClient` の直下にぶら下がる形で現れていた。
+>
+> その前の issue #128 では、実装から取り直した。`page.tsx` を頂点にした旧ツリーは server-first 化
 > （issue #76）と刷新（issue #138）に追随しておらず、削除済みの Hero の `Button`、`SocialLinks` の
 > `next/image` 依存、`ContactForm` 配下の重複行が残っていた。
 
