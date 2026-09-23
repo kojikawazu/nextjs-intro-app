@@ -11,11 +11,16 @@ PNPM        := pnpm
 IMAGE       := techprofile-pro
 # Terraform 作業ディレクトリ
 TF_DIR      := terraform
+# state / tfvars の保管先。バケット名は public リポジトリにコミットしないため、
+# 環境変数 TF_STATE_BUCKET（例: export TF_STATE_BUCKET=<bucket>）で渡す。prefix はリポジトリ名と 1:1
+TF_STATE_BUCKET ?=
+TF_PREFIX   := nextjs-intro-app
+TF_VARS_GCS  = gs://$(TF_STATE_BUCKET)/$(TF_PREFIX)/terraform.tfvars
 
 # 全ターゲットはファイルを生成しない（同名ファイルがあっても常に実行する）
 .PHONY: help setup install sample dev build start lint format format-check \
         type-check test test-run test-coverage test-it test-e2e check lint-actions lint-fix lint-md lint-md-fix \
-        docker-build docker-run tf-init tf-plan tf-apply clean
+        docker-build docker-run tf-init tf-plan tf-apply tf-vars-pull tf-vars-push tf-require-bucket clean
 
 # デフォルトターゲット: ヘルプ表示
 .DEFAULT_GOAL := help
@@ -120,9 +125,10 @@ docker-run:
 	docker run --rm -p 3000:3000 $(IMAGE)
 
 # ---- Terraform ---------------------------------------------------------
-## tf-init: Terraform を初期化する
-tf-init:
-	cd $(TF_DIR) && terraform init
+## tf-init: Terraform を初期化する（要 TF_STATE_BUCKET）
+tf-init: tf-require-bucket
+	cd $(TF_DIR) && terraform init -reconfigure \
+		-backend-config="bucket=$(TF_STATE_BUCKET)" -backend-config="prefix=$(TF_PREFIX)"
 
 ## tf-plan: Terraform の変更計画を表示する
 tf-plan:
@@ -131,6 +137,22 @@ tf-plan:
 ## tf-apply: Terraform の変更を適用する
 tf-apply:
 	cd $(TF_DIR) && terraform apply
+
+# TF_STATE_BUCKET 未設定のまま gs:///... を叩かないよう、GCS を使うターゲットの前提として検査する
+tf-require-bucket:
+	@test -n "$(TF_STATE_BUCKET)" || { echo "TF_STATE_BUCKET を設定してください（例: export TF_STATE_BUCKET=<bucket>）"; exit 1; }
+
+## tf-vars-pull: 共有バケットから terraform.tfvars を取得する（plan / apply の前に実行。要 TF_STATE_BUCKET）
+# tfvars は秘密を含むため、umask で作成時点から本人のみ読み書き可（600）にする
+tf-vars-pull: tf-require-bucket
+	umask 077 && gcloud storage cp $(TF_VARS_GCS) $(TF_DIR)/terraform.tfvars
+
+## tf-vars-push: ローカルの terraform.tfvars を共有バケットへ保存する（確認あり。要 TF_STATE_BUCKET）
+# 上書きは確認を挟む。誤って上書きしてもバケットのバージョニングで旧版に戻せる
+tf-vars-push: tf-require-bucket
+	@test -f $(TF_DIR)/terraform.tfvars || { echo "$(TF_DIR)/terraform.tfvars がありません"; exit 1; }
+	@read -p "$(TF_VARS_GCS) を上書きします。よろしいですか？ [y/N] " ans && [ "$$ans" = y ]
+	gcloud storage cp $(TF_DIR)/terraform.tfvars $(TF_VARS_GCS)
 
 # ---- クリーンアップ ----------------------------------------------------
 ## clean: ビルド成果物・テスト成果物を削除する

@@ -180,7 +180,11 @@ export const ContactFormSchema = z.object({
 | `.env` ファイルの除外 | `.gitignore` により `.env` ファイルがリポジトリに含まれないようにする |
 | `.env.example` の提供 | 実際の値を含まないテンプレートファイルのみをリポジトリに含める |
 | `NEXT_PUBLIC_` プレフィックス | クライアントに公開する環境変数にのみ `NEXT_PUBLIC_` を付与。機密情報を含む変数にはこのプレフィックスを使用しない |
-| Cloud Run 環境変数 | 本番デプロイ時は Cloud Run の環境変数設定、または GitHub Actions Secrets 経由で管理 |
+| Cloud Run 環境変数 | 本番の環境変数は Terraform（`terraform/cloud_run.tf`）で管理し、値は `terraform.tfvars` に置く（docs/09 §7.5） |
+| Terraform の state / tfvars | 共有 GCS バケットの `nextjs-intro-app/` に置き、Git には含めない。**state には Cloud Run の環境変数（`RESEND_API_KEY` 等）が平文で入る**ため、tfvars を同じバケットに置いても読める範囲は広がらない。バケットは公開アクセス防止（`enforced`）・均一バケットレベルアクセス・バージョニングを有効化済み |
+| state の信頼境界 | GCS の権限はバケット単位のため、**バケットへの read 権限を持つ主体は全プロジェクトの state / tfvars を読める**（prefix は権限境界ではない）。現状の主体はオーナー本人と、バケット所属プロジェクトのデフォルト Compute SA（editor 継承）。後者の除去はバケットを管理するインフラ共通リポジトリ側で扱う |
+| バケット名の非公開 | 本リポジトリは public のため、state バケット名はコミットせず環境変数 `TF_STATE_BUCKET` で渡す（docs/09 §7.5） |
+| plan 出力のマスク | `resend_api_key` は `sensitive = true` とし、`plan` / `apply` の出力に値を出さない |
 
 ### 3.3 実行時チェック
 
@@ -678,7 +682,7 @@ CI の検出は「秘匿**ファイル**が追跡対象に入ったか」をパ�
 
 | 層 | 検出するもの | 担当 |
 |---|---|---|
-| `.gitignore` | 混入させない（未追跡ファイルのみ） | リポジトリ |
+| `.gitignore` | 混入させない（未追跡ファイルのみ）。`.env*`（`.env.example` を除く）/ 鍵 / `*.tfvars` / `*.tfstate` / plan ファイル（`*.tfplan`） | リポジトリ |
 | Secret scan ジョブ | 秘匿**ファイル**の追跡（パス） | CI |
 | GitHub secret scanning | 秘匿**値**（トークン文字列） | GitHub（未有効化） |
 | Push protection | 秘匿値を含む push の拒否 | GitHub（未有効化） |

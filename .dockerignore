@@ -3,3 +3,16 @@ private/
 terraform/
 .env*
 sample.json
+
+# 以下は terraform/ 外に置かれた場合の保険（ビルドコンテキストへ秘密を入れない。issue #155）
+*.tfvars
+*.tfvars.json
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.pem
+*.key
+*.p12
+*-key.json
+service-account*.json
+credentials.json

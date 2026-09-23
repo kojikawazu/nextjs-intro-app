@@ -41,6 +41,7 @@
     - [7.2 環境変数](#72-環境変数)
     - [7.3 GCS 認証戦略](#73-gcs-認証戦略)
     - [7.4 カスタムドメイン構成](#74-カスタムドメイン構成)
+    - [7.5 インフラ構成管理（Terraform）](#75-インフラ構成管理terraform)
 
 ---
 
@@ -708,7 +709,7 @@ ThemeToggle (Client) ──> document.documentElement.dataset.theme = 'dark'  �
 
 | ワークフロー | 契機 | 内容 |
 |---|---|---|
-| `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / 依存監査 / UT / IT |
+| `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / Terraform fmt・validate / 依存監査 / UT / IT |
 | `e2e.yml` | PR（main 宛） | Playwright（fake-gcs-server コンテナ） |
 | `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env` 系ファイルの追跡検出（docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
@@ -909,6 +910,53 @@ Cloudflare DNS に追加する。TXT レコードはプロキシの対象外の�
 
 旧ドメイン `introtechkk.com`（お名前.com）は失効済みで、ネームサーバーが `*.onamae-expired.com` を指している。
 Cloud Run 側のドメインマッピングは削除済み。
+
+---
+
+### 7.5 インフラ構成管理（Terraform）
+
+`terraform/` で Cloud Run サービス・サービスアカウント・invoker IAM・Artifact Registry を管理する。
+
+#### state と tfvars の置き場所
+
+**複数プロジェクトで共有する state 用 GCS バケットの、リポジトリ名と同じディレクトリ（prefix）に置く。** バケットの作成・設定と prefix の命名規約の正本はインフラ共通の private リポジトリにあり、ここには書き写さない。
+
+本リポジトリは public のため、**バケット名はコミットしない。** `backend "gcs" {}` を空にしておき（partial configuration）、`make tf-init` が環境変数 `TF_STATE_BUCKET` から `bucket` / `prefix` を渡す。バケット名を知られてもアクセスはできない（公開アクセス防止・IAM で保護）が、公開する必要のない情報は出さない。
+
+```text
+gs://<TF_STATE_BUCKET>/
+└── nextjs-intro-app/          ← prefix = リポジトリ名（後から変えない）
+    ├── default.tfstate        ← backend が読み書きする
+    └── terraform.tfvars       ← make tf-vars-pull / tf-vars-push で同期する
+```
+
+| ファイル | Git | 置き場所 |
+|---|---|---|
+| `*.tf` / `backend` 設定 | コミットする | `terraform/` |
+| `terraform.tfstate` | 除外 | 共有バケット（backend が自動で読み書き） |
+| `terraform.tfvars` | 除外（秘密を含む） | 共有バケット。変数名の一覧は README に記載 |
+
+バケットはアプリとは異なる GCP プロジェクトにあるが、backend は実行者の認証情報でアクセスするため問題ない。信頼境界はバケット単位である点は docs/06 §3.2 を参照。
+
+#### 変更経路の分担
+
+同じ Cloud Run サービスを 2 つの経路が触るため、**どちらが何の正本か**を分ける。
+
+| 変更内容 | 正本 | 経路 |
+|---|---|---|
+| アプリの更新（コンテナイメージ） | GitHub Actions | `deploy_to_googlecloud.yml` の `gcloud run deploy` |
+| インフラ・環境変数・IAM | Terraform | `make tf-init` → `make tf-vars-pull` → `make tf-plan` → `make tf-apply` |
+
+CI はイメージを同じタグ（固定名）で push するため、イメージ参照は Terraform の定義と一致し差分にならない。**環境変数は Terraform だけで変更する。** コンソールや `gcloud run services update --set-env-vars` で変えると、次の `apply` で定義の値に戻される。
+
+#### state 不在からの復旧（issue #155）
+
+backend 導入前はローカル state のみで、その state は失われていた。CI の `gcloud run deploy` でデプロイが回っていたため state が無くても何も壊れず、#62 で改名した `SITE_URL` が本番へ反映されないまま残っていた（本番には旧名 `NEXT_PUBLIC_SITE_URL` が残存。`getSiteUrl()` が正規オリジンへフォールバックするため表面化しなかった）。
+
+復旧は `terraform/imports.tf` の `import` ブロックで既存リソースを state に取り込み、`plan` で差分を確認してから `apply` した。取り込み後に `imports.tf` は削除した。
+
+- **`cloud-run-sa` は共有リソース。** 同じ GCP プロジェクトの別サービスもこの SA で動いているため、`prevent_destroy` で削除を禁止している。
+- **`plan` の差分が空であることを定期的に確認する。** 差分が出るなら、定義と実態が乖離している。
 
 ---
 

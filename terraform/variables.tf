@@ -1,14 +1,6 @@
 # ---------------------------------------------
 # Variables
 # ---------------------------------------------
-variable "project" {
-  type = string
-}
-
-variable "environment" {
-  type = string
-}
-
 variable "gcp_project_id" {
   type = string
 }
@@ -55,19 +47,17 @@ variable "gcs_json_path" {
   type = string
 }
 
-variable "google_application_credentials" {
-  type = string
-}
-
+# plan / apply の出力に値を出さない（Cloud Run の env として state には平文で入る点は変わらない）
 variable "resend_api_key" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "resend_from_email" {
   type = string
 }
 
-variable "my_mail_address" {    
+variable "my_mail_address" {
   type = string
 }
 

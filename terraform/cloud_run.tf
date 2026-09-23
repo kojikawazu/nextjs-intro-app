@@ -5,6 +5,12 @@
 resource "google_service_account" "cloud_run_sa" {
   account_id   = "cloud-run-sa"
   display_name = "Cloud Run Service Account"
+
+  # 同じ GCP プロジェクトの別サービスもこの SA で動いている。
+  # このリポジトリの destroy / replace で消すと他サービスが停止するため、削除を禁止する。
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Google Cloud Run にデプロイするサービス
