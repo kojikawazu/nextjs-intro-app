@@ -76,7 +76,7 @@ design/
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl は除外しない（provider のバージョンとハッシュを固定するためコミットする。issue #158）
 # tfvars は名前を問わず秘密を含みうる（*.auto.tfvars / 環境別ファイル等）
 *.tfvars
 *.tfvars.json

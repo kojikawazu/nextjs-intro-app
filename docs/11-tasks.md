@@ -284,6 +284,7 @@ AI セクションは Product と Articles の間に入る。
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-23 | `.terraform.lock.hcl` を `.gitignore` の除外から外してコミットし、provider（`hashicorp/google` 5.45.2）を固定（issue #158）。環境ごとに provider のバージョンがずれ、plan の結果が変わりうる状態だった | - |
 | 2026-09-23 | Terraform の state / tfvars を共有 GCS バケットの `nextjs-intro-app/` へ移し、既存リソースを `import` で取り込み（issue #155）。state が失われたまま CI の `gcloud` でデプロイが回っており、#62 の `SITE_URL` が本番未反映だったことが判明したため併せて反映。CI に `terraform fmt` / `validate` を追加。`.gitignore` で `.env` / `.env.production` が除外されていなかった穴も是正 | - |
 | 2026-09-22 | 7 セクションを organisms へ切り出し、`client.tsx` を合成ルートにした（issue #153）。Organisms の定義が「状態を持つもの」になっており、それが構造を縛っていたため定義から改めた。テスト 299 → 344 件 | - |
 | 2026-09-22 | 執筆記事セクション（Articles）を追加（issue #127 / 親 #125）。Zenn のいいね数上位 3 件を掲載し、いいね数自体は表示しない判断。欠損フィールドの落とし方（中黒・リンク化）を UT で固定 | - |
