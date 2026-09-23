@@ -936,6 +936,8 @@ gs://<TF_STATE_BUCKET>/
 | `terraform.tfstate` | 除外 | 共有バケット（backend が自動で読み書き） |
 | `terraform.tfvars` | 除外（秘密を含む） | 共有バケット。変数名の一覧は README に記載 |
 
+tfvars の同期は、インフラ共通リポジトリの共通スクリプト `scripts/tfvars.sh` を Makefile から直接呼ぶ（リポジトリごとに実装をコピーしない規約。コピーすると上書き保護やバケット名の持ち方がずれていくため）。スクリプトは bucket / prefix を `terraform init` 済みの backend 設定から読むため、partial configuration でも Terraform と同じ値を使う。内容が異なる相手側は `FORCE=--force` のときだけ上書きする。
+
 バケットはアプリとは異なる GCP プロジェクトにあるが、backend は実行者の認証情報でアクセスするため問題ない。信頼境界はバケット単位である点は docs/06 §3.2 を参照。
 
 #### 変更経路の分担

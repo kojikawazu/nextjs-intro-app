@@ -251,15 +251,16 @@ docker build -t techprofile-pro .
 
 アプリのデプロイは上記の GitHub Actions、**インフラと Cloud Run の環境変数は Terraform** が正本です（分担の詳細は [docs/09 §7.5](./docs/09-architecture-specification.md)）。
 
-state と `terraform.tfvars` は共有 GCS バケットの `nextjs-intro-app/` に置いています（どちらも Git には含めません）。バケット名は公開しないため、環境変数 `TF_STATE_BUCKET` で渡します。
+state と `terraform.tfvars` は共有 GCS バケットの `nextjs-intro-app/` に置いています（どちらも Git には含めません）。バケット名は公開しないため、環境変数 `TF_STATE_BUCKET` で渡します。tfvars の同期はインフラ共通リポジトリ（private）の `scripts/tfvars.sh` を使うため、その clone 先を `MY_INFRA_DIR` で渡します。
 
 ```bash
 export TF_STATE_BUCKET=<bucket>
+export MY_INFRA_DIR=<インフラ共通リポジトリの clone 先>
 make tf-init        # backend（GCS）に接続
-make tf-vars-pull   # バケットから terraform/terraform.tfvars を取得
+make tf-vars-pull   # バケットから terraform/terraform.tfvars を取得（ローカルと異なれば止まる）
 make tf-plan        # 差分を確認
 make tf-apply       # 適用
-make tf-vars-push   # tfvars を変更したらバケットへ保存（確認あり）
+make tf-vars-push   # tfvars を変更したらバケットへ保存（バケットと異なれば止まる。上書きは FORCE=--force）
 ```
 
 `terraform.tfvars` に必要な変数（値は記載しません）:
