@@ -933,6 +933,7 @@ gs://<TF_STATE_BUCKET>/
 | ファイル | Git | 置き場所 |
 |---|---|---|
 | `*.tf` / `backend` 設定 | コミットする | `terraform/` |
+| `.terraform.lock.hcl` | コミットする | `terraform/`。provider のバージョンとハッシュを固定し、手元・CI・別マシンで同じ provider を使う（秘密は含まない）。Mac（`darwin_arm64`）と CI（`linux_amd64`）の両方のハッシュを記録する。provider を上げるときは `terraform init -upgrade` 後に `terraform providers lock -platform=darwin_arm64 -platform=linux_amd64` を実行する |
 | `terraform.tfstate` | 除外 | 共有バケット（backend が自動で読み書き） |
 | `terraform.tfvars` | 除外（秘密を含む） | 共有バケット。変数名の一覧は README に記載 |
 
