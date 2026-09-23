@@ -284,6 +284,7 @@ AI セクションは Product と Articles の間に入る。
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-23 | `.dockerignore` に `node_modules/` / `.next/` / `*.tsbuildinfo` / `.git/` / テスト成果物 / `.playwright-mcp/` を追加し、ローカルの `docker build` でホストの依存がコンテナ用を上書きする問題を解消（issue #162）。ビルドコンテキストは約 2.4 GB → 約 1 MB。SA キーの除外名を `.gitignore` と揃え、Dockerfile の不要なコメントアウト行を削除 | - |
 | 2026-09-23 | Secret scan の検出対象に Terraform の秘密ファイル（`*.tfvars` / `*.tfstate*` / `*.tfplan`）と GCP SA キー（区切り違いの名前・既定名 `<project>-<hex12>.json`・JSON の中身）を追加し、`.gitignore` も揃えた（issue #160 / #161）。検出ロジックを `scripts/secret-scan.sh` へ切り出し、62 ケースの自己テストを本番スキャンの前に実行する | - |
 | 2026-09-23 | `.terraform.lock.hcl` を `.gitignore` の除外から外してコミットし、provider（`hashicorp/google` 5.45.2）を固定（issue #158）。環境ごとに provider のバージョンがずれ、plan の結果が変わりうる状態だった | - |
 | 2026-09-23 | Terraform の state / tfvars を共有 GCS バケットの `nextjs-intro-app/` へ移し、既存リソースを `import` で取り込み（issue #155）。state が失われたまま CI の `gcloud` でデプロイが回っており、#62 の `SITE_URL` が本番未反映だったことが判明したため併せて反映。CI に `terraform fmt` / `validate` を追加。`.gitignore` で `.env` / `.env.production` が除外されていなかった穴も是正 | - |

@@ -4,7 +4,26 @@ terraform/
 .env*
 sample.json
 
+# 依存とビルド成果物はコンテナ内で作る（issue #162）。
+# Dockerfile は pnpm install の後に COPY . . するため、ホスト（macOS / darwin-arm64）の
+# node_modules が入るとコンテナ（linux）用の依存を上書きし、ネイティブバイナリを持つ依存
+# （@next/swc-* / lightningcss / sharp 等）が動かなくなる。ホストの古い .next も混ざる。
+# CI はクリーンな checkout でビルドするため影響せず、ローカル検証でだけ本番と結果が変わる。
+node_modules/
+.next/
+*.tsbuildinfo
+
+# 実行時に不要で、ビルドコンテキストを膨らませるもの
+.git/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+# Playwright MCP のスナップショット（取得したページ本文 = 本番データを含む）
+.playwright-mcp/
+
 # 以下は terraform/ 外に置かれた場合の保険（ビルドコンテキストへ秘密を入れない。issue #155）
+# SA キーの名前は .gitignore / scripts/secret-scan.sh と揃える（issue #160）
 *.tfvars
 *.tfvars.json
 *.tfstate
@@ -15,4 +34,7 @@ sample.json
 *.p12
 *-key.json
 service-account*.json
+service_account*.json
+serviceAccount*.json
 credentials.json
+*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
