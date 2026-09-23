@@ -183,6 +183,7 @@ nextjs-intro-app/
 ├── docs/                       # プロジェクトドキュメント
 ├── node_modules/               # pnpm パッケージ（git 管理外）
 ├── public/                     # 静的ファイル配信ディレクトリ
+├── scripts/                    # 補助スクリプト（secret-scan.sh とそのテスト）
 ├── src/                        # アプリケーションソースコード
 │   ├── app/                    # Next.js App Router
 │   ├── components/             # UI コンポーネント
@@ -711,7 +712,7 @@ ThemeToggle (Client) ──> document.documentElement.dataset.theme = 'dark'  �
 |---|---|---|
 | `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / Terraform fmt・validate / 依存監査 / UT / IT |
 | `e2e.yml` | PR（main 宛） | Playwright（fake-gcs-server コンテナ） |
-| `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env` 系ファイルの追跡検出（docs/06 §11） |
+| `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env`・Terraform の秘密ファイル・GCP SA キーの追跡検出（`scripts/secret-scan.sh`。docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
 
 #### Node バージョンの統一

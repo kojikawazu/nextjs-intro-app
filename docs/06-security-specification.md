@@ -655,11 +655,16 @@ IP はログに出力しない。切り分けには「レートリミットが�
 
 | 項目 | 内容 |
 |---|---|
-| 検出方法 | `git ls-files` の出力をパスのパターンで照合する。**ファイルの中身は見ない** |
-| 検出対象（鍵） | `*.key` / `*.pem` / `*.p12` / `*.pfx` / `*.jks` / `*.keystore` / `id_rsa` / `id_ed25519` / `id_dsa` / `credentials.json` / `serviceAccountKey.json` |
+| 実体 | `scripts/secret-scan.sh`（ローカルでも `bash scripts/secret-scan.sh` で同じ判定を再現できる） |
+| 検出方法（名前） | `git ls-files` の出力をパスのパターンで照合する |
+| 検出方法（中身） | 追跡中の `*.json` のうち、`"type": "service_account"` と `"private_key"` を**両方**含むもの（GCP SA キーの構造）。名前をどう変えても検出できる。対象を `*.json` に限るのは、ドキュメント中の説明文を誤検知しないため |
+| 検出対象（鍵） | `*.key` / `*.pem` / `*.p12` / `*.pfx` / `*.jks` / `*.keystore` / `id_rsa` / `id_ed25519` / `id_dsa` / `credentials.json` |
+| 検出対象（GCP SA キー） | `service-account.json` / `service_account.json` / `serviceAccountKey.json` 等の区切り違い（`service[-_]?[Aa]ccount([-_]?[Kk]ey)?.json`）と、コンソールからダウンロードした既定名 `<project-id>-<12 桁の 16 進>.json`（issue #160） |
+| 検出対象（Terraform） | `*.tfvars` / `*.tfvars.json` / `*.tfstate` / `*.tfstate.*`（`*.tfstate.backup` 等）/ `*.tfplan`。いずれも秘密を平文で含む（issue #161）。`.terraform.lock.hcl` は provider のハッシュのみのため対象外 |
 | 検出対象（環境変数） | `.env` 系（`.env` / `.env.local` / `.env.production` 等） |
 | 除外 | `*.example` / `*.sample` / `*.template` / `*.dist` / `*.env.d.ts`（テンプレートと型定義は誤検知になるため） |
 | 実行契機 | PR（main 宛）と main への push。**変更種別で絞らない** |
+| 自己テスト | 本番のスキャン前に `scripts/secret-scan.test.sh` を実行する。一時リポジトリで各ファイルを `git add -f` で追跡させ、検出対象が落ちること・既存 JSON やテンプレートで誤検知しないこと・`.gitignore` が同じ名前を除外することを検証する。判定が壊れると本番のスキャンは「常に OK」になり気づけないため |
 
 `git ls-files` はインデックスを読むだけで履歴もワーキングツリーも走査しないため高速で、パスフィルタによる分岐なしに常時実行できる。
 
@@ -683,6 +688,6 @@ CI の検出は「秘匿**ファイル**が追跡対象に入ったか」をパ�
 | 層 | 検出するもの | 担当 |
 |---|---|---|
 | `.gitignore` | 混入させない（未追跡ファイルのみ）。`.env*`（`.env.example` を除く）/ 鍵 / `*.tfvars` / `*.tfstate` / plan ファイル（`*.tfplan`） | リポジトリ |
-| Secret scan ジョブ | 秘匿**ファイル**の追跡（パス） | CI |
+| Secret scan ジョブ | 秘匿**ファイル**の追跡（パス + GCP SA キーの JSON 構造） | CI |
 | GitHub secret scanning | 秘匿**値**（トークン文字列） | GitHub（未有効化） |
 | Push protection | 秘匿値を含む push の拒否 | GitHub（未有効化） |

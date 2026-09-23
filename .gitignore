@@ -30,10 +30,15 @@
 *.pem
 *.key
 *.p12
-# GCP 等のサービスアカウント鍵
+# GCP 等のサービスアカウント鍵。区切りが service-account / service_account / serviceAccount と
+# 揺れるため全形を並べる。検出側（scripts/secret-scan.sh）と対象を揃えること（issue #160）
 *-key.json
 service-account*.json
+service_account*.json
+serviceAccount*.json
 credentials.json
+# GCP コンソールでダウンロードした SA キーの既定名 <project-id>-<12 桁の 16 進>.json
+*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
 
 # debug
 npm-debug.log*

@@ -172,6 +172,9 @@
 |--------|------|
 | @vitest/coverage-v8 | カバレッジレポート生成 |
 | @vitest/ui | テスト結果のビジュアルUI |
+| bash（`scripts/*.test.sh`） | シェルスクリプトの自己テスト。現状は `scripts/secret-scan.test.sh` のみ |
+
+Vitest は `src/**` と jsdom を前提とするため、`scripts/` のシェルスクリプトは bash のテストで検証する。`scripts/secret-scan.test.sh` は一時 Git リポジトリで秘匿ファイルを `git add -f` で追跡させ、検出対象（準正常系）・誤検知しないファイル（正常系）・`.gitignore` の除外を検証する。CI（`secret-scan.yml`）が本番のスキャンの前に実行する（docs/06 §11.2）。
 
 ---
 
