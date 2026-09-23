@@ -11,11 +11,18 @@ PNPM        := pnpm
 IMAGE       := techprofile-pro
 # Terraform 作業ディレクトリ
 TF_DIR      := terraform
+# state の保管先。バケット名は public リポジトリにコミットしないため、
+# 環境変数 TF_STATE_BUCKET（例: export TF_STATE_BUCKET=<bucket>）で渡す。prefix はリポジトリ名と 1:1
+TF_STATE_BUCKET ?=
+TF_PREFIX   := nextjs-intro-app
+# tfvars の同期はインフラ共通リポジトリの scripts/tfvars.sh を直接呼ぶ（各リポジトリへコピーしない規約）。
+# clone 先は環境により異なり、public リポジトリに手元のパスも出さないため、既定値は置かず環境変数で渡す
+MY_INFRA_DIR ?=
 
 # 全ターゲットはファイルを生成しない（同名ファイルがあっても常に実行する）
 .PHONY: help setup install sample dev build start lint format format-check \
         type-check test test-run test-coverage test-it test-e2e check lint-actions lint-fix lint-md lint-md-fix \
-        docker-build docker-run tf-init tf-plan tf-apply clean
+        docker-build docker-run tf-init tf-plan tf-apply tf-vars-pull tf-vars-push tf-require-bucket tf-require-infra-dir clean
 
 # デフォルトターゲット: ヘルプ表示
 .DEFAULT_GOAL := help
@@ -120,9 +127,10 @@ docker-run:
 	docker run --rm -p 3000:3000 $(IMAGE)
 
 # ---- Terraform ---------------------------------------------------------
-## tf-init: Terraform を初期化する
-tf-init:
-	cd $(TF_DIR) && terraform init
+## tf-init: Terraform を初期化する（要 TF_STATE_BUCKET）
+tf-init: tf-require-bucket
+	cd $(TF_DIR) && terraform init -reconfigure \
+		-backend-config="bucket=$(TF_STATE_BUCKET)" -backend-config="prefix=$(TF_PREFIX)"
 
 ## tf-plan: Terraform の変更計画を表示する
 tf-plan:
@@ -131,6 +139,23 @@ tf-plan:
 ## tf-apply: Terraform の変更を適用する
 tf-apply:
 	cd $(TF_DIR) && terraform apply
+
+# TF_STATE_BUCKET 未設定のまま init しないよう検査する（空の bucket で backend を構成させない）
+tf-require-bucket:
+	@test -n "$(TF_STATE_BUCKET)" || { echo "TF_STATE_BUCKET を設定してください（例: export TF_STATE_BUCKET=<bucket>）"; exit 1; }
+
+tf-require-infra-dir:
+	@test -x "$(MY_INFRA_DIR)/scripts/tfvars.sh" || { echo "MY_INFRA_DIR にインフラ共通リポジトリの clone 先を設定してください（例: export MY_INFRA_DIR=<path>）"; exit 1; }
+
+## tf-vars-pull: 共有バケットから terraform.tfvars を取得する（tf-init 後に実行。上書きは FORCE=--force）
+# bucket / prefix は init 済みの backend 設定から共通スクリプトが読む。権限 600 で作成される
+tf-vars-pull: tf-require-infra-dir
+	$(MY_INFRA_DIR)/scripts/tfvars.sh pull --dir $(TF_DIR) $(FORCE)
+
+## tf-vars-push: ローカルの terraform.tfvars を共有バケットへ保存する（上書きは FORCE=--force）
+# 内容が異なれば止まる。上書きしてもバケット側はバージョニングで旧版が残る
+tf-vars-push: tf-require-infra-dir
+	$(MY_INFRA_DIR)/scripts/tfvars.sh push --dir $(TF_DIR) $(FORCE)
 
 # ---- クリーンアップ ----------------------------------------------------
 ## clean: ビルド成果物・テスト成果物を削除する

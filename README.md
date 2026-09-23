@@ -247,6 +247,35 @@ docker build -t techprofile-pro .
 
 > 本番では GCS（`GCS_PRIVATE_BUCKET_NAME` / `GCS_JSON_PATH`）と Resend の環境変数を Cloud Run 側に設定する必要があります。GCS 認証は Cloud Run の ADC（Application Default Credentials）を利用します。
 
+### インフラ（Terraform）
+
+アプリのデプロイは上記の GitHub Actions、**インフラと Cloud Run の環境変数は Terraform** が正本です（分担の詳細は [docs/09 §7.5](./docs/09-architecture-specification.md)）。
+
+state と `terraform.tfvars` は共有 GCS バケットの `nextjs-intro-app/` に置いています（どちらも Git には含めません）。バケット名は公開しないため、環境変数 `TF_STATE_BUCKET` で渡します。tfvars の同期はインフラ共通リポジトリ（private）の `scripts/tfvars.sh` を使うため、その clone 先を `MY_INFRA_DIR` で渡します。
+
+```bash
+export TF_STATE_BUCKET=<bucket>
+export MY_INFRA_DIR=<インフラ共通リポジトリの clone 先>
+make tf-init        # backend（GCS）に接続
+make tf-vars-pull   # バケットから terraform/terraform.tfvars を取得（ローカルと異なれば止まる）
+make tf-plan        # 差分を確認
+make tf-apply       # 適用
+make tf-vars-push   # tfvars を変更したらバケットへ保存（バケットと異なれば止まる。上書きは FORCE=--force）
+```
+
+`terraform.tfvars` に必要な変数（値は記載しません）:
+
+| 変数 | 内容 |
+|---|---|
+| `gcp_project_id` / `gcp_region` | GCP プロジェクト ID / リージョン |
+| `repository_id` / `app_name` | Artifact Registry のリポジトリ名 / イメージ名 |
+| `service_name` / `http_port` | Cloud Run サービス名 / コンテナポート |
+| `invoker_role` / `invoker_member` | 公開設定（`roles/run.invoker` / `allUsers`） |
+| `site_url` | `SITE_URL` として注入するサイト URL |
+| `gcs_private_bucket_name` / `gcs_json_path` | 表示データの GCS バケット / パス |
+| `resend_api_key` / `resend_from_email` / `my_mail_address` | 問い合わせメール（Resend）の設定 |
+| `node_env` / `next_telemetry_disabled` | 実行時の環境変数 |
+
 ### カスタムドメイン
 
 本番は `https://introtechkkplus.com`（apex）で公開しています。DNS は Cloudflare、オリジンは Cloud Run です。

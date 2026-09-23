@@ -28,14 +28,22 @@
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+# GCP 等のサービスアカウント鍵
+*-key.json
+service-account*.json
+credentials.json
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# env files（テンプレートの .env.example だけ追跡する）
+# 以前は .env*.local のみで、.env / .env.production が除外されていなかった（issue #155 で是正）
+.env*
+!.env.example
 
 # vercel
 .vercel
@@ -63,13 +71,20 @@ pids
 # Design files
 design/
 
-# Terraform files (for future use)
+# Terraform files
+# state と tfvars は共有 GCS バケットの nextjs-intro-app/ に置く（docs/09 §7.5）
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
 .terraform/
 .terraform.lock.hcl
-terraform.tfvars
-terraform.tfstate.backup
+# tfvars は名前を問わず秘密を含みうる（*.auto.tfvars / 環境別ファイル等）
+*.tfvars
+*.tfvars.json
+# plan ファイル（-out）には変数の値がシークレット込みで入る
+*.tfplan
+tfplan
+crash.log
+crash.*.log
 
 private/
 sample.json
