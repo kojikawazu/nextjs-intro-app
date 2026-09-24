@@ -715,6 +715,19 @@ ThemeToggle (Client) ──> document.documentElement.dataset.theme = 'dark'  �
 | `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env`・Terraform の秘密ファイル・GCP SA キーの追跡検出（`scripts/secret-scan.sh`。docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |
 
+#### ビルドコンテキスト（`.dockerignore`）
+
+Dockerfile の builder は `pnpm install --frozen-lockfile` の**後に** `COPY . .` するため、ビルドコンテキストに入ったものはコンテナ内で作った成果物を上書きする。**依存（`node_modules/`）とビルド成果物（`.next/` / `*.tsbuildinfo`）はコンテナ内で作り、ホストからは持ち込まない**（issue #162）。
+
+| 除外するもの | 理由 |
+|---|---|
+| `node_modules/` | ホスト（macOS / darwin-arm64）向けのネイティブバイナリ（`@next/swc-*` / `lightningcss` / `sharp` 等）がコンテナ（linux-musl）用を上書きし、ビルド失敗や壊れたイメージになる |
+| `.next/` / `*.tsbuildinfo` | ホストの古いビルド成果物・incremental 情報がビルドに混ざる |
+| `.git/` / テスト成果物 / `.playwright-mcp/` | 実行時に不要。`.playwright-mcp/` は本番データを含むページのスナップショット |
+| 秘密ファイル（`.env*` / `*.tfvars` / `*.tfstate*` / 鍵 / SA キー） | イメージへ秘密を焼き込まない。SA キーの名前は `.gitignore` / `scripts/secret-scan.sh` と揃える |
+
+CI はクリーンな checkout でビルドするためこの問題は起きず、**ローカル検証でだけ本番と結果が変わる**のが危険な点だった。修正前はホストに `node_modules` / `.next` がある状態でコンテキストが約 2.4 GB（うち `node_modules` 2.1 GB）、修正後は約 1 MB。
+
 #### Node バージョンの統一
 
 **`package.json` の `engines.node` を正本とする。**
