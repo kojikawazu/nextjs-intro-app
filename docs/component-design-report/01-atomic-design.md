@@ -29,6 +29,7 @@
     - [3.3 ArticleEntry](#33-articleentry)
     - [3.4 SectionHeading](#34-sectionheading)
     - [3.5 SocialLinks](#35-sociallinks)
+    - [3.6 AiPracticeEntry](#36-aipracticeentry)
 - [4. Organisms（生体コンポーネント）](#4-organisms生体コンポーネント)
     - [4.1 Organisms の定義](#41-organisms-の定義)
     - [4.2 Header](#42-header)
@@ -56,14 +57,16 @@ src/components/
 │   ├── Input.tsx
 │   ├── TextArea.tsx
 │   └── ThemeToggle.tsx
-├── molecules/      ← Atoms を組み合わせた複合コンポーネント（5コンポーネント）
+├── molecules/      ← Atoms を組み合わせた複合コンポーネント（6コンポーネント）
+│   ├── AiPracticeEntry.tsx
 │   ├── ArticleEntry.tsx
 │   ├── CareerCard.tsx
 │   ├── ProductCard.tsx
 │   ├── SectionHeading.tsx
 │   └── SocialLinks.tsx
-└── organisms/      ← インターフェース上の独立した区画（9コンポーネント）
+└── organisms/      ← インターフェース上の独立した区画（10コンポーネント）
     ├── AboutSection.tsx
+    ├── AiUsageSection.tsx
     ├── ArticlesSection.tsx
     ├── CareerSection.tsx
     ├── ContactForm.tsx
@@ -79,10 +82,10 @@ src/components/
 （`frontend.md`「クライアントコンポーネントのロジックはカスタムフックに切り出す」）。
 現在は `useTheme`（`ThemeToggle` が使用）の 1 件。
 
-> organisms は issue #153 で 2 件 → 9 件になった。それまで 7 つのセクションは
+> organisms は issue #153 で 2 件 → 9 件になり、issue #129 の `AiUsageSection` で 10 件になった。それまで 7 つのセクションは
 > `client.tsx` にインラインで実装されており（296 行）、Atomic Design の階層に載っていなかった。
 > molecules は issue #128 の `ProductCard`、issue #127 の `ArticleEntry`、issue #153 の
-> `SectionHeading` 追加で 5 件になった。
+> `SectionHeading` 追加で 5 件、issue #129 の `AiPracticeEntry` で 6 件になった。
 > 階層の件数は 2026-09-22（issue #141）に実ファイルから数え直した。
 > 以前は atoms 4 / molecules 3 と記載されていたが、`ThemeToggle` の追加（#138）と
 > `SkillCard` の削除（#126）に追随していなかった。
@@ -396,7 +399,7 @@ ArticleEntry (<article> + 下罫)
 └── 概要
 ```
 
-**カードではなく「行」で組む唯一の molecule。** `CareerCard` / `ProductCard` は左罫のカードだが、
+**カードではなく「行」で組む molecule**（issue #129 の `AiPracticeEntry` も同じ体裁、§3.6）。 `CareerCard` / `ProductCard` は左罫のカードだが、
 記事は件数が増えやすく 1 件あたりの情報量も小さい。同じカードにすると縦に間延びし、一覧として
 流し読みできなくなる。**同じ体裁を使うかどうかは「並びの性格」で決める**（`ProductCard` が
 `CareerCard` に揃えたのは、どちらも「作ったもの」を示す並びだったため）。
@@ -432,6 +435,7 @@ issue #153 で抽出した。About / Career / Product / Articles / Contact の *
 
 **件数は「0 件のときに 0 を出す」。** `count` を渡すかどうかで出し分ける設計にしてあり、
 件数の概念があるセクション（Career / Product / Articles）では 0 件でも `0` と出る。
+件数の概念が無いセクション（About / AI / Contact）は `count` を渡さない。
 `count && ...` のように falsy で握りつぶすと、**「0 件」と「件数の概念が無い」が区別できなくなる**。
 
 ### 3.5 SocialLinks
@@ -461,6 +465,36 @@ issue #153 で抽出した。About / Career / Product / Articles / Contact の *
 
 **ホバー**: 枠線を `--rule` から `--field` へ、文字色を `--mute` から `--ink` へ。拡大やオーバーレイは使わない。
 
+### 3.6 AiPracticeEntry
+
+**ファイル**: `src/components/molecules/AiPracticeEntry.tsx`
+
+**依存 Atom**: なし
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | 方針の見出し |
+| `description` | `string` | 方針の要約（1 文）。空なら段落を描画しない |
+| `className` | `string?` | 追加クラス |
+
+**構造**:
+
+```text
+AiPracticeEntry (<article> + 下罫)
+├── 見出し（h3）
+└── 要約
+```
+
+**`ArticleEntry` と同じ「行」で組む。** 1 件が見出しと 1 文だけで、`CareerCard` / `ProductCard` の
+左罫カードにすると中身に対して枠が勝ち、縦に間延びする。§3.3 の「同じ体裁を使うかどうかは並びの
+性格で決める」に従えば、これは「実績」ではなく「流し読みする要約の一覧」であり、記事の行と性格が近い。
+
+**リンクを持たない。** 詳細ページへの導線はセクションに 1 本だけ置き（`AiUsageSection`）、方針ごとには
+張らない。解説ページ側の構成が変わるたびに方針ごとのアンカーを追随させる必要が出るため。
+
+**要約が空なら段落を描画しない**（空白のみも同様）。GCS の JSON は手書きのため、見出しだけを先に
+入れた状態がありうる。
+
 ---
 
 ## 4. Organisms（生体コンポーネント）
@@ -482,7 +516,7 @@ Organisms は **molecules や atoms を組み合わせた、インターフェ�
 | 系統 | コンポーネント | 状態 |
 |------|--------------|------|
 | **機能単位** | `Header` / `ContactForm` | あり |
-| **セクション** | `HeroSection` / `AboutSection` / `CareerSection` / `ProductSection` / `ArticlesSection` / `ContactSection` / `SiteFooter` | なし |
+| **セクション** | `HeroSection` / `AboutSection` / `CareerSection` / `AiUsageSection` / `ProductSection` / `ArticlesSection` / `ContactSection` / `SiteFooter` | なし |
 
 どちらも「独立した区画」である点で同じカテゴリに属する。
 
@@ -575,14 +609,15 @@ Input / TextArea 側の `aria-describedby` / `aria-invalid` が担う。
 
 ### 4.4 セクション organisms
 
-issue #153 で `client.tsx` から切り出した 7 つ。**いずれも状態を持たず**、渡されたデータを
-描画するだけである。
+issue #153 で `client.tsx` から切り出した 7 つと、issue #129 で追加した `AiUsageSection` の 8 つ。
+**いずれも状態を持たず**、渡されたデータを描画するだけである。
 
 | コンポーネント | アンカー | 依存 | 主な判断 |
 |--------------|---------|------|---------|
 | `HeroSection` | （なし） | — | リードが無ければ引用パネルごと落とす。`startYear` が `null` なら `—` |
 | `AboutSection` | `#about` | `SectionHeading` / `SocialLinks` / `next/image` | 氏名は画像の `alt` にのみ使う |
 | `CareerSection` | `#career` | `SectionHeading` / `CareerCard` / `formatCareerPeriod` | `career_end === 'now'` の解釈。**並べ替えない** |
+| `AiUsageSection` | `#ai-usage` | `SectionHeading` / `AiPracticeEntry` | **件数を出さない**。詳細 URL が空ならリンクを描画しない |
 | `ProductSection` | `#product` | `SectionHeading` / `ProductCard` | — |
 | `ArticlesSection` | `#articles` | `SectionHeading` / `ArticleEntry` | カード間の `gap` を持たない（行として連続させる） |
 | `ContactSection` | `#contact` | `SectionHeading` / `ContactForm` | — |
@@ -630,6 +665,9 @@ page.tsx（Server Component / force-dynamic）
     │   │   ├── Badge (atom) ← 進行中の案件のみ
     │   │   └── groupTechStack (lib)
     │   └── formatCareerPeriod (lib)
+    ├── AiUsageSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   └── AiPracticeEntry (molecule) × N件
     ├── ProductSection (organism)
     │   ├── SectionHeading (molecule)
     │   └── ProductCard (molecule) × N件
@@ -658,7 +696,7 @@ page.tsx（Server Component / force-dynamic）
 |---------------|------|------|
 | `page.tsx` | なし | `async` でデータを取得し props へ渡すだけ |
 | `HomeClient` | なし | `'use client'` は子（Header / ContactForm / ThemeToggle）を配置するために維持している |
-| セクション organisms 7 件 | なし | 渡されたデータを描画するだけ |
+| セクション organisms 8 件 | なし | 渡されたデータを描画するだけ |
 | `Header` | `isMobileMenuOpen` | |
 | `ContactForm` | `isSubmitting` / `isSubmitted` / `submitError` + `useForm` | |
 | `ThemeToggle` | なし | `useTheme` は状態を返さない（§2.6） |
@@ -676,12 +714,13 @@ page.tsx（Server Component / force-dynamic）
 │            Organisms（独立した区画）                   │
 │    Header: ナビゲーション + モバイルメニュー            │
 │    ContactForm: フォーム管理 + API通信                │
-│    〜Section 6 件 + SiteFooter: 各セクションの区画       │
+│    〜Section 7 件 + SiteFooter: 各セクションの区画       │
 ├─────────────────────────────────────────────────────┤
 │              Molecules（複合表示部品）                 │
 │    CareerCard: 分類チップ + Badge で経歴を表示          │
 │    ProductCard: 個人開発プロダクトを表示               │
 │    ArticleEntry: 執筆記事を罫線区切りの行で表示        │
+│    AiPracticeEntry: AI 活用の方針を罫線区切りの行で表示 │
 │    SectionHeading: 見出し + 罫線 + 件数                │
 │    SocialLinks: テキストチップでSNSリンク一覧           │
 ├─────────────────────────────────────────────────────┤

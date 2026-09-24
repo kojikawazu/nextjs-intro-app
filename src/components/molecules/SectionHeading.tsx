@@ -18,7 +18,7 @@ export interface SectionHeadingProps {
  *
  * **件数は「0 件のときに 0 を出す」。** `count` を渡すかどうかで出し分ける設計にしてあり、
  * 件数の概念があるセクション（Career / Product / Articles）では 0 件でも `0` と出る。
- * 件数の概念が無いセクション（About / Contact）は `count` を渡さない。
+ * 件数の概念が無いセクション（About / AI / Contact）は `count` を渡さない。
  */
 export function SectionHeading({ title, count }: SectionHeadingProps) {
     return (

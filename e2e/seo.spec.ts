@@ -54,6 +54,7 @@ test.describe('サーバーサイドレンダリング（正常系）', () => {
             'Solving Problems with Technology',
             'About',
             'Career',
+            'AI',
             'Product',
             'Articles',
             'Contact',

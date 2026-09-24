@@ -4,6 +4,7 @@ import { Header } from '@/components/organisms/Header';
 import { HeroSection } from '@/components/organisms/HeroSection';
 import { AboutSection } from '@/components/organisms/AboutSection';
 import { CareerSection } from '@/components/organisms/CareerSection';
+import { AiUsageSection } from '@/components/organisms/AiUsageSection';
 import { ProductSection } from '@/components/organisms/ProductSection';
 import { ArticlesSection } from '@/components/organisms/ArticlesSection';
 import { ContactSection } from '@/components/organisms/ContactSection';
@@ -46,6 +47,7 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
     const navItems = [
         { name: navbar.about_name, href: '#about' },
         { name: navbar.career_name, href: '#career' },
+        { name: navbar.ai_usage_name, href: '#ai-usage' },
         { name: navbar.product_name, href: '#product' },
         { name: navbar.article_name, href: '#articles' },
         { name: navbar.contact_name, href: '#contact' },
@@ -71,6 +73,8 @@ export function HomeClient({ portfolioData }: HomeClientProps) {
             />
 
             <CareerSection title={navbar.career_name} careers={portfolioData.career_data} />
+
+            <AiUsageSection title={navbar.ai_usage_name} data={portfolioData.ai_usage_data} />
 
             <ProductSection title={navbar.product_name} data={portfolioData.product_data} />
 

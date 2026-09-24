@@ -17,6 +17,8 @@ export interface PortfolioData {
     career_title_data: CareerTitleData;
     /** 経歴一覧データ */
     career_data: CareerData[];
+    /** AI 活用セクションの表示データ */
+    ai_usage_data: AiUsageData;
     /** 個人開発セクションの表示データ */
     product_data: ProductData;
     /** 執筆記事セクションの表示データ */
@@ -35,6 +37,8 @@ export interface NavbarData {
     about_name: string;
     /** Career セクションのナビリンク表示名 */
     career_name: string;
+    /** AI 活用セクションのナビリンク表示名 */
+    ai_usage_name: string;
     /** 個人開発セクションのナビリンク表示名 */
     product_name: string;
     /** 執筆記事セクションのナビリンク表示名 */
@@ -196,6 +200,38 @@ export interface ArticleItem {
     article_published_at: string;
     /** 記事の概要。1 行で収まる長さにする */
     article_contents: string;
+}
+
+/**
+ * AI 活用セクションの表示データ。
+ *
+ * **ポートフォリオ側は概要と導線だけを持つ。** 詳細は別サイトの解説ページに置いており、
+ * ここでは原則 1 文と方針の要約を並べ、`ai_usage_detail_url` から詳細へ送る（issue #129）。
+ * 詳細を両方に書くと、2 サイトで更新のタイミングがずれて内容が食い違っていくため。
+ *
+ * **ツール一覧は持たない。** 起票時は `ai_tools` を案に含めていたが、解説ページ側に
+ * ツール一覧が無く、ポートフォリオ側だけに足すと詳細に無い内容を新しく書くことになるため
+ * 外した。閲覧者に伝えたいのは「どのツールか」より「どう使い、品質をどう担保しているか」である。
+ */
+export interface AiUsageData {
+    /** セクションの見出し下に表示する説明文。AI 活用の原則を 1 文で書く */
+    ai_usage_description: string;
+    /** 方針の要約一覧。表示順は配列順に従う */
+    ai_practices: AiPractice[];
+    /** 詳細を載せた解説ページの URL。空文字ならリンクを描画しない */
+    ai_usage_detail_url: string;
+}
+
+/**
+ * AI 活用の方針 1 件分のデータ。
+ *
+ * フィールド名は `ProductItem` / `ArticleItem` と同じ `*_title` / `*_contents` の語彙に揃える。
+ */
+export interface AiPractice {
+    /** 方針の見出し */
+    ai_practice_title: string;
+    /** 方針の要約。1 文で収まる長さにする */
+    ai_practice_contents: string;
 }
 
 /**

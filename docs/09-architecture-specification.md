@@ -240,13 +240,22 @@ src/
 │   │   └── ThemeToggle.tsx     # 配色テーマ切り替え (ボタン 2 個。§6.7)
 │   ├── molecules/              # Atoms を組み合わせた複合部品
 │   │   ├── CareerCard.tsx      # 経歴カード (期間, チーム規模, 技術スタック, フェーズ, 役割)
+│   │   ├── AiPracticeEntry.tsx # AI 活用の方針の行 (見出し, 要約)
 │   │   ├── ProductCard.tsx     # 個人開発カード (概要, 技術スタック, site / repo リンク)
 │   │   ├── ArticleEntry.tsx    # 執筆記事の行 (タイトルリンク, 媒体・公開年月, 概要)
 │   │   ├── SectionHeading.tsx  # セクション見出し (h2 + 罫線 + 件数)
 │   │   └── SocialLinks.tsx     # SNS リンク群 (名前のテキスト + 外部リンク)
 │   └── organisms/              # 独立した機能単位のコンポーネント
 │       ├── ContactForm.tsx     # お問い合わせフォーム (React Hook Form + Zod バリデーション)
-│       └── Header.tsx          # ヘッダー (ナビゲーション, モバイルメニュー, テーマ切り替え)
+│       ├── Header.tsx          # ヘッダー (ナビゲーション, モバイルメニュー, テーマ切り替え)
+│       ├── HeroSection.tsx     # Hero (リード文, 経歴サマリ)
+│       ├── AboutSection.tsx    # About (プロフィール画像, SNS, 自己紹介)
+│       ├── CareerSection.tsx   # Career (経歴カードの一覧)
+│       ├── AiUsageSection.tsx  # AI 活用 (原則, 方針の要約, 詳細ページへのリンク)
+│       ├── ProductSection.tsx  # 個人開発 (プロダクトカードの一覧)
+│       ├── ArticlesSection.tsx # 執筆記事 (記事の行の一覧)
+│       ├── ContactSection.tsx  # Contact (見出し + ContactForm)
+│       └── SiteFooter.tsx      # フッター (コピーライト)
 │
 ├── hooks/                      # クライアントコンポーネントのロジック
 │   └── useTheme.ts             # 配色テーマの適用と Cookie 保存 (§6.7)
@@ -327,10 +336,10 @@ src/
 │  │  │   - 技術チップ   │ │   - 罫線区切り   │            │  │
 │  │  │   - 外部リンク   │ │   - 外部リンク   │            │  │
 │  │  └─────────────────┘ └─────────────────┘            │  │
-│  │  ┌─────────────────┐                                │  │
-│  │  │  SectionHeading │                                │  │
-│  │  │   - 見出し+罫線  │                                │  │
-│  │  └─────────────────┘                                │  │
+│  │  ┌─────────────────┐ ┌─────────────────┐            │  │
+│  │  │  SectionHeading │ │ AiPracticeEntry │            │  │
+│  │  │   - 見出し+罫線  │ │   - 罫線区切り   │            │  │
+│  │  └─────────────────┘ └─────────────────┘            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐  │
@@ -363,6 +372,9 @@ page.tsx (Server Component)
     │   ├── SectionHeading (molecule)
     │   ├── CareerCard (molecule) → Badge (atom) / groupTechStack (lib) / cn
     │   └── formatCareerPeriod (lib/career-period) → toDateString (lib/custom-date)
+    ├── AiUsageSection (organism)
+    │   ├── SectionHeading (molecule)
+    │   └── AiPracticeEntry (molecule) → cn
     ├── ProductSection (organism)
     │   ├── SectionHeading (molecule)
     │   └── ProductCard (molecule) → cn
@@ -1055,7 +1067,7 @@ backend 導入前はローカル state のみで、その state は失われて�
 | XSS 対策 | React デフォルト | React の JSX エスケープ機能による自動対策 |
 | CSRF 対策 | Next.js デフォルト | API Routes の SameSite Cookie によるデフォルト保護 |
 | Node.js モジュール除外 | next.config.js | クライアントバンドルからサーバー専用モジュールを除外 |
-| 外部リンク安全性 | SocialLinks / ProductCard / ArticleEntry | `rel="noopener noreferrer"` の設定 |
+| 外部リンク安全性 | SocialLinks / ProductCard / ArticleEntry / AiUsageSection | `rel="noopener noreferrer"` の設定 |
 | 開発環境ログ制限 | resend.ts, contact/route.ts | `NODE_ENV === 'development'` の場合のみ詳細ログを出力 |
 
 ### 9.2 入力バリデーション層
@@ -1090,6 +1102,9 @@ PortfolioData
 │   ├── link_title: string
 │   ├── about_name: string
 │   ├── career_name: string
+│   ├── ai_usage_name: string
+│   ├── product_name: string
+│   ├── article_name: string
 │   └── contact_name: string
 │
 ├── hero_data: HeroData
@@ -1112,6 +1127,13 @@ PortfolioData
 │   ├── career_title_stack: string
 │   ├── career_title_phase: string
 │   └── career_title_role: string
+│
+├── ai_usage_data: AiUsageData
+│   ├── ai_usage_description: string
+│   ├── ai_practices: AiPractice[]
+│   │   ├── ai_practice_title: string
+│   │   └── ai_practice_contents: string   ※ 空なら段落を描画しない
+│   └── ai_usage_detail_url: string        ※ 空文字ならリンクを描画しない
 │
 ├── product_data: ProductData
 │   ├── product_description: string
