@@ -15,10 +15,12 @@
     - [2.9 ProductItem（個人開発プロダクト）](#29-productitem個人開発プロダクト)
     - [2.10 ArticleData（執筆記事データ）](#210-articledata執筆記事データ)
     - [2.11 ArticleItem（執筆記事）](#211-articleitem執筆記事)
-    - [2.12 ContactData（お問い合わせセクションデータ）](#212-contactdataお問い合わせセクションデータ)
-    - [2.13 FooterData（フッターデータ）](#213-footerdataフッターデータ)
-    - [2.14 ContactFormData（問い合わせフォームデータ）](#214-contactformdata問い合わせフォームデータ)
-    - [2.15 ContactFormErrors（フォームバリデーションエラー）](#215-contactformerrorsフォームバリデーションエラー)
+    - [2.12 AiUsageData（AI 活用データ）](#212-aiusagedataai-活用データ)
+    - [2.13 AiPractice（AI 活用の方針）](#213-aipracticeai-活用の方針)
+    - [2.14 ContactData（お問い合わせセクションデータ）](#214-contactdataお問い合わせセクションデータ)
+    - [2.15 FooterData（フッターデータ）](#215-footerdataフッターデータ)
+    - [2.16 ContactFormData（問い合わせフォームデータ）](#216-contactformdata問い合わせフォームデータ)
+    - [2.17 ContactFormErrors（フォームバリデーションエラー）](#217-contactformerrorsフォームバリデーションエラー)
 - [3. データソースとストレージ](#3-データソースとストレージ)
     - [3.1 Google Cloud Storage（GCS）](#31-google-cloud-storagegcs)
         - [接続設定](#接続設定)
@@ -66,6 +68,7 @@
 | `about_data` | `AboutData` | Yes | 自己紹介セクションの表示データ |
 | `career_title_data` | `CareerTitleData` | Yes | 経歴セクションのカラムタイトルデータ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`CareerCard.tsx`）ではラベルがハードコードされており、このデータは画面に反映されていない |
 | `career_data` | `CareerData[]` | Yes | 経歴一覧データ（配列） |
+| `ai_usage_data` | `AiUsageData` | Yes | AI 活用セクションの表示データ |
 | `product_data` | `ProductData` | Yes | 個人開発セクションの表示データ |
 | `article_data` | `ArticleData` | Yes | 執筆記事セクションの表示データ |
 | `contact_data` | `ContactData` | Yes | お問い合わせセクションの表示データ。**注意**: 型定義およびJSON構造には含まれるが、現在のUI（`page.tsx`, `ContactForm.tsx`）ではセクション見出し・ボタン文言がハードコードされており、このデータは画面に反映されていない |
@@ -78,6 +81,7 @@
 | `link_title` | `string` | Yes | サイトのロゴ / タイトルテキスト | `"TechProfile"` |
 | `about_name` | `string` | Yes | Aboutセクションのナビリンク表示名 | `"About"` |
 | `career_name` | `string` | Yes | Careerセクションのナビリンク表示名 | `"Career"` |
+| `ai_usage_name` | `string` | Yes | AI 活用セクションのナビリンク表示名 | `"AI"` |
 | `product_name` | `string` | Yes | 個人開発セクションのナビリンク表示名 | `"Product"` |
 | `article_name` | `string` | Yes | 執筆記事セクションのナビリンク表示名 | `"Articles"` |
 | `contact_name` | `string` | Yes | Contactセクションのナビリンク表示名 | `"Contact"` |
@@ -148,7 +152,7 @@
 出すのとは用途が違うため（親 #125 の共通前提 1）。
 
 **件数の絞り込みはデータ側で行う。** 画面は受け取った配列をそのまま全件描画する
-（段階表示は状態を持つため実装しない。docs/03 §3.5）。
+（段階表示は状態を持つため実装しない。docs/03 §3.6）。
 
 ### 2.9 ProductItem（個人開発プロダクト）
 
@@ -178,7 +182,7 @@
 **後からフィールドを足すのは安いが、GCS に投入済みのフィールドを消すのは高い**（実データと
 コードの両方から削除が必要になる）ため、足さない側に倒している。`career_title_data` /
 `contact_data` が「GCS にあるが画面から参照されていない」状態で残っているのが、この非対称性の
-実例である（§2.6 / §2.10）。
+実例である（§2.6 / §2.14）。
 
 ### 2.10 ArticleData（執筆記事データ）
 
@@ -220,7 +224,36 @@
 両方が空ならメタ行ごと描画しない。素朴に連結すると `・ 2024年5月` のように行き場のない区切り記号が
 残るため。`article_contents` が空なら概要の段落を描画しない。いずれも空白のみの値を未設定として扱う。
 
-### 2.12 ContactData（お問い合わせセクションデータ）
+### 2.12 AiUsageData（AI 活用データ）
+
+AI をどう開発に使い、品質をどう担保しているかを紹介するセクションのデータ（issue #129 / 親 #125）。
+
+| フィールド名 | 型 | 必須 | 説明 | 例 |
+|---|---|---|---|---|
+| `ai_usage_description` | `string` | Yes | セクションの見出し下に表示する説明文。AI 活用の原則を 1 文で書く | `"意思決定権は人間にある。AI には選択肢とトレードオフを出させ、手を動かさせる。"` |
+| `ai_practices` | `AiPractice[]` | Yes | 方針の要約一覧。**表示順は配列順に従う**。0 件なら一覧ごと描画しない | §2.13 参照 |
+| `ai_usage_detail_url` | `string` | Yes | 詳細を載せた解説ページの URL。**空文字・空白のみならリンクを描画しない** | `"https://smartportalcom.com/aiusage"` |
+
+**ポートフォリオ側は概要と導線だけを持つ。** 詳細は別サイトの解説ページに置き、ここには原則と
+方針の要約だけを書く。詳細を両方に書くと、2 サイトで更新のタイミングがずれて内容が食い違っていく。
+
+#### 持たないフィールド
+
+| 項目 | 持たない理由 |
+|---|---|
+| ツール一覧（起票時の `ai_tools`） | 解説ページ側にツール一覧が無く、ポートフォリオ側だけに足すと詳細に無い内容を新しく書くことになる。閲覧者に伝えたいのは「どのツールか」より「どう使い、品質をどう担保しているか」 |
+| ツールアイコン（起票時の `ai_tool_img`） | 上に同じ。加えて `ProductItem` と同じ理由（原寸配信になり LCP に響く。§2.9 参照） |
+
+### 2.13 AiPractice（AI 活用の方針）
+
+フィールド名は `ProductItem` / `ArticleItem` と同じ `*_title` / `*_contents` の語彙に揃える。
+
+| フィールド名 | 型 | 必須 | 説明 | 例 |
+|---|---|---|---|---|
+| `ai_practice_title` | `string` | Yes | 方針の見出し | `"土台をつくる"` |
+| `ai_practice_contents` | `string` | Yes | 方針の要約。1 文で収まる長さにする。**空なら段落を描画しない** | `"規約と定型作業の手順をルールファイルとスキルに明文化し、AI が常に同じ前提で動ける状態にしている。"` |
+
+### 2.14 ContactData（お問い合わせセクションデータ）
 
 > **未使用**: この型はGCSのJSONデータに含まれ、`PortfolioData` の型定義にも存在するが、**現在のUI（`page.tsx:274` のセクション見出し「Contact」、`ContactForm.tsx:127` のボタン文言「上記内容で送信する」等）ではハードコードされており、このデータは参照されていない**。将来的にデータ駆動の表示に切り替える場合に使用可能。
 
@@ -231,13 +264,13 @@
 | `contact_contents` | `string` | Yes | セクションの説明テキスト | `"お気軽にお問い合わせください"` |
 | `contact_btn_name` | `string` | Yes | 送信ボタンの表示テキスト | `"送信"` |
 
-### 2.13 FooterData（フッターデータ）
+### 2.15 FooterData（フッターデータ）
 
 | フィールド名 | 型 | 必須 | 説明 | 例 |
 |---|---|---|---|---|
 | `copyright` | `string` | Yes | コピーライト表記 | `"(C) 2025 TechProfile Pro"` |
 
-### 2.14 ContactFormData（問い合わせフォームデータ）
+### 2.16 ContactFormData（問い合わせフォームデータ）
 
 ユーザーが問い合わせフォームから送信するデータ。PortfolioData には含まれず、フォーム入力から生成される。
 
@@ -247,7 +280,7 @@
 | `email` | `string` | Yes | 送信者のメールアドレス | `"taro@example.com"` |
 | `message` | `string` | Yes | 問い合わせメッセージ本文 | `"サービスについて詳しく知りたいです"` |
 
-### 2.15 ContactFormErrors（フォームバリデーションエラー）
+### 2.17 ContactFormErrors（フォームバリデーションエラー）
 
 クライアント側のバリデーション結果を保持する。各フィールドはオプショナルで、エラーがある場合のみ値が設定される。
 

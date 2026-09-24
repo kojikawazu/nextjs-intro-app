@@ -16,6 +16,7 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         ).toBeVisible();
         await expect(page.getByRole('heading', { name: 'About', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'AI', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Product', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Articles', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Contact', exact: true })).toBeVisible();
@@ -100,6 +101,35 @@ test.describe('執筆記事（正常系）', () => {
 
         // 媒体と公開年月は中黒で連結して 1 行に出す。
         await expect(page.getByText('Zenn ・ 2024年5月')).toBeVisible();
+    });
+});
+
+test.describe('AI 活用（正常系）', () => {
+    test('方針の要約と、詳細ページへの外部リンクが表示される', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'AI', exact: true })).toBeVisible();
+
+        await expect(page.getByRole('heading', { name: 'ルールを先に書く' })).toBeVisible();
+
+        // 詳細は別サイトに置き、ここは概要と導線だけを持つ（issue #129）。導線が切れると
+        // セクションが要約だけで行き止まりになるため、リンクの存在と開き方を確かめる。
+        const link = page.getByRole('link', { name: 'AIの詳細を新しいタブで開く' });
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute('href', 'https://example.com/ai-usage');
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', /noopener/);
+        await expect(link).toHaveAttribute('rel', /noreferrer/);
+    });
+
+    test('ヘッダーナビで AI セクションへスクロールする', async ({ page }) => {
+        await page.setViewportSize({ width: 768, height: 900 });
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'AI', exact: true })).toBeVisible();
+
+        // md 幅（768px）はナビが横並びになる最小幅で、6 項目が最も窮屈になる。
+        // ここで押せることを確かめれば、それより広い幅でも押せる。
+        await page.locator('header').getByRole('button', { name: 'AI', exact: true }).click();
+        await expect(page.locator('#ai-usage')).toBeInViewport({ timeout: 10_000 });
     });
 });
 

@@ -47,6 +47,7 @@
         - [4.7.12 ArticleEntry (`src/components/molecules/ArticleEntry.tsx`)](#4712-articleentry-srccomponentsmoleculesarticleentrytsx)
         - [4.7.13 SectionHeading とセクション organisms](#4713-sectionheading-とセクション-organisms)
         - [4.7.14 lib へ切り出したロジック](#4714-lib-へ切り出したロジック)
+        - [4.7.15 AiPracticeEntry (`src/components/molecules/AiPracticeEntry.tsx`)](#4715-aipracticeentry-srccomponentsmoleculesaipracticeentrytsx)
 - [5. 統合テスト仕様](#5-統合テスト仕様)
     - [5.1 APIルート](#51-apiルート)
         - [5.1.1 GET /api/portfolio (`src/app/api/portfolio/route.ts`)](#511-get-apiportfolio-srcappapiportfolioroutets)
@@ -70,6 +71,7 @@
     - [6.12 経歴の技術スタック表示](#612-経歴の技術スタック表示)
     - [6.13 個人開発のリンク出し分け](#613-個人開発のリンク出し分け)
     - [6.14 執筆記事の表示](#614-執筆記事の表示)
+    - [6.15 AI 活用の表示](#615-ai-活用の表示)
 - [7. パフォーマンステスト](#7-パフォーマンステスト)
     - [7.1 Lighthouse指標目標](#71-lighthouse指標目標)
     - [7.2 APIパフォーマンス](#72-apiパフォーマンス)
@@ -675,8 +677,8 @@ Hero の数値帯（プロジェクト数 / 使用技術数 / 経歴開始年）
 | 階層 | コンポーネント | テスト仕様 |
 |------|--------------|-----------|
 | Atoms | `Button` / `Input` / `TextArea` / `Badge` / `ThemeToggle` | §4.7.2〜§4.7.6 |
-| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` / `ArticleEntry` / `SectionHeading` | §4.7.1 / §4.7.7 / §4.7.11 / §4.7.12 / §4.7.13 |
-| Organisms | `Header` / `ContactForm` / セクション 7 件 | §4.7.8 / §4.7.9 / §4.7.13 |
+| Molecules | `CareerCard` / `SocialLinks` / `ProductCard` / `ArticleEntry` / `AiPracticeEntry` / `SectionHeading` | §4.7.1 / §4.7.7 / §4.7.11 / §4.7.12 / §4.7.15 / §4.7.13 |
+| Organisms | `Header` / `ContactForm` / セクション 8 件 | §4.7.8 / §4.7.9 / §4.7.13 |
 | lib | `formatCareerPeriod` / `splitAboutContents` | §4.7.14 |
 | Hooks | `useTheme` | §4.7.10 |
 
@@ -937,8 +939,14 @@ issue #153 で `client.tsx`（296 行）から切り出したコンポーネン�
 | `CareerSection` | 2 | 3 | **配列順をそのまま表示順にする** / `career_end === 'now'` の解釈 / 不正日付は例外を伝播 |
 | `ProductSection` | 1 | 3 | 0 件でも見出しと `0` / 説明文が空でも一覧は残る / 配列順を保つ |
 | `ArticlesSection` | 1 | 3 | 0 件でも見出しと `0` / URL 空の記事だけリンクにしない / 配列順を保つ |
+| `AiUsageSection` | 1 | 5 | **件数を出さない** / 詳細 URL が空・空白のみならリンクを描画しない / 方針 0 件でも見出し・原則・リンクは出す / 配列順を保つ |
 | `ContactSection` | 1 | 2 | 見出しが空でもフォームは描画する / 件数を出さない |
 | `SiteFooter` | 2 | 2 | ランドマーク `contentinfo` を出す / 値が空でも枠は残る |
+
+**`AiUsageSection` の詳細リンクのガードは、`ArticleEntry`（UT-AE-007）と同じ理由で要素数
+（`container.querySelectorAll('a')`）で検証する。** 導入時に、ガードの無効化 / `rel` から
+`noreferrer` を削除 / `AiPracticeEntry` の `trim()` 除去 の 3 変異を入れ、いずれも該当テストが
+落ちることを確認済み。
 
 **「0 件のときに `0` と出す」を明示的に固定している。** `count && ...` のように falsy で
 握りつぶす実装に変えると落ちる。0 件であることと、件数の概念が無いことは別の状態である。
@@ -965,6 +973,17 @@ issue #153 で `client.tsx`（296 行）から切り出したコンポーネン�
 `'now'` は `new Date()` として解釈されるが、その値は表示に使われない。コードを読めば分かる
 ことだが、**うっかり `endYear` を使う実装に変えると年末年始にだけ壊れる**類の退行であり、
 テストで固定する価値がある。
+
+#### 4.7.15 AiPracticeEntry (`src/components/molecules/AiPracticeEntry.tsx`)
+
+正常系1 : 準正常系+異常系3（issue #129）。
+
+| テストID | テストケース | 期待結果 |
+|----------|------------|---------|
+| UT-APE-001 | 方針の見出しと要約を表示する | 見出しは `h3` |
+| UT-APE-002 | 要約が空なら段落を描画せず、見出しだけを残す | `<p>` 要素が 0 件 |
+| UT-APE-003 | 空白のみの要約は未設定として扱う | `<p>` 要素が 0 件 |
+| UT-APE-004 | 呼び出し側のクラスを既定のクラスと併せて適用する | 追加クラスと区切り罫（`border-b`）の両方が付く |
 
 ---
 
@@ -1045,6 +1064,7 @@ issue #153 で `client.tsx`（296 行）から切り出したコンポーネン�
 | E2E-HOME-003 | Heroセクションが表示される | ページロード完了を待機 | 「Solving Problems with Technology」見出しが表示される |
 | E2E-HOME-004 | Aboutセクションが表示される | #about にスクロール | About見出しと紹介文が表示される |
 | E2E-HOME-005 | Careerセクションが表示される | #career にスクロール | Career見出しと経歴カードが表示される |
+| E2E-HOME-011 | AIセクションが表示される | ページロード完了を待機 | AI見出しが表示される |
 | E2E-HOME-009 | Productセクションが表示される | ページロード完了を待機 | Product見出しが表示される |
 | E2E-HOME-010 | Articlesセクションが表示される | ページロード完了を待機 | Articles見出しが表示される |
 | E2E-HOME-007 | Contactセクションが表示される | #contact にスクロール | Contact見出しとフォームが表示される |
@@ -1126,7 +1146,7 @@ issue #153 で `client.tsx`（296 行）から切り出したコンポーネン�
 
 | テストID | 分類 | テストケース | 検証内容 |
 |----------|------|------------|---------|
-| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `Product` / `Articles` / `Contact` を含む |
+| E2E-SSR-001 | 正常系 | 初期 HTML の本文 | `Solving Problems with Technology` / `About` / `Career` / `AI` / `Product` / `Articles` / `Contact` を含む |
 | E2E-SSR-002 | 準正常系 | 退行の検出 | `animate-spin` を含まず、タグ除去後の本文が 300 文字超 |
 
 > **閾値の根拠**: 300 は E2E シードデータ基準（現状 973 文字）。データ取得が `useEffect` に
@@ -1247,6 +1267,21 @@ UT では確認できない。
 
 **表示テキストでリンクを引けること自体が仕様**である。`ArticleEntry` は `aria-label` を付けない設計
 （タイトルが行き先を説明しているため）なので、`aria-label` を足す変更が入ると本テストが落ちる。
+
+### 6.15 AI 活用の表示
+
+`e2e/home.spec.ts`（issue #129）。
+
+| テストID | 分類 | テストケース | 期待結果 |
+|----------|------|------------|---------|
+| E2E-AI-001 | 正常系 | 方針の要約と、詳細ページへの外部リンクが表示される | 方針の見出しが出る。`AIの詳細を新しいタブで開く` でリンクを引け、`href` がシードデータの URL、`target="_blank"` と `rel` の `noopener` / `noreferrer` が付く |
+| E2E-AI-002 | 正常系 | md 幅（768px）でヘッダーナビから AI セクションへ移動する | `#ai-usage` がビューポートに入る |
+
+**E2E-AI-002 を 768px で行うのは、ナビが横並びになる最小幅で 6 項目が最も窮屈になるため。**
+ここで押せれば、それより広い幅でも押せる。
+
+**詳細リンクは本セクションの導線そのもの**である。ポートフォリオ側は概要だけを持ち詳細は別サイトに
+置く設計のため、リンクが消えるとセクションが要約だけで行き止まりになる。
 
 ---
 

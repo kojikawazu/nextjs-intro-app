@@ -162,6 +162,9 @@ nextjs-intro-app/
 | `about_data` | 自己紹介・SNS リンク |
 | `career_title_data` | 経歴カードのラベル定義 |
 | `career_data` | 経歴情報（配列） |
+| `ai_usage_data` | AI 活用（原則・方針の要約・詳細ページの URL） |
+| `product_data` | 個人開発 |
+| `article_data` | 執筆記事 |
 | `contact_data` | お問い合わせフォーム設定 |
 | `footer_data` | フッター情報 |
 
@@ -210,7 +213,7 @@ pnpm test:e2e      # E2E（要 Docker + ビルド。Playwright + fake-gcs-server
 | レスポンシブデザイン | ✅ | Mobile / Tablet / Desktop の 3 段階 |
 | スムーススクロールナビゲーション | ✅ | ヘッダー＋モバイルメニュー |
 | ライト / ダークテーマ切替 | ✅ | 既定は OS の `prefers-color-scheme`。選択は Cookie に保存し、サーバー側で初期 HTML に反映するためちらつかない |
-| Hero / About / Career / Product / Articles / Contact / Footer | ✅ | 1 ページ構成。個人開発（Product）は issue #128、執筆記事（Articles）は issue #127 で追加 |
+| Hero / About / Career / AI / Product / Articles / Contact / Footer | ✅ | 1 ページ構成。個人開発（Product）は issue #128、執筆記事（Articles）は issue #127、AI 活用（AI）は issue #129 で追加 |
 | お問い合わせフォーム（バリデーション付き） | ✅ | React Hook Form + Zod、送信は Resend |
 | SEO メタデータ | 🟡 | `layout.tsx` で title/OGP/Twitter/canonical を設定（`metadataBase` 基準）。`og:image` は未設定 |
 | サーバーサイドレンダリング | ✅ | `page.tsx` がサーバー側でデータ取得し、初期 HTML に全セクションの本文を含む |

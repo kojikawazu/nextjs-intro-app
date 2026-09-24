@@ -182,14 +182,15 @@ GCS 側が古いままだと型エラーにならず実行時に壊れる**。�
 
 | # | タスク名 | ステータス | 優先度 | 備考 |
 |---|---------|-----------|--------|------|
+| 79 | AI 活用セクションの追加 | 完了 | 中 | issue #129（親 #125）。`AiUsageData` / `AiPractice` と `AiPracticeEntry` / `AiUsageSection` を追加し、**Career の直後**へ配置（ナビは 6 項目へ）。AI の活用状況は閲覧者の関心が高まっている情報のため、実務経歴の次に届く位置へ上げた（#127 時点の計画「Product と Articles の間」を置き換え）。**詳細は別サイトの解説ページに置き、ポートフォリオ側は原則 1 文・方針 4 件の要約・詳細リンクだけを持つ**。起票時案の `ai_tools` / `ai_tool_img` は持たない（解説ページにツール一覧が無く、ポートフォリオ側だけに書くと詳細に無い内容が生まれるため）。見出しに件数を出さない。md 幅（768px）で 6 項目のナビが収まることを実測（ロゴとの間に約 150px）。UT 10 件（正常系 2 : 準正常系+異常系 8）、E2E 2 件。ガード無効化・`trim()` 除去・`noreferrer` 削除の 3 変異で検出力を確認済み。テスト 344 → 354 件 |
 | 78 | セクションの organisms 化と `client.tsx` の合成ルート化 | 完了 | 中 | issue #153。セクション追加のたびに `client.tsx` が伸び 296 行に達していた（`section-heading` の重複 5 箇所）。**根本原因は自前の Organisms 定義**で、「状態を持つもの」と定義していたため状態を持たないセクションの置き場所が無かった。Atomic Design の定義に状態は含まれないため定義を改め、7 セクションを organisms へ切り出した（`client.tsx` は 296 → 87 行）。`SectionHeading` を molecule として抽出。**副産物として `formatCareerPeriod` と `about_contents` の分割が `lib/` へ出てユニットテスト可能になった**（それまで `client.tsx` の private 関数で E2E 経由でしか踏まれていなかった）。テストは 299 → 344 件。**E2E は 1 行も変更していない**（見た目が変わっていないことの根拠） |
 | 77 | 執筆記事セクションの追加 | 完了 | 中 | issue #127（親 #125）。`ArticleData` / `ArticleItem` と `ArticleEntry` を追加し、Product の後ろへ配置（ナビは 5 項目へ）。**見出しは `Blog` ではなく `Articles`**（Product に自作のブログ基盤「ブログWebアプリ」があり、`Blog` だと「作ったもの」と「書いた記事」が同じ語で並ぶ）。掲載は Zenn のいいね数上位 3 件で、**いいね数は画面に出さない**（手書きデータでは実数とずれ続けるため、選定基準としてのみ使う）。概要文は記事本文から作成。カードではなく罫線区切りの行で組む（記事は件数が増えやすく 1 件の情報量が小さいため）。UT 8 件（正常系 2 : 準正常系+異常系 6）。**変異注入で `queryAllByRole('link')` が `<a href="">` を検出できないことが判明**し、`container.querySelectorAll('a')` へ改めた |
 | 76 | 個人開発セクションの追加 | 完了 | 中 | issue #128（親 #125）。`ProductData` / `ProductItem` と `ProductCard` を追加し、Career の直後へ配置（ナビは 4 項目へ）。**スクショ画像は持たない**（`images: { unoptimized: true }` で原寸配信になり docs/04 の LCP 目標に響く。site リンクから実物を見に行けるため情報は途切れない）。プロダクト名を `product_name` ではなく **`product_title`** にしたのは `NavbarData.product_name` との衝突を避けるため。URL が空文字・空白のみならそのリンクを描画しない（UT 7 / E2E 2 ケース。`trim()` 除去と `rel` 削除の 2 変異で検出力を確認済み） |
 
 > Skills セクションの削除（issue #126 / 親 #125）はタスク #68 として §2.4 に記録している。
 
-残り: #129（AI 使用方法）。表示順は Career → 個人開発 → AI → 執筆記事（Articles）であり、
-AI セクションは Product と Articles の間に入る。
+全サブ issue（#126〜#129）が完了した。最終的な表示順は
+Hero → About → Career → AI → Product → Articles → Contact（issue #129 で AI を Career の直後へ置いた）。
 
 ---
 
@@ -284,6 +285,7 @@ AI セクションは Product と Articles の間に入る。
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-09-24 | AI 活用セクションを追加（issue #129 / 親 #125）。詳細は別サイトの解説ページに置き、ポートフォリオ側は原則・方針の要約・詳細リンクだけを持つ。関心の高さを理由に Career の直後へ配置。docs/05 §2.9 の `contact_data` の節番号参照（§2.10 → §2.14）、docs/09 のディレクトリ構成・`NavbarData`、README のトップレベルキー一覧の追随漏れも併せて是正 | - |
 | 2026-09-23 | `.dockerignore` に `node_modules/` / `.next/` / `*.tsbuildinfo` / `.git/` / テスト成果物 / `.playwright-mcp/` を追加し、ローカルの `docker build` でホストの依存がコンテナ用を上書きする問題を解消（issue #162）。ビルドコンテキストは約 2.4 GB → 約 1 MB。SA キーの除外名を `.gitignore` と揃え、Dockerfile の不要なコメントアウト行を削除 | - |
 | 2026-09-23 | Secret scan の検出対象に Terraform の秘密ファイル（`*.tfvars` / `*.tfstate*` / `*.tfplan`）と GCP SA キー（区切り違いの名前・既定名 `<project>-<hex12>.json`・JSON の中身）を追加し、`.gitignore` も揃えた（issue #160 / #161）。検出ロジックを `scripts/secret-scan.sh` へ切り出し、62 ケースの自己テストを本番スキャンの前に実行する | - |
 | 2026-09-23 | `.terraform.lock.hcl` を `.gitignore` の除外から外してコミットし、provider（`hashicorp/google` 5.45.2）を固定（issue #158）。環境ごとに provider のバージョンがずれ、plan の結果が変わりうる状態だった | - |

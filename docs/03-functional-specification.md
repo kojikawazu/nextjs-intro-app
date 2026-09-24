@@ -33,28 +33,33 @@
         - [CareerCard コンポーネント仕様](#careercard-コンポーネント仕様)
         - [技術スタックの表示](#技術スタックの表示)
         - [日付フォーマットロジック (`formatCareerPeriod`)](#日付フォーマットロジック-formatcareerperiod)
-    - [3.5 Product Section](#35-product-section)
+    - [3.5 AI Usage Section](#35-ai-usage-section)
         - [機能概要](#機能概要-4)
         - [仕様詳細](#仕様詳細-4)
-        - [ProductCard コンポーネント仕様](#productcard-コンポーネント仕様)
-        - [リンクの出し分け](#リンクの出し分け)
-    - [3.6 Articles Section](#36-articles-section)
+        - [AiPracticeEntry コンポーネント仕様](#aipracticeentry-コンポーネント仕様)
+        - [詳細ページへの導線](#詳細ページへの導線)
+    - [3.6 Product Section](#36-product-section)
         - [機能概要](#機能概要-5)
         - [仕様詳細](#仕様詳細-5)
-        - [ArticleEntry コンポーネント仕様](#articleentry-コンポーネント仕様)
-        - [欠損したフィールドの扱い](#欠損したフィールドの扱い)
-    - [3.7 Contact Section](#37-contact-section)
+        - [ProductCard コンポーネント仕様](#productcard-コンポーネント仕様)
+        - [リンクの出し分け](#リンクの出し分け)
+    - [3.7 Articles Section](#37-articles-section)
         - [機能概要](#機能概要-6)
         - [仕様詳細](#仕様詳細-6)
+        - [ArticleEntry コンポーネント仕様](#articleentry-コンポーネント仕様)
+        - [欠損したフィールドの扱い](#欠損したフィールドの扱い)
+    - [3.8 Contact Section](#38-contact-section)
+        - [機能概要](#機能概要-7)
+        - [仕様詳細](#仕様詳細-7)
         - [フォームフィールド](#フォームフィールド)
         - [バリデーションルール (Zod スキーマ)](#バリデーションルール-zod-スキーマ)
         - [サーバーサイドバリデーション (`POST /api/contact`)](#サーバーサイドバリデーション-post-apicontact)
         - [送信フロー](#送信フロー)
         - [送信完了画面](#送信完了画面)
         - [メール送信仕様](#メール送信仕様)
-    - [3.8 Footer](#38-footer)
-        - [機能概要](#機能概要-7)
-        - [仕様詳細](#仕様詳細-7)
+    - [3.9 Footer](#39-footer)
+        - [機能概要](#機能概要-8)
+        - [仕様詳細](#仕様詳細-8)
 - [4. ユーザーフロー](#4-ユーザーフロー)
     - [4.1 ページ読み込みフロー](#41-ページ読み込みフロー)
     - [4.2 ナビゲーションフロー](#42-ナビゲーションフロー)
@@ -136,6 +141,7 @@ page.tsx (Server Component: データ取得)
         +-- Hero Section
         +-- About Section
         +-- Career Section
+        +-- AI Usage Section
         +-- Product Section
         +-- Articles Section
         +-- Contact Section
@@ -176,11 +182,11 @@ page.tsx (Server Component: データ取得)
 
 #### デスクトップナビゲーション (md以上)
 
-- ナビ項目: About, Career, Product, Articles, Contact（`navbar_data` から取得）
+- ナビ項目: About, Career, AI, Product, Articles, Contact（`navbar_data` から取得）
 - **`<button>` を維持する。** `e2e/home.spec.ts` と `e2e/security.spec.ts` が `getByRole('button', { name: 'Contact' })` でハイドレーション完了を確認しており、`<a>` に変えると JS を実行しなくても遷移してしまい確認の意味が失われる（issue #131 で一度壊した箇所）
 - クリック時: 対応セクションへスムーズスクロール（`prefers-reduced-motion` 時は即時）
 - ホバー: 文字色を `--mute` から `--ink` へ
-- 項目が 6 件（#127〜#129 の追加後）に増えても収まる幅で組む
+- 項目が 6 件（#127〜#129 の追加後）でも収まる幅で組む。md 幅（768px）でロゴとナビの間に約 150px の余白が残ることを確認済み（issue #129）
 
 #### モバイルナビゲーション (md未満)
 
@@ -329,13 +335,73 @@ page.tsx (Server Component: データ取得)
 
 ---
 
-### 3.5 Product Section
+### 3.5 AI Usage Section
 
 #### 機能概要
 
-個人開発したプロダクトを紹介するセクション（issue #128 / 親 #125）。**Career の直後**に置く。
+AI をどう開発に組み込み、品質をどう担保しているかを紹介するセクション（issue #129 / 親 #125）。
+**Career の直後**に置く。AI の活用状況は採用担当者・発注検討者の関心が高まっている情報であり、
+実務経歴を読んだ次に届く位置へ上げる。
+
+**ポートフォリオ側は概要と導線だけを持つ。** 詳細は別サイトの解説ページに置き、ここでは原則 1 文と
+方針の要約を並べて `ai_usage_detail_url` から詳細へ送る。詳細を両方に書くと、2 サイトで更新の
+タイミングがずれて内容が食い違っていくため。
+
+**ツール一覧は持たない。** 閲覧者が知りたいのは「どのツールか」より「どう使い、品質をどう担保して
+いるか」であり、解説ページ側にもツール一覧は無い。ポートフォリオ側だけに足すと、詳細に無い内容を
+新しく書くことになる。
+
+#### 仕様詳細
+
+| 項目 | 仕様 |
+|------|------|
+| アンカー | `#ai-usage` |
+| 見出し | `navbar_data.ai_usage_name`（罫線のみ。**件数は出さない**） |
+| 説明文 | `ai_usage_data.ai_usage_description`（原則 1 文） |
+| 一覧 | `ai_usage_data.ai_practices` を配列順に描画。0 件なら一覧ごと描画しない |
+| 1 件の描画 | `AiPracticeEntry`（`src/components/molecules/AiPracticeEntry.tsx`） |
+| 詳細リンク | `ai_usage_data.ai_usage_detail_url`。一覧の後ろに「詳しく見る ↗」を置く |
+
+**件数を出さない**のは、方針の数は実績の件数と違って多寡に意味がなく、数字だけが出ても何の件数か
+伝わらないため（About / Contact と同じ扱い）。
+
+#### AiPracticeEntry コンポーネント仕様
+
+| Props | 型 | 説明 |
+|-------|-----|------|
+| `title` | `string` | 方針の見出し |
+| `description` | `string` | 方針の要約（1 文）。空なら段落を描画しない |
+| `className` | `string?` | 追加クラス |
+
+**`ArticleEntry` と同じ罫線区切りの「行」で組む。** 1 件が見出しと 1 文だけで、左罫のカードに
+すると中身に対して枠が勝ち、縦に間延びする。
+
+```text
+AiPracticeEntry (<article> + 下罫)
+├── 見出し（h3）
+└── 要約
+```
+
+#### 詳細ページへの導線
+
+| 条件 | 挙動 | 理由 |
+|------|------|------|
+| `ai_usage_detail_url` あり | 別タブで開くリンクを描画。`rel="noopener noreferrer"` | 外部サイトのため（docs/06 §5.1） |
+| 空文字・空白のみ | **リンクを描画しない** | `<a href="">` は現在のページ自身を指し、押すと再読み込みされるだけになる |
+
+リンク文言「詳しく見る」だけでは何の詳細かが伝わらないため、`aria-label` に
+`{見出し}の詳細を新しいタブで開く` を設定する。
+
+---
+
+### 3.6 Product Section
+
+#### 機能概要
+
+個人開発したプロダクトを紹介するセクション（issue #128 / 親 #125）。**Career と AI Usage の後ろ**に置く。
 採用担当者はまず実務経歴を読むため、「何ができる人か」への到達を遅らせない位置に差し込む
-（issue #135 の評価軸 1）。
+（issue #135 の評価軸 1）。Career との間に AI Usage が入るのは、関心の高いその情報を実務の次に
+届けるため（issue #129）。
 
 掲載データは GCS の JSON へ手書きする。GitHub API からのリポジトリ自動取得は行わない。
 **見せたいものだけを選び、説明文と見せ方を制御する**のが目的であり、リポジトリ一覧を
@@ -406,14 +472,14 @@ page.tsx (Server Component: データ取得)
 
 ---
 
-### 3.6 Articles Section
+### 3.7 Articles Section
 
 #### 機能概要
 
 執筆した技術記事を紹介するセクション（issue #127 / 親 #125）。実績（Career / Product）の後ろに置く。
 何を作ったかより先に何を書いたかを見せる理由がないため。
 
-**見出しは `Blog` ではなく `Articles`。** §3.5 の Product に自作のブログ基盤「ブログWebアプリ」を
+**見出しは `Blog` ではなく `Articles`。** §3.6 の Product に自作のブログ基盤「ブログWebアプリ」を
 掲載しているため、`Blog` だと「作ったもの」と「書いた記事」が同じ語で並んでしまう。
 
 掲載データは GCS の JSON へ手書きする。Zenn / Qiita の API からの自動取得は行わない。
@@ -478,7 +544,7 @@ GCS の JSON は手書きのため、値が空のまま入りうる。
 
 ---
 
-### 3.7 Contact Section
+### 3.8 Contact Section
 
 #### 機能概要
 
@@ -570,7 +636,7 @@ GCS の JSON は手書きのため、値が空のまま入りうる。
 
 ---
 
-### 3.8 Footer
+### 3.9 Footer
 
 #### 機能概要
 
@@ -792,6 +858,7 @@ src/components/
   |   +-- ThemeToggle.tsx
   +-- molecules/      ... Atoms を組み合わせた複合コンポーネント
   |   +-- CareerCard.tsx
+  |   +-- AiPracticeEntry.tsx
   |   +-- ProductCard.tsx
   |   +-- ArticleEntry.tsx
   |   +-- SectionHeading.tsx
@@ -802,6 +869,7 @@ src/components/
       +-- HeroSection.tsx
       +-- AboutSection.tsx
       +-- CareerSection.tsx
+      +-- AiUsageSection.tsx
       +-- ProductSection.tsx
       +-- ArticlesSection.tsx
       +-- ContactSection.tsx
@@ -900,17 +968,23 @@ Input と同等のインターフェース。追加で `min-h-[120px]`, `resize-
 
 #### ProductCard
 
-個人開発プロダクト 1 件分のカード。Props と構成は §3.5 を参照。
+個人開発プロダクト 1 件分のカード。Props と構成は §3.6 を参照。
 
 ルート要素は `<article>`。`CareerCard` と同じく、プロダクト 1 件は独立して意味を持つ内容のため。
 表示専用で外部から DOM を触る必要がないため `forwardRef` は使わない。
 
 #### ArticleEntry
 
-執筆記事 1 件分の行。Props と構成は §3.6 を参照。
+執筆記事 1 件分の行。Props と構成は §3.7 を参照。
 
 ルート要素は `<article>`。記事 1 件は独立して意味を持つ内容のため（`CareerCard` / `ProductCard` と同じ）。
 表示専用のため `forwardRef` は使わない。
+
+#### AiPracticeEntry
+
+AI 活用の方針 1 件分の行。Props と構成は §3.5 を参照。
+
+ルート要素は `<article>`。`ArticleEntry` と同じ行の体裁で、表示専用のため `forwardRef` は使わない。
 
 #### SectionHeading
 
@@ -946,13 +1020,14 @@ issue #153 で 5 箇所の重複から抽出した。
 
 #### ContactForm
 
-フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.7 節参照)。
+フォーム入力 + バリデーション + API送信 + 状態管理の複合コンポーネント (詳細は 3.8 節参照)。
 
 #### セクション organisms
 
-`HeroSection` / `AboutSection` / `CareerSection` / `ProductSection` / `ArticlesSection` /
-`ContactSection` / `SiteFooter` の 7 つ（issue #153）。**いずれも状態を持たず**、渡された
-データを描画する。各セクションの仕様は §3.2〜§3.8 を参照。
+`HeroSection` / `AboutSection` / `CareerSection` / `AiUsageSection` / `ProductSection` /
+`ArticlesSection` / `ContactSection` / `SiteFooter` の 8 つ（issue #153 で 7 つを切り出し、
+`AiUsageSection` は issue #129 で追加）。**いずれも状態を持たず**、渡されたデータを描画する。
+各セクションの仕様は §3.2〜§3.9 を参照。
 
 `client.tsx` からは**必要なデータだけを渡す**（`PortfolioData` 全体を渡さない）。依存が
 props に現れ、セクション単体でテストできる。
@@ -1073,7 +1148,7 @@ props に現れ、セクション単体でテストできる。
 ```typescript
 PortfolioData
   +-- navbar_data: NavbarData
-  |     link_title, about_name, career_name, product_name, article_name, contact_name
+  |     link_title, about_name, career_name, ai_usage_name, product_name, article_name, contact_name
   +-- hero_data: HeroData
   |     hero_img_url
   +-- about_data: AboutData
@@ -1084,6 +1159,9 @@ PortfolioData
   +-- career_data: CareerData[]
   |     career_title, career_start, career_end, career_member,
   |     career_contents, career_skill_stack[], career_skill_phase[], career_role
+  +-- ai_usage_data: AiUsageData
+  |     ai_usage_description, ai_practices: AiPractice[], ai_usage_detail_url
+  |       ai_practice_title, ai_practice_contents
   +-- product_data: ProductData
   |     product_description, product_items: ProductItem[]
   |       product_title, product_contents, product_site_url,

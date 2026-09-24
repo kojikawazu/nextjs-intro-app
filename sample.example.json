@@ -3,6 +3,7 @@
         "link_title": "TechProfile Pro",
         "about_name": "About",
         "career_name": "Career",
+        "ai_usage_name": "AI",
         "product_name": "Product",
         "article_name": "Articles",
         "contact_name": "Contact"
@@ -66,6 +67,24 @@
             "career_role": "バックエンドエンジニア"
         }
     ],
+    "ai_usage_data": {
+        "ai_usage_description": "AI には手を動かさせ、判断は人間が行う。その分担を前提に開発を進めています。",
+        "ai_practices": [
+            {
+                "ai_practice_title": "ルールを先に書く",
+                "ai_practice_contents": "設計・テスト・Git 運用の規約をファイルに分けて置き、AI が常に同じ前提で動けるようにしている。"
+            },
+            {
+                "ai_practice_title": "工程ごとに任せる範囲を決める",
+                "ai_practice_contents": "要件の洗い出しや実装は AI に任せ、採否や設計の判断は人間が行う。"
+            },
+            {
+                "ai_practice_title": "任せないことを決める",
+                "ai_practice_contents": "マージの承認と本番データの変更は人間が行う。"
+            }
+        ],
+        "ai_usage_detail_url": "https://example.com/ai-usage"
+    },
     "product_data": {
         "product_description": "業務外で設計から運用まで一人で回しているプロダクト。",
         "product_items": [
