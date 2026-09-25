@@ -204,3 +204,87 @@ test.describe('縦の余白リズム', () => {
         }
     });
 });
+
+test.describe('ナビの出し分け', () => {
+    // ナビ項目はシードデータ（sample.example.json の navbar_data）の表示名。
+    const NAV_ITEMS = ['About', 'Career', 'AI', 'Product', 'Articles', 'Contact'];
+
+    /**
+     * ヘッダーの横並びナビとハンバーガーのどちらが出ているかを確かめる。
+     *
+     * 出し分けは `md:flex` / `md:hidden` の CSS だけで決まり、jsdom の UT では検証できない。
+     * `getByRole` は `display: none` の要素を拾わないため、「見えている方だけが引ける」ことで
+     * 出し分けを確かめられる。
+     *
+     * @param page - Playwright のページ
+     * @param expected - `inline` なら横並びナビ、`hamburger` ならハンバーガーだけが出ている想定
+     */
+    async function expectNavMode(
+        page: import('@playwright/test').Page,
+        expected: 'inline' | 'hamburger',
+    ) {
+        const header = page.locator('header');
+        const hamburger = header.getByRole('button', { name: 'メニューを開く' });
+        if (expected === 'inline') {
+            for (const name of NAV_ITEMS) {
+                await expect(header.getByRole('button', { name, exact: true })).toBeVisible();
+            }
+            await expect(hamburger).toBeHidden();
+        } else {
+            await expect(hamburger).toBeVisible();
+            for (const name of NAV_ITEMS) {
+                await expect(header.getByRole('button', { name, exact: true })).toHaveCount(0);
+            }
+        }
+    }
+
+    // --- 正常系 ---
+    test('デスクトップ幅では横並びナビが出て、ハンバーガーは出ない', async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await page.goto('/');
+
+        await expectNavMode(page, 'inline');
+    });
+
+    // --- 準正常系（ブレークポイントの境界）---
+    test('768px で横並びナビ、767px でハンバーガーに切り替わる', async ({ page }) => {
+        // Tailwind の md は min-width: 768px。1280 / 390 だけではブレークポイントが
+        // ずれても気づけないため、境界の両側を押さえる。
+        await page.setViewportSize({ width: 768, height: 900 });
+        await page.goto('/');
+        await expectNavMode(page, 'inline');
+
+        await page.setViewportSize({ width: 767, height: 900 });
+        await expectNavMode(page, 'hamburger');
+    });
+
+    test('モバイル幅でハンバーガーから選んだセクションへ移動する', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Career', exact: true })).toBeVisible();
+
+        const header = page.locator('header');
+        await header.getByRole('button', { name: 'メニューを開く' }).click();
+        await header.getByRole('button', { name: 'Career', exact: true }).click();
+
+        // 開閉そのものは UT（§4.7.8）で担保済み。ここは実ブラウザで実際にスクロールするかを見る。
+        await expect(page.locator('#career')).toBeInViewport({ timeout: 10_000 });
+    });
+
+    // --- 異常系 ---
+    test('メニューを開いたまま md 幅以上へ広げても、ナビが二重に出ない', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/');
+
+        const header = page.locator('header');
+        await header.getByRole('button', { name: 'メニューを開く' }).click();
+        await expect(header.getByRole('button', { name: 'About', exact: true })).toBeVisible();
+
+        // 開閉状態は React に残ったままになる。縦メニュー側の md:hidden が効いていなければ、
+        // 横並びナビと縦メニューの両方に同じ項目が並ぶ。
+        await page.setViewportSize({ width: 1024, height: 900 });
+        for (const name of NAV_ITEMS) {
+            await expect(header.getByRole('button', { name, exact: true })).toHaveCount(1);
+        }
+    });
+});
