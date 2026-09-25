@@ -100,7 +100,7 @@ export interface CareerTitleData {
     career_title_role: string;
 }
 
-/** 経歴タイムラインに表示するプロジェクト 1 件分のデータ。 */
+/** 経歴セクションに表示するプロジェクト 1 件分のデータ。 */
 export interface CareerData {
     /** プロジェクト名 / 案件タイトル */
     career_title: string;
