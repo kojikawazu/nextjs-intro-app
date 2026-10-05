@@ -53,7 +53,7 @@
         "jsdom": "^29.1.1",
         "markdownlint-cli2": "^0.23.3",
         "msw": "^2.15.0",
-        "postcss": "8.5.28",
+        "postcss": "8.5.29",
         "prettier": "^3.9.6",
         "tailwindcss": "3.4.4",
         "testcontainers": "^12.1.0",
