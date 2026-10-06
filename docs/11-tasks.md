@@ -125,6 +125,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | issue #84 で対応。`git mv` で `src/lib/custom-date.ts` へリネームし、`client.tsx` とテストの import を更新。docs 6 ファイルの記述も追随 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 82 | Dependabot セキュリティアラートの解消と docs/09 依存表の同期 | 完了 | 高 | issue #178。更新 PR は 0 件でも推移的依存のアラートが 31 件（high 11）開いたままだった。`pnpm update`（範囲内）で 23 件、`pnpm.overrides`（`next>postcss` / `gaxios>uuid` / `smol-toml`）で 6 件を解消し、本番依存の `pnpm audit` は 0 件に。残る 2 件（katex / postcss-selector-parser）は開発・ビルド時のみで、上書きが破壊的変更を伴うため見送った。判断理由と上書きを外す条件は docs/09 §2.4。あわせて docs/09 の依存表で乖離していた行（next 14.2.5 → 15.5.25、tailwind-merge 2 → 3、Node >= 18 → >= 24 等）を `package.json` と同期 |
 | 81 | resend 6 / @google-cloud/storage 8 / @testing-library/jest-dom 7 への更新 | 完了 | 中 | issue #176（Dependabot #107 / #110 / #111 を統合）。3 件とも main とコンフリクトし、`@dependabot rebase` / `recreate` がいずれも失敗したため手動でまとめて更新した。**コード変更は不要**だった（resend の「HTTP エラー時は例外でなく `{ data, error }` を返す」契約、GCS の `bucket / file / exists / download / save`、jest-dom のルート import による matcher 拡張はいずれも維持）。resend の送信経路は MSW を使う IT で、GCS は fake-gcs-server を使う IT / E2E で実通信を確認。本番依存の `pnpm audit` は 8 → 6 件（`form-data` high / `@tootallnate/once` low が解消、新規の検出なし） |
 | 80 | zod 4 / @hookform/resolvers 5 への同時更新 | 完了 | 中 | issue #174（Dependabot #108 / #109 を統合）。resolvers v3 の `zodResolver` は zod 4 に非対応で、**zod だけを上げた #108 は E2E のバリデーション表示で失敗していた**ため 1 PR で同時に上げた。非推奨の `z.string().email()` は `.pipe(z.email())` へ置き換えた（`z.email().min(1)` だと空欄時に形式エラーが「必須」より先に返り、メッセージの優先順位が崩れることを実測）。テスト側の `error.flatten()` も `z.flattenError()` へ。`replyTo` のヘッダーインジェクション防御（改行の拒否）が zod 4 の正規表現でも維持されることを既存テストで確認 |
 | 70 | ESLint 9 + flat config への移行 | 完了 | 中 | issue #133。`eslint@9` / `typescript-eslint@8` へ更新し、`.eslintrc.json` を `eslint.config.mjs` へ移行。`next lint`（Next.js 16 で削除）から ESLint CLI へ切替。**`eslint-config-next` は 16 系を使うが Next.js 16 への移行ではない**（15.5.25 は同梱の `@next/eslint-plugin-next` が 14.2.5 と古く ESLint 9 で異常終了する。16.3.5 は `next` への peer 依存を持たない）。移行の成否は lint が通ることでは判定できないため、**違反を意図的に混入させて検出能力を 8 項目で実証**した |
@@ -260,20 +261,20 @@ Hero → About → Career → AI → Product → Articles → Contact（issue #1
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 68 |
+| 完了 | 69 |
 | 未着手 | 8 |
 | 検討中 | 4 |
-| **合計** | **80** |
+| **合計** | **81** |
 
 | 優先度 | 件数 |
 |--------|------|
 | 最高 | 5 |
-| 高 | 25 |
+| 高 | 26 |
 | 中 | 37 |
 | 低 | 13 |
-| **合計** | **80** |
+| **合計** | **81** |
 
-> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #81（resend 6 / GCS 8 / jest-dom 7）、#80（zod 4 / resolvers 5）、#78（セクションの organisms 化）、#77（執筆記事セクション）、#76（個人開発セクション）、#75（コンポーネント設計レポートの追随）、#30（コンポーネントテスト）、#74（クライアントロジックの hooks/ 切り出し）、#73（全セクションの再構成とテーマ切替 UI）、#72（技術スタックの 9 区分化）、#71（配色トークンとテーマ解決機構）、#43（ライトモード / テーマ切替）、#70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #52（カバレッジ閾値）、#41（OGP 画像）、#39（Google Analytics）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #82（セキュリティアラート解消）、#81（resend 6 / GCS 8 / jest-dom 7）、#80（zod 4 / resolvers 5）、#78（セクションの organisms 化）、#77（執筆記事セクション）、#76（個人開発セクション）、#75（コンポーネント設計レポートの追随）、#30（コンポーネントテスト）、#74（クライアントロジックの hooks/ 切り出し）、#73（全セクションの再構成とテーマ切替 UI）、#72（技術スタックの 9 区分化）、#71（配色トークンとテーマ解決機構）、#43（ライトモード / テーマ切替）、#70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #52（カバレッジ閾値）、#41（OGP 画像）、#39（Google Analytics）。
 >
 > 件数は 2026-09-22（issue #138）に実テーブルから再集計した。再掲行（#30 / #47）は 1 件として数える。
 > 従来のステータス表は内訳が合計と一致していなかった（55 + 9 + 4 = 68 に対し合計 73 行）。
@@ -287,6 +288,7 @@ Hero → About → Career → AI → Product → Articles → Contact（issue #1
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-10-07 | Dependabot のセキュリティアラート 31 件のうち 29 件を解消（issue #178）。lockfile の更新と `pnpm.overrides` 3 件で、本番依存の `pnpm audit` は 0 件。上書きの理由・外す条件・見送った 2 件の判断を docs/09 §2.4 に新設。docs/09 の依存表・動作環境要件、docs/04 の Next.js バージョン記載の古い行も `package.json` と同期 | - |
 | 2026-10-07 | resend を 6 系、@google-cloud/storage を 8 系、@testing-library/jest-dom を 7 系へ更新（issue #176）。Dependabot の #107 / #110 / #111 はコンフリクトし rebase / recreate とも失敗したため手動で統合。コード変更は不要で、docs/08・09・10 の依存バージョンを追随 | - |
 | 2026-10-07 | zod を 4 系、@hookform/resolvers を 5 系へ同時に更新（issue #174）。Dependabot が別々に出した #108 / #109 は単独では成立しない（#108 は E2E 失敗）ため統合。非推奨の `z.string().email()` を `.pipe(z.email())` へ置き換え、docs/03・06・07・08・09 の記述を追随 | - |
 | 2026-09-25 | 要件定義（docs/02）とスコープ（docs/01）を現在の実装・掲載データへ同期（issue #169）。#138 などで挙動が変わった後も旧実装を要件として書いていた FR を改め、廃止した FR（固定ヘッダー・スクロール時の背景切替・Hero の背景画像と CTA）は欠番として理由を残した。AI / Product / Articles セクション・テーマ切替・送信回数の制限・正規 URL の FR を追加。docs/02 §4・§5（技術スタック・構成・API・環境変数）は docs/07・09 の古い写しになっていたため、正本への参照に置き換えた。docs/01 のスコープ表に残っていた Skills セクションと「ダーク系で固定」も是正 | - |
