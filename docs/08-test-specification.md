@@ -160,7 +160,7 @@
 |--------|-----------|------|
 | Vitest | ^2.0.0 | テストランナー（Next.js / TypeScript との親和性が高く、Vite ベースで高速） |
 | @testing-library/react | ^16.0.0 | Reactコンポーネントのレンダリング・操作テスト |
-| @testing-library/jest-dom | ^6.0.0 | DOMアサーションマッチャー拡張 |
+| @testing-library/jest-dom | ^7.0.1 | DOMアサーションマッチャー拡張 |
 | @testing-library/user-event | ^14.0.0 | ユーザーインタラクションのシミュレーション |
 | jsdom | ^24.0.0 | ブラウザ環境のエミュレーション |
 | msw (Mock Service Worker) | ^2.0.0 | APIリクエストのモック |
