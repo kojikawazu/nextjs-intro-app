@@ -122,7 +122,7 @@ Zodスキーマ定義:
 ```typescript
 export const ContactFormSchema = z.object({
     name: z.string().min(1).min(2).max(50),
-    email: z.string().min(1).email().max(255),
+    email: z.string().min(1).max(255).pipe(z.email()),
     message: z.string().min(1).min(10).max(2000),
 });
 ```
@@ -537,7 +537,7 @@ Zod (`ContactFormSchema`) による検証は「受け付けてよい値か」の
 - 問い合わせ者のメールアドレスが `replyTo` ヘッダーに設定される
 - これにより返信時に問い合わせ者に直接返信が可能
 - 送信元 (`from`) はサイトのドメインメールアドレスで固定されており、なりすましの防止に寄与
-- `replyTo` には制御文字の除去を挟んでいない。`ContactFormSchema` の `.email()` が改行を含む文字列を弾くため、**スキーマが唯一の防御**になる。この前提は `src/schemas/contact.test.ts` で固定している
+- `replyTo` には制御文字の除去を挟んでいない。`ContactFormSchema` の `z.email()` が改行を含む文字列を弾くため、**スキーマが唯一の防御**になる。この前提は `src/schemas/contact.test.ts` で固定している
 
 ### 8.3 メールヘッダーインジェクション対策
 

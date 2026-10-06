@@ -131,8 +131,8 @@
 | @google-cloud/storage | ^7.16.0 | Google Cloud Storage クライアント |
 | resend | ^4.6.0 | メール送信サービスクライアント |
 | react-hook-form | ^7.51.4 | フォーム状態管理 |
-| @hookform/resolvers | ^3.6.0 | React Hook Form 用バリデーションリゾルバー |
-| zod | ^3.23.8 | スキーマバリデーション |
+| @hookform/resolvers | ^5.9.1 | React Hook Form 用バリデーションリゾルバー |
+| zod | ^4.6.5 | スキーマバリデーション |
 | clsx | ^2.1.1 | 条件付きクラス名結合 |
 | tailwind-merge | ^2.3.0 | Tailwind CSS クラスの競合解決 |
 
