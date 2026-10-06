@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
 import { ContactFormSchema } from './contact';
 
 const validInput = {
@@ -11,7 +12,7 @@ const validInput = {
 function firstError(input: unknown, field: 'name' | 'email' | 'message'): string | undefined {
     const result = ContactFormSchema.safeParse(input);
     if (result.success) return undefined;
-    return result.error.flatten().fieldErrors[field]?.[0];
+    return z.flattenError(result.error).fieldErrors[field]?.[0];
 }
 
 describe('ContactFormSchema', () => {
