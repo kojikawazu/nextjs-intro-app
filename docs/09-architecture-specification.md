@@ -128,8 +128,8 @@
 | next | 14.2.5 | React フレームワーク (App Router) |
 | react | 19.3.0 | UI ライブラリ |
 | react-dom | 19.3.0 | React DOM レンダラー |
-| @google-cloud/storage | ^7.16.0 | Google Cloud Storage クライアント |
-| resend | ^4.6.0 | メール送信サービスクライアント |
+| @google-cloud/storage | ^8.2.0 | Google Cloud Storage クライアント |
+| resend | ^6.32.1 | メール送信サービスクライアント |
 | react-hook-form | ^7.51.4 | フォーム状態管理 |
 | @hookform/resolvers | ^5.9.1 | React Hook Form 用バリデーションリゾルバー |
 | zod | ^4.6.5 | スキーマバリデーション |
@@ -155,7 +155,7 @@
 | vitest | ^4.1.10 | テストランナー（ユニットテスト） |
 | @vitest/coverage-v8 | ^4.1.10 | カバレッジ計測（v8 プロバイダ） |
 | @testing-library/react | ^16.3.2 | React コンポーネントの描画・操作テスト（コンポーネントテスト導入時に使用） |
-| @testing-library/jest-dom | ^6.9.1 | DOM アサーションマッチャー拡張 |
+| @testing-library/jest-dom | ^7.0.1 | DOM アサーションマッチャー拡張 |
 | @testing-library/user-event | ^14.6.1 | ユーザー操作のシミュレーション |
 | jsdom | ^29.1.1 | テスト実行時のブラウザ環境エミュレーション |
 | testcontainers | ^12.0.4 | 統合 / E2E テストで fake-gcs-server コンテナを起動（要 Docker） |
