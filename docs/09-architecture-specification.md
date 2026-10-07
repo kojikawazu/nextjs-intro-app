@@ -182,12 +182,20 @@
 | `gaxios>uuid` | ^11.1.1 | `@google-cloud/storage` 経由の `gaxios@6` が `uuid@^9` を要求する。gaxios が使うのは multipart 境界文字列の `v4()` のみで、11 系も同じ API と CJS 版を提供する | gaxios が uuid 依存を外す / 11.1.1 以上を要求する版へ上がったとき |
 | `smol-toml` | ^1.9.0 | `markdownlint-cli2`（最新の 0.23.3）が 1.8.0 を固定している。開発時の lint ツールの設定読み込みにのみ使われるマイナー差 | markdownlint-cli2 が 1.9.0 以上を要求するようになったとき |
 
-**上書きしていない残存アラート**（いずれも開発・ビルド時のみで、入力は自リポジトリのファイルに限られる）:
+**生成物・挙動の同一性を確認したうえで上書きしたもの**（issue #180。#178 時点では「上書きが破壊的変更を伴う」として見送っていた）:
 
-| 対象 | 経路 | 上書きしない理由 |
+| 対象 | 上書き後 | 理由・確認内容 | 外す条件 |
+|---|---|---|---|
+| `katex` | ^0.18.2 | markdownlint → micromark-extension-math（`^0.16`）経由。markdownlint が使うのは数式の**構文解析**（`math`）だけで、katex を呼ぶ HTML 化（`mathHtml`）は実行されない（モジュールとして読み込まれるのみ）。上書き後も数式ブロックを含む Markdown を解析でき、違反の検出が維持されることを確認 | micromark-extension-math が 0.18.2 以上を許容するようになったとき |
+| `postcss-selector-parser` | ^7.1.6 | tailwindcss 3（`^6.1.2`）経由。7.0.0 の破壊的変更は「走査中の挿入を安全にした」1 点のみだが、tailwind 3 は走査しながらセレクタを書き換えるため、**上書きの前後で生成 CSS を比較し、tailwind 単体の出力・Next のビルド成果物ともバイト単位で同一**であることを確認した | tailwindcss 4 へ移行したとき（tailwind 3 自体の依存ではなくなる） |
+
+> **CSS の同一性はこの時点の入力に対する確認である。** 新しいバリアント（`group-*` / `peer-*` / 任意セレクタ等）を使い始めた場合は、tailwind 3 が 7 系の parser で想定どおりのセレクタを生成するかを、E2E かビルド成果物で確かめること。
+
+**修正版が存在しないため対応できないもの**:
+
+| 対象 | 経路 | 状況 |
 |---|---|---|
-| `katex` 0.16 系 | markdownlint → micromark-extension-math（`^0.16` を要求） | 修正版 0.18.2 は 0.x 系のマイナー差で破壊的変更にあたる |
-| `postcss-selector-parser` 6 系 | tailwindcss 3（`^6` を要求） | 修正版 7.1.6 はメジャー差。tailwindcss 4 への移行で解消する |
+| `braces`（high, GHSA-vfj7-8cjw-p6xm） | eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch | 修正版が未公開（patched なし）。開発時の lint のみで、入力は自リポジトリの glob パターンに限られる。修正版の公開後に `pnpm update` で追随する |
 
 ---
 
