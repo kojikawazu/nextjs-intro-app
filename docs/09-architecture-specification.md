@@ -209,7 +209,7 @@ nextjs-intro-app/
 ├── docs/                       # プロジェクトドキュメント
 ├── node_modules/               # pnpm パッケージ（git 管理外）
 ├── public/                     # 静的ファイル配信ディレクトリ
-├── scripts/                    # 補助スクリプト（secret-scan.sh とそのテスト）
+├── scripts/                    # 補助スクリプト（secret-scan.sh / major-updates.sh とそれぞれのテスト）
 ├── src/                        # アプリケーションソースコード
 │   ├── app/                    # Next.js App Router
 │   ├── components/             # UI コンポーネント
@@ -744,11 +744,12 @@ ThemeToggle (Client) ──> document.documentElement.dataset.theme = 'dark'  �
 
 本番環境は GitHub Actions (`deploy_to_googlecloud.yml`) により Cloud Run にデプロイされる。
 
-ワークフローは 4 本。
+ワークフローは 5 本。
 
 | ワークフロー | 契機 | 内容 |
 |---|---|---|
-| `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / Terraform fmt・validate / 依存監査 / UT / IT |
+| `ci.yml` | PR（main 宛） | 型チェック / ESLint / Prettier / actionlint / メジャー更新検出のテスト / Terraform fmt・validate / 依存監査 / UT / IT |
+| `major-updates.yml` | 毎週月曜 09:00 JST・手動 | メジャー差のある依存を検出し、追跡 issue を作成・更新する（`scripts/major-updates.sh`。docs/06 §「メジャー更新は自動 PR の対象外とする」） |
 | `e2e.yml` | PR（main 宛） | Playwright（fake-gcs-server コンテナ） |
 | `secret-scan.yml` | PR（main 宛）・main への push | 鍵・`.env`・Terraform の秘密ファイル・GCP SA キーの追跡検出（`scripts/secret-scan.sh`。docs/06 §11） |
 | `deploy_to_googlecloud.yml` | main への push | Docker ビルド → Cloud Run デプロイ |

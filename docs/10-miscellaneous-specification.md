@@ -203,6 +203,7 @@ pnpm dev
 | const 優先 | 必須（`prefer-const: "error"`） |
 | GitHub Actions | `actionlint` でワークフロー定義を検証（式・ランナーラベル・コンテキスト参照）。`run:` ブロックは shellcheck に掛かる。CI でブロッキング |
 | シークレット混入 | `secret-scan.yml` が `git ls-files` を鍵・`.env` 系のパスパターンと照合。PR と main への push で常時実行・ブロッキング。詳細は docs/06 §11 |
+| メジャー更新 | `major-updates.yml` が毎週 `pnpm outdated` を見て、メジャー差のある依存を追跡 issue に一覧する（Dependabot はメジャー更新を自動 PR にしない）。詳細は docs/06 |
 | Markdown | `markdownlint-cli2` で 30 本の `.md` を検証（`.markdownlint-cli2.jsonc`）。CI でブロッキング |
 
 #### markdownlint のルール取捨選択
