@@ -462,19 +462,23 @@ GitHub 側の Dependabot alerts（Settings → Code security）も有効化す�
 
 #### メジャー更新は自動 PR の対象外とする
 
-判断が必要なメジャー更新は `.github/dependabot.yml` の `ignore` で除外し、**専用の issue で扱う**。
+npm の**メジャー更新はすべて** `.github/dependabot.yml` の `ignore`（`dependency-name: '*'` × `version-update:semver-major`）で除外する（issue #189）。Dependabot の自動 PR は、毎週の minor / patch をまとめた 1 本だけになる。github-actions のメジャー更新は対象外のまま自動 PR で上げる。
 
-| 除外対象 | 理由 | 対応 issue |
+除外する理由は 2 つある。自動 PR には**何を確認すべきかが残らない**こと、そして**全 PR が `pnpm-lock.yaml` を触るため、互いにコンフリクトする**ことである。
+
+- 2026-09-19、Dependabot の PR を続けてマージした際に `pnpm-lock.yaml` が破損し（同一マッピング内でキーが重複）、CI と Cloud Run デプロイが停止した。複数の PR が同じロックファイルを触るため、**テキストとしてはマージできるが YAML としては壊れる**という形で検知をすり抜けた。
+- 以前は `next` と `@types/node` だけを個別に除外していた。そのため 2026-10-25 には、それ以外のメジャー 4 件（typescript 6 / eslint-plugin-jsdoc 65 / jsdom 30 / tailwindcss 4）が個別に PR として上がった。1 件マージするたびに残りがコンフリクトし、毎回 `@dependabot rebase` と CI の再実行を待った。うち 2 件（typescript / tailwindcss）は移行作業なしでは CI が通らなかった。個別の除外では漏れが出るので、一律の除外に改めた。
+
+**メジャー更新の拾い方**: `pnpm outdated` でメジャー差のある依存を確認する。上げると決めたものは専用の issue を起票し、確認すべき点（破壊的変更・成果物への影響）をそこに残してから手動で上げる。
+
+**セキュリティ更新への影響**: `ignore` は Dependabot security updates にも効く。そのため、**修正版がメジャー更新にしかない脆弱性は自動 PR にならない**。この場合も Dependabot alerts には上がり、本番依存の critical は CI の `pnpm audit:ci` で止まる。アラートを見て、上記と同じく issue で扱う。
+
+メジャー更新で特に前提条件の確認が要る依存:
+
+| 依存 | 確認すべきこと | 関連 issue |
 |---|---|---|
 | `next` | Node / ESLint の前提条件が絡む | #88 |
-| `react` / `react-dom` / `@types/react` | `forwardRef` を多用する atoms 全体に影響する | #104 |
-| `@types/node` | 型定義は実行環境の Node メジャーに追従させる。自動でメジャーが上がると「本番に存在しない API を型が通す」状態に戻る | issue #130 |
-
-除外する理由は 2 つ。自動 PR には**何を確認すべきかが残らない**こと、そして**毎週再作成されて競合の温床になる**ことである。
-
-実際に 2026-09-19、Dependabot の PR を続けてマージした際に `pnpm-lock.yaml` が破損し（同一マッピング内でキーが重複）、CI と Cloud Run デプロイが停止した。複数の PR が同じロックファイルを触るため、**テキストとしてはマージできるが YAML としては壊れる**という形で検知をすり抜けた。
-
-各 issue の完了時に、対応する除外を `ignore` から外す。
+| `@types/node` | 型定義は実行環境の Node メジャーに追従させる。先に上がると「本番に存在しない API を型が通す」状態に戻るため、Dockerfile / `engines.node` を上げるときに揃える | #130 |
 
 #### なぜ閾値を「本番依存の critical」に置くか
 

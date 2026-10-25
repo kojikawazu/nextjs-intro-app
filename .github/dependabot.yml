@@ -19,18 +19,13 @@ updates:
               update-types:
                   - minor
                   - patch
-      # 判断が必要なメジャー更新は自動 PR の対象外とし、専用の issue で扱う。
-      # 自動 PR には「何を確認すべきか」が残らず、毎週再作成されて競合の温床になるため。
-      # 各 issue の完了時に、対応する除外をここから外す。
+      # メジャー更新はすべて自動 PR の対象外とし、上げると決めたものだけ専用の issue で扱う（issue #189）。
+      # 自動 PR には「何を確認すべきか」が残らない。しかも全 PR が pnpm-lock.yaml を触るため、
+      # 1 件マージするたびに残りがコンフリクトする。個別の除外だけでは、それ以外のメジャーが漏れ続けた。
+      # ignore はセキュリティ更新にも効く。メジャーでしか直らない脆弱性は Dependabot alerts と
+      # CI の audit で拾う（docs/06 §「メジャー更新は自動 PR の対象外とする」）。
       ignore:
-          # Node / ESLint の前提条件が絡む（issue #88）
-          - dependency-name: next
-            update-types:
-              - version-update:semver-major
-          # 型定義は実行環境の Node メジャーに追従させる（issue #130）。
-          # 自動でメジャーが上がると「本番に存在しない API を型が通す」状態に戻るため、
-          # Dockerfile / engines.node を上げるときに手動で揃える。
-          - dependency-name: '@types/node'
+          - dependency-name: '*'
             update-types:
               - version-update:semver-major
 
