@@ -63,6 +63,11 @@ jobs:
                   docker run --rm -v "$PWD":/repo --workdir /repo \
                     rhysd/actionlint:1.7.12 -color
 
+            # major-updates.yml は週次の schedule でしか動かないため、検出ロジックを変えた PR で
+            # 壊れても次の月曜まで気づけない。PR の時点で同じテストを走らせる（issue #189）。
+            - name: Test major update detection
+              run: bash scripts/major-updates.test.sh
+
             # 依存監査は「止める基準」と「見せる基準」を分ける。
             #
             # ブロッキング: 本番依存（--prod）の critical のみ。devDependency 経由の指摘は

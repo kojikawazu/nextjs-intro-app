@@ -177,9 +177,19 @@
 |--------|------|
 | @vitest/coverage-v8 | カバレッジレポート生成 |
 | @vitest/ui | テスト結果のビジュアルUI |
-| bash（`scripts/*.test.sh`） | シェルスクリプトの自己テスト。現状は `scripts/secret-scan.test.sh` のみ |
+| bash（`scripts/*.test.sh`） | シェルスクリプトの自己テスト。`scripts/secret-scan.test.sh` / `scripts/major-updates.test.sh` |
 
 Vitest は `src/**` と jsdom を前提とするため、`scripts/` のシェルスクリプトは bash のテストで検証する。`scripts/secret-scan.test.sh` は一時 Git リポジトリで秘匿ファイルを `git add -f` で追跡させ、検出対象（準正常系）・誤検知しないファイル（正常系）・`.gitignore` の除外を検証する。CI（`secret-scan.yml`）が本番のスキャンの前に実行する（docs/06 §11.2）。
+
+`scripts/major-updates.test.sh` は、メジャー更新の検出と追跡 issue の同期を検証する（23 件。issue #189）。
+
+| 分類 | 主なケース |
+|---|---|
+| 正常系 | メジャー差だけを名前順に出す / 本文の表と埋め込んだ検出結果の往復 / 追跡 issue が無ければ作成だけする / 最新メジャーが進んだら本文を更新してコメントする |
+| 準正常系 | マイナー・パッチは出さない / 0.x のマイナーは出さず 0.x → 1.0 は出す / latest が current より古いものは出さない / current が無ければ wanted で比べる / 前回と同じなら何もしない / 似た題名の別 issue を追跡 issue とみなさない / 埋め込み行が無い・壊れた本文は空として扱う |
+| 異常系 | `pnpm outdated` の出力が JSON オブジェクトとして読めなければ、issue に触らず終了コード 2 で落ちる |
+
+外部 I/O の `gh` / `pnpm` だけを、呼び出しを記録する偽物に差し替える（PATH の先頭に置く）。CI（`ci.yml`）と週次の `major-updates.yml` が同期の前に実行する。
 
 ---
 

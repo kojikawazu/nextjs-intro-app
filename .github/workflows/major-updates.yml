@@ -1,0 +1,61 @@
+name: Major updates
+
+# Dependabot はメジャー更新を一律で自動 PR の対象外にしている（.github/dependabot.yml / issue #189）。
+# そのままでは気づけないため、週に 1 回メジャー差のある依存を検出し、追跡 issue 1 本に一覧を出す。
+# 新しいメジャーが出た週だけ issue にコメントを付けて通知する（本文の書き換えは通知されない）。
+#
+# 時刻は Dependabot の週次実行（月曜）に合わせ、月曜 09:00 JST（00:00 UTC）にする。
+# GitHub は 60 日間リポジトリに動きが無いと schedule のワークフローを止める。
+# 止まったら Actions の画面から再度有効にする（docs/06）。
+on:
+    schedule:
+        - cron: '0 0 * * 1'
+    workflow_dispatch:
+
+# 書き込むのは issue だけ。コードは読むだけにする。
+permissions:
+    contents: read
+    issues: write
+
+# 手動実行と schedule が重なると、同じ追跡 issue を 2 本作りうるため直列にする。
+concurrency:
+    group: major-updates
+
+jobs:
+    track:
+        name: Track major updates
+        runs-on: ubuntu-latest
+
+        steps:
+            # push しないジョブのため、トークンを .git/config に残さない
+            - name: Checkout code
+              uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            # このジョブは issues: write のトークンを持つ。サードパーティの action はタグの付け替えで
+            # 中身を差し替えられるため、commit SHA で固定する（ci.yml の @v6 と同じコミット）。
+            # SHA 固定でも Dependabot（github-actions）が末尾のバージョンのコメントごと更新する。
+            - name: Setup pnpm
+              uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v7
+              with:
+                  node-version: 24
+                  cache: pnpm
+
+            # pnpm outdated はインストール済みの版を current として読むため、lockfile どおりに入れる。
+            # 使うのは依存の版だけなので、postinstall 等のスクリプトは走らせない。
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile --ignore-scripts
+
+            # 判定が壊れると「メジャー差のある依存は無い」のまま issue が更新され続け、誰も気づけない。
+            # 先に検出ロジックをテストで確かめてから同期する。
+            - name: Test detection logic
+              run: bash scripts/major-updates.test.sh
+
+            - name: Sync tracking issue
+              run: bash scripts/major-updates.sh sync
+              env:
+                  GH_TOKEN: ${{ github.token }}

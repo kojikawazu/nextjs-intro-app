@@ -462,19 +462,36 @@ GitHub 側の Dependabot alerts（Settings → Code security）も有効化す�
 
 #### メジャー更新は自動 PR の対象外とする
 
-判断が必要なメジャー更新は `.github/dependabot.yml` の `ignore` で除外し、**専用の issue で扱う**。
+npm の**メジャー更新はすべて** `.github/dependabot.yml` の `ignore`（`dependency-name: '*'` × `version-update:semver-major`）で除外する（issue #189）。Dependabot の自動 PR は、毎週の minor / patch をまとめた 1 本だけになる。github-actions のメジャー更新は対象外のまま自動 PR で上げる。
 
-| 除外対象 | 理由 | 対応 issue |
+除外する理由は 2 つある。自動 PR には**何を確認すべきかが残らない**こと、そして**全 PR が `pnpm-lock.yaml` を触るため、互いにコンフリクトする**ことである。
+
+- 2026-09-19、Dependabot の PR を続けてマージした際に `pnpm-lock.yaml` が破損し（同一マッピング内でキーが重複）、CI と Cloud Run デプロイが停止した。複数の PR が同じロックファイルを触るため、**テキストとしてはマージできるが YAML としては壊れる**という形で検知をすり抜けた。
+- 以前は `next` と `@types/node` だけを個別に除外していた。そのため 2026-10-25 には、それ以外のメジャー 4 件（typescript 6 / eslint-plugin-jsdoc 65 / jsdom 30 / tailwindcss 4）が個別に PR として上がった。1 件マージするたびに残りがコンフリクトし、毎回 `@dependabot rebase` と CI の再実行を待った。うち 2 件（typescript / tailwindcss）は移行作業なしでは CI が通らなかった。個別の除外では漏れが出るので、一律の除外に改めた。
+
+**メジャー更新の拾い方**: 除外しただけでは誰も気づかないため、`.github/workflows/major-updates.yml` が毎週（月曜 09:00 JST）`pnpm outdated` を見て、メジャー差のある依存を**追跡 issue 1 本**（`chore(deps): メジャー更新の追跡（自動更新）`、ラベル `dependencies`）に一覧する。
+
+| 状況 | 動き |
+|---|---|
+| 追跡 issue が無く、メジャー差がある | 追跡 issue を作る（作成そのものが通知になる） |
+| 追跡 issue があり、新しいメジャーが出た | 本文の一覧を作り直し、**新しく出たものをコメントで通知する** |
+| 追跡 issue があり、前回と同じ | 何もしない（本文の書き換えは通知されないため、コメントしないと気づかれない） |
+| メジャー差が無く、追跡 issue も無い | 何もしない |
+
+- 「新しい」は（依存, 最新のメジャー）の組で判定する。typescript 6 → 7 のように、同じ依存でも最新のメジャーが進んだら通知する。前回の検出結果は、issue 本文の末尾に HTML コメントで埋め込んである
+- メジャーは先頭の数字だけで比べる。`0.x` のマイナー更新（0.23 → 0.24）は対象にせず、Dependabot の minor-and-patch の PR で上げる（Dependabot もそう扱っている）
+- 上げると決めたものは、依存ごとに専用の issue を起票し（追跡 issue のサブ issue にしてよい）、確認すべき点（破壊的変更・成果物への影響）をそこに残してから手動で上げる
+- 判定は `scripts/major-updates.sh` にあり、`scripts/major-updates.test.sh` で検証する（docs/08）。ローカルでも `pnpm outdated --format json > outdated.json` の出力を `bash scripts/major-updates.sh detect outdated.json` に渡せば同じ判定を再現できる（ファイルを 2 回読むため、プロセス置換 `<(...)` は使えない）
+- **GitHub は 60 日間リポジトリに動きが無いと schedule のワークフローを止める。** 止まったら Actions の画面から有効にし直す
+
+**セキュリティ更新への影響**: `ignore` は Dependabot security updates にも効く。そのため、**修正版がメジャー更新にしかない脆弱性は自動 PR にならない**。この場合も Dependabot alerts には上がり、本番依存の critical は CI の `pnpm audit:ci` で止まる。アラートを見て、上記と同じく issue で扱う。
+
+メジャー更新で特に前提条件の確認が要る依存:
+
+| 依存 | 確認すべきこと | 関連 issue |
 |---|---|---|
 | `next` | Node / ESLint の前提条件が絡む | #88 |
-| `react` / `react-dom` / `@types/react` | `forwardRef` を多用する atoms 全体に影響する | #104 |
-| `@types/node` | 型定義は実行環境の Node メジャーに追従させる。自動でメジャーが上がると「本番に存在しない API を型が通す」状態に戻る | issue #130 |
-
-除外する理由は 2 つ。自動 PR には**何を確認すべきかが残らない**こと、そして**毎週再作成されて競合の温床になる**ことである。
-
-実際に 2026-09-19、Dependabot の PR を続けてマージした際に `pnpm-lock.yaml` が破損し（同一マッピング内でキーが重複）、CI と Cloud Run デプロイが停止した。複数の PR が同じロックファイルを触るため、**テキストとしてはマージできるが YAML としては壊れる**という形で検知をすり抜けた。
-
-各 issue の完了時に、対応する除外を `ignore` から外す。
+| `@types/node` | 型定義は実行環境の Node メジャーに追従させる。先に上がると「本番に存在しない API を型が通す」状態に戻るため、Dockerfile / `engines.node` を上げるときに揃える | #130 |
 
 #### なぜ閾値を「本番依存の critical」に置くか
 
