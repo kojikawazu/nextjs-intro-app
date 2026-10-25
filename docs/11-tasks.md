@@ -125,6 +125,7 @@
 | 47 | `costom-date.ts` のファイル名修正 | 完了 | 低 | issue #84 で対応。`git mv` で `src/lib/custom-date.ts` へリネームし、`client.tsx` とテストの import を更新。docs 6 ファイルの記述も追随 |
 | 48 | ローディング/エラー状態のアクセシビリティ改善 | 完了 | 中 | `aria-live`, `role="alert"` 等の追加 |
 | 49 | サーバーサイドバリデーション強化（Zod統一） | 完了 | 中 | API Route のバリデーションをクライアント側と同じ Zod スキーマで統一 |
+| 85 | 依存更新後の docs 同期・不要な override の削除・dev 依存アラートの解消 | 完了 | 中 | issue #193。Dependabot の #188 / #184 / #185 は `package.json` しか変えないため、README・docs/04・08・09・10 のバージョンを `package.json` に合わせた（docs/10 には以前から古い Zod `^3.23.8` 等も残っていた）。docs/09 §2.4 の「外す条件」を確かめ、満たした `smol-toml`・`gaxios>uuid` の override を削除（GCS の統合テストで確認）。`braces` はアドバイザリが取り下げられた。vite は vitest の peer 依存として固定されていたため一度直接追加して解決し直し、dev 依存のアラート 7 件を解消（`pnpm audit` 0 件）。追跡 issue の本文が毎回書き換わる件（`gh --jq` が末尾に改行を足す）も修正 |
 | 84 | Dependabot のメジャー更新を一律で自動 PR の対象外にする | 完了 | 中 | issue #189。`ignore` は `next` / `@types/node` の個別除外だけで、それ以外のメジャー（typescript 6 / eslint-plugin-jsdoc 65 / jsdom 30 / tailwindcss 4）が別々の PR として上がり、マージのたびに `pnpm-lock.yaml` でコンフリクトしていた。npm は `dependency-name: '*'` × `semver-major` で一律除外し、メジャーは `pnpm outdated` で確認して issue で扱う。除外だけでは気づけないため、`major-updates.yml` が毎週 `pnpm outdated` を見て追跡 issue 1 本に一覧し、新しいメジャーが出た週だけコメントで通知する（`scripts/major-updates.sh` / テスト 23 件）。`ignore` はセキュリティ更新にも効くため、メジャーでしか直らない脆弱性は alerts と CI の audit で拾う（docs/06） |
 | 83 | 残る Dependabot アラート（katex / postcss-selector-parser）の解消 | 完了 | 中 | issue #180。#178 で「上書きが破壊的変更を伴う」として見送った 2 件を、実影響を調べたうえで `pnpm.overrides` で解消し、Dependabot アラートは 0 件に。katex は markdownlint が構文解析しか使わず描画処理が実行されないこと、postcss-selector-parser 7 は tailwind 3 の生成 CSS が**上書き前後でバイト単位で同一**であることを確認した。開発依存込みの `pnpm audit` に残る `braces`（high）は修正版が未公開のため対象外（docs/09 §2.4） |
 | 82 | Dependabot セキュリティアラートの解消と docs/09 依存表の同期 | 完了 | 高 | issue #178。更新 PR は 0 件でも推移的依存のアラートが 31 件（high 11）開いたままだった。`pnpm update`（範囲内）で 23 件、`pnpm.overrides`（`next>postcss` / `gaxios>uuid` / `smol-toml`）で 6 件を解消し、本番依存の `pnpm audit` は 0 件に。残る 2 件（katex / postcss-selector-parser）は開発・ビルド時のみで、上書きが破壊的変更を伴うため見送った。判断理由と上書きを外す条件は docs/09 §2.4。あわせて docs/09 の依存表で乖離していた行（next 14.2.5 → 15.5.25、tailwind-merge 2 → 3、Node >= 18 → >= 24 等）を `package.json` と同期 |
@@ -263,20 +264,20 @@ Hero → About → Career → AI → Product → Articles → Contact（issue #1
 
 | ステータス | 件数 |
 |-----------|------|
-| 完了 | 72 |
+| 完了 | 73 |
 | 未着手 | 8 |
 | 検討中 | 4 |
-| **合計** | **84** |
+| **合計** | **85** |
 
 | 優先度 | 件数 |
 |--------|------|
 | 最高 | 5 |
 | 高 | 26 |
-| 中 | 40 |
+| 中 | 41 |
 | 低 | 13 |
-| **合計** | **84** |
+| **合計** | **85** |
 
-> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #84（Dependabot のメジャー一律除外）、#83（残アラート解消）、#82（セキュリティアラート解消）、#81（resend 6 / GCS 8 / jest-dom 7）、#80（zod 4 / resolvers 5）、#78（セクションの organisms 化）、#77（執筆記事セクション）、#76（個人開発セクション）、#75（コンポーネント設計レポートの追随）、#30（コンポーネントテスト）、#74（クライアントロジックの hooks/ 切り出し）、#73（全セクションの再構成とテーマ切替 UI）、#72（技術スタックの 9 区分化）、#71（配色トークンとテーマ解決機構）、#43（ライトモード / テーマ切替）、#70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #52（カバレッジ閾値）、#41（OGP 画像）、#39（Google Analytics）。
+> 直近の完了（番号は本ドキュメントのタスク番号。GitHub issue 番号は各行の備考を参照）: #85（依存更新後の docs 同期・override 整理）、#84（Dependabot のメジャー一律除外）、#83（残アラート解消）、#82（セキュリティアラート解消）、#81（resend 6 / GCS 8 / jest-dom 7）、#80（zod 4 / resolvers 5）、#78（セクションの organisms 化）、#77（執筆記事セクション）、#76（個人開発セクション）、#75（コンポーネント設計レポートの追随）、#30（コンポーネントテスト）、#74（クライアントロジックの hooks/ 切り出し）、#73（全セクションの再構成とテーマ切替 UI）、#72（技術スタックの 9 区分化）、#71（配色トークンとテーマ解決機構）、#43（ライトモード / テーマ切替）、#70（ESLint 9 + flat config）、#69（Node バージョン統一）、#53（実行環境の Node 整合）、#68（Skills セクション削除）、#67（React 19 移行）、#66（markdownlint 導入）、#65（Secret scan ジョブ）、#64（デッドコード整理）、#47（ファイル名のタイプミス修正）、#63（lib/ の配置ルール確定）、#62（件名のヘッダーインジェクション対策）、#61（CORS 判断・レートリミット・CSP）、#45（レート制限）、#60（ログ方針・統一エラーレスポンス）、#59（メール HTML の XSS 対策）、#58（next 15.5.25）、#57（next 14.2.35）、#56（server-first 化）、#55（JSDoc 45 件）、#48（ローディング/エラー状態のアクセシビリティ改善）。残る未着手の主なもの: #52（カバレッジ閾値）、#41（OGP 画像）、#39（Google Analytics）。
 >
 > 件数は 2026-09-22（issue #138）に実テーブルから再集計した。再掲行（#30 / #47）は 1 件として数える。
 > 2026-10-25（issue #189）にも再集計した。#83 の追加時に集計表が更新されておらず、合計が 1 件少なかった。
@@ -291,6 +292,7 @@ Hero → About → Career → AI → Product → Articles → Contact（issue #1
 
 | 日付 | 内容 | 担当 |
 |------|------|------|
+| 2026-10-25 | 依存更新後の docs 同期と後片付け（issue #193）。README・docs/04・08・09・10 のバージョンを `package.json` に合わせ、外す条件を満たした `smol-toml`・`gaxios>uuid` の override を削除、取り下げられた `braces` のアドバイザリを docs/09 §2.4 から外した。vitest 4.1.12・vite 8.3.5 への更新で dev 依存のアラート 7 件を解消（`pnpm audit` 0 件）。追跡 issue の本文比較で末尾の改行を無視するよう修正 | - |
 | 2026-10-25 | Dependabot の npm メジャー更新を `dependency-name: '*'` で一律に自動 PR の対象外にした（issue #189）。個別除外（`next` / `@types/node`）から漏れたメジャー 4 件が別々の PR として上がり、マージのたびに `pnpm-lock.yaml` でコンフリクトしていた。メジャー更新に気づけるよう、週次の `major-updates.yml` が追跡 issue を作成・更新し、新しいメジャーをコメントで通知する仕組みを追加。docs/06 に拾い方とセキュリティ更新への影響、docs/08 にテストケース、docs/09・10 にワークフローを追記し、除外表に残っていた `react` 系（#104 で解除済み）を削除 | - |
 | 2026-10-07 | #178 で見送った katex / postcss-selector-parser のアラートを `pnpm.overrides` で解消（issue #180）。Dependabot アラートは 0 件。tailwind 3 の生成 CSS が上書き前後で同一であることをビルド成果物の比較で確認し、docs/09 §2.4 の「上書きしていない残存アラート」を「確認のうえ上書きしたもの」と「修正版が無いもの（braces）」に改めた | - |
 | 2026-10-07 | Dependabot のセキュリティアラート 31 件のうち 29 件を解消（issue #178）。lockfile の更新と `pnpm.overrides` 3 件で、本番依存の `pnpm audit` は 0 件。上書きの理由・外す条件・見送った 2 件の判断を docs/09 §2.4 に新設。docs/09 の依存表・動作環境要件、docs/04 の Next.js バージョン記載の古い行も `package.json` と同期 | - |

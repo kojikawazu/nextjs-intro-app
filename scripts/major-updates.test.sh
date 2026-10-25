@@ -188,7 +188,8 @@ body_file() {
 }
 case "$1 $2" in
     "issue list") cat "$FAKE_ISSUES" ;;
-    "issue view") cat "$FAKE_BODY" ;;
+    # 本物の gh issue view --jq .body と同じく、保存された本文の末尾に改行を 1 つ足して出す
+    "issue view") cat "$FAKE_BODY"; echo ;;
     "issue create") echo "create" >>"$FAKE_LOG"; cp "$(body_file "$@")" "${FAKE_OUT}/created.md" ;;
     "issue edit") echo "edit $3" >>"$FAKE_LOG"; cp "$(body_file "$@")" "${FAKE_OUT}/edited.md" ;;
     "issue comment") echo "comment $3" >>"$FAKE_LOG"; cp "$(body_file "$@")" "${FAKE_OUT}/comment.md" ;;

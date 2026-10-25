@@ -132,7 +132,9 @@ sync() {
     state "${work}/prev_body.md" >"${work}/prev.json"
     new_entries "${work}/prev.json" "${work}/current.json" >"${work}/new.json"
 
-    if ! diff -q "${work}/prev_body.md" "${work}/body.md" >/dev/null; then
+    # gh issue view --jq .body は本文の末尾に改行を 1 つ足して出す。ファイルのまま比べると
+    # 内容が同じでも毎回一致せず、毎週 edited になる。コマンド置換で末尾の改行を落としてから比べる。
+    if [ "$(cat "${work}/prev_body.md")" != "$(cat "${work}/body.md")" ]; then
         gh issue edit "$issue" --body-file "${work}/body.md" >/dev/null
         echo "#${issue} の本文を更新した"
     fi

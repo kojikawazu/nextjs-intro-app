@@ -76,16 +76,16 @@
 
 | 技術 | バージョン | ドキュメント |
 |------|-----------|-------------|
-| Next.js | 15.5.25 | <https://nextjs.org/docs> |
-| React | 19.3.0 | <https://react.dev> |
+| Next.js | 15.5.28 | <https://nextjs.org/docs> |
+| React | 19.3.1 | <https://react.dev> |
 | TypeScript | 5.5.2 | <https://www.typescriptlang.org/docs/> |
 | Tailwind CSS | 3.4.4 | <https://tailwindcss.com/docs> |
-| React Hook Form | ^7.51.4 | <https://react-hook-form.com> |
-| Zod | ^3.23.8 | <https://zod.dev> |
-| Resend | ^6.32.1 | <https://resend.com/docs> |
-| @google-cloud/storage | ^8.2.0 | <https://cloud.google.com/storage/docs/reference/libraries> |
+| React Hook Form | ^7.90.0 | <https://react-hook-form.com> |
+| Zod | ^4.6.7 | <https://zod.dev> |
+| Resend | ^6.34.1 | <https://resend.com/docs> |
+| @google-cloud/storage | ^8.4.0 | <https://cloud.google.com/storage/docs/reference/libraries> |
 | clsx | ^2.1.1 | <https://github.com/lukeed/clsx> |
-| tailwind-merge | ^2.3.0 | <https://github.com/dcastil/tailwind-merge> |
+| tailwind-merge | ^3.7.0 | <https://github.com/dcastil/tailwind-merge> |
 
 ### 2.2 開発ツール
 

@@ -125,14 +125,14 @@
 
 | パッケージ | バージョン | 用途 |
 |-----------|-----------|------|
-| next | 15.5.25 | React フレームワーク (App Router) |
-| react | 19.3.0 | UI ライブラリ |
-| react-dom | 19.3.0 | React DOM レンダラー |
-| @google-cloud/storage | ^8.2.0 | Google Cloud Storage クライアント |
-| resend | ^6.32.1 | メール送信サービスクライアント |
-| react-hook-form | ^7.89.0 | フォーム状態管理 |
+| next | 15.5.28 | React フレームワーク (App Router) |
+| react | 19.3.1 | UI ライブラリ |
+| react-dom | 19.3.1 | React DOM レンダラー |
+| @google-cloud/storage | ^8.4.0 | Google Cloud Storage クライアント |
+| resend | ^6.34.1 | メール送信サービスクライアント |
+| react-hook-form | ^7.90.0 | フォーム状態管理 |
 | @hookform/resolvers | ^5.9.1 | React Hook Form 用バリデーションリゾルバー |
-| zod | ^4.6.5 | スキーマバリデーション |
+| zod | ^4.6.7 | スキーマバリデーション |
 | clsx | ^2.1.1 | 条件付きクラス名結合 |
 | tailwind-merge | ^3.7.0 | Tailwind CSS クラスの競合解決 |
 
@@ -141,27 +141,27 @@
 | パッケージ | バージョン | 用途 |
 |-----------|-----------|------|
 | typescript | 5.5.2 | 型安全な JavaScript |
-| @types/node | 24.13.6 | Node.js 型定義（実行環境の Node メジャーに揃える） |
+| @types/node | 24.19.2 | Node.js 型定義（実行環境の Node メジャーに揃える） |
 | @types/react | 19.3.0 | React 型定義 |
 | @types/react-dom | 19.3.0 | React DOM 型定義 |
 | tailwindcss | 3.4.4 | ユーティリティファースト CSS フレームワーク |
-| postcss | 8.5.29 | CSS 変換ツール |
+| postcss | 8.5.31 | CSS 変換ツール |
 | autoprefixer | 10.6.1 | ベンダープレフィックス自動付与 |
 | eslint | 9.39.5 | JavaScript/TypeScript リンター（flat config） |
-| eslint-config-next | 16.3.5 | Next.js 用 ESLint 設定。**アプリの Next.js は 15 系のまま**で、本パッケージは `next` への peer 依存を持たない（issue #133） |
-| typescript-eslint | ^8.71.1 | TypeScript 用パーサ / プラグインの統合パッケージ（旧 `@typescript-eslint/*` v7 を置換） |
-| eslint-plugin-jsdoc | ^64.5.4 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象） |
-| prettier | ^3.9.9 | コードフォーマッター |
-| vitest | ^4.1.11 | テストランナー（ユニットテスト） |
-| @vitest/coverage-v8 | ^4.1.11 | カバレッジ計測（v8 プロバイダ） |
+| eslint-config-next | 16.4.2 | Next.js 用 ESLint 設定。**アプリの Next.js は 15 系のまま**で、本パッケージは `next` への peer 依存を持たない（issue #133） |
+| typescript-eslint | ^8.72.0 | TypeScript 用パーサ / プラグインの統合パッケージ（旧 `@typescript-eslint/*` v7 を置換） |
+| eslint-plugin-jsdoc | ^65.4.0 | JSDoc（TSDoc）コメントの静的検査（`src/**` の TS/TSX 対象） |
+| prettier | ^3.9.10 | コードフォーマッター |
+| vitest | ^4.1.12 | テストランナー（ユニットテスト） |
+| @vitest/coverage-v8 | ^4.1.12 | カバレッジ計測（v8 プロバイダ） |
 | @testing-library/react | ^16.3.3 | React コンポーネントの描画・操作テスト（コンポーネントテスト導入時に使用） |
 | @testing-library/jest-dom | ^7.0.1 | DOM アサーションマッチャー拡張 |
-| @testing-library/user-event | ^14.6.7 | ユーザー操作のシミュレーション |
-| jsdom | ^29.1.1 | テスト実行時のブラウザ環境エミュレーション |
-| testcontainers | ^12.2.0 | 統合 / E2E テストで fake-gcs-server コンテナを起動（要 Docker） |
+| @testing-library/user-event | ^14.6.8 | ユーザー操作のシミュレーション |
+| jsdom | ^30.1.3 | テスト実行時のブラウザ環境エミュレーション |
+| testcontainers | ^12.2.1 | 統合 / E2E テストで fake-gcs-server コンテナを起動（要 Docker） |
 | msw | ^2.15.0 | 統合テストで Resend の HTTP をモック |
-| @playwright/test | ^1.63.0 | E2E（実ブラウザ）テスト |
-| markdownlint-cli2 | ^0.23.3 | Markdown（docs/ 等）の静的検査 |
+| @playwright/test | ^1.64.1 | E2E（実ブラウザ）テスト |
+| markdownlint-cli2 | ^0.24.0 | Markdown（docs/ 等）の静的検査 |
 
 ### 2.3 動作環境要件
 
@@ -178,9 +178,14 @@
 
 | 対象 | 上書き後 | 理由 | 外す条件 |
 |---|---|---|---|
-| `next>postcss` | ^8.5.29 | `next@15.5.25` が `postcss@8.4.31` を固定しており、high 2 件を含む 4 件の脆弱性が残る。next 16 自身が 8.5 系（8.5.23）を使うため、8.5 系への引き上げは Next の想定内と判断 | next 16 への移行（issue #88）で next 自身が 8.5.23 以上を要求するようになったとき |
-| `gaxios>uuid` | ^11.1.1 | `@google-cloud/storage` 経由の `gaxios@6` が `uuid@^9` を要求する。gaxios が使うのは multipart 境界文字列の `v4()` のみで、11 系も同じ API と CJS 版を提供する | gaxios が uuid 依存を外す / 11.1.1 以上を要求する版へ上がったとき |
-| `smol-toml` | ^1.9.0 | `markdownlint-cli2`（最新の 0.23.3）が 1.8.0 を固定している。開発時の lint ツールの設定読み込みにのみ使われるマイナー差 | markdownlint-cli2 が 1.9.0 以上を要求するようになったとき |
+| `next>postcss` | ^8.5.29 | next 15 系が `postcss@8.4.31` を固定しており（15.5.28 でも同じ）、high 2 件を含む 4 件の脆弱性が残る。next 16 自身が 8.5 系（8.5.23）を使うため、8.5 系への引き上げは Next の想定内と判断 | next 16 への移行（issue #88）で next 自身が 8.5.23 以上を要求するようになったとき |
+
+**外す条件を満たしたため外したもの**（issue #193）:
+
+| 対象 | 外した理由 |
+|---|---|
+| `gaxios>uuid`（^11.1.1） | `@google-cloud/storage@8.4.0` が使う `gaxios@7.3.1` は uuid に依存しなくなり、依存ツリーから uuid が消えた。外した後も GCS の統合テスト（fake-gcs-server）が通ることを確認 |
+| `smol-toml`（^1.9.0） | `markdownlint-cli2@0.24.0` が `smol-toml@1.9.1` を要求するようになった |
 
 **生成物・挙動の同一性を確認したうえで上書きしたもの**（issue #180。#178 時点では「上書きが破壊的変更を伴う」として見送っていた）:
 
@@ -191,11 +196,9 @@
 
 > **CSS の同一性はこの時点の入力に対する確認である。** 新しいバリアント（`group-*` / `peer-*` / 任意セレクタ等）を使い始めた場合は、tailwind 3 が 7 系の parser で想定どおりのセレクタを生成するかを、E2E かビルド成果物で確かめること。
 
-**修正版が存在しないため対応できないもの**:
+**修正版が存在しないため対応できないもの**: なし。
 
-| 対象 | 経路 | 状況 |
-|---|---|---|
-| `braces`（high, GHSA-vfj7-8cjw-p6xm） | eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch | 修正版が未公開（patched なし）。開発時の lint のみで、入力は自リポジトリの glob パターンに限られる。修正版の公開後に `pnpm update` で追随する |
+以前ここにあった `braces`（high, GHSA-vfj7-8cjw-p6xm。eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch 経由）は、アドバイザリが 2026-10-23 に取り下げられた（issue #193 で確認）。`braces@3.0.3` のまま `pnpm audit` は 0 件。
 
 ---
 
