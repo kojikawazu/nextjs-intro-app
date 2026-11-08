@@ -220,7 +220,7 @@ page.tsx (Server Component: データ取得)
 | 段 | 内容 | 出どころ |
 |---|------|---------|
 | 見出し | `Solving Problems with Technology` | コードの固定文字列（**変更なし**） |
-| 具体 | 「専門はバックエンド開発。…要件定義(検討)から設計、実装、テスト設計、レビューまでの一連の流れを経験しております。」 | `about_data.about_contents[1]` を **About から移動** |
+| 具体 | 「バックエンド開発から始まり、…技術検証から設計、実装、テスト設計、レビューまでの一連の流れを経験しております。更にAI駆動開発の導入に伴い、…」 | `about_data.about_contents[1]` を **About から移動**（文言は json-intro-data-app#66 で更新） |
 | 数値帯 | プロジェクト数 / 使用技術数 / 経歴開始年 | `career_data` から算出（`summarizeCareers`） |
 
 **見出しは `<br />` で折らない。** テキストノードが分かれると見出しのアクセシブル名が `Solving Problemswith Technology` になりうる。折り返しは `max-w-[17ch]` で作る。
