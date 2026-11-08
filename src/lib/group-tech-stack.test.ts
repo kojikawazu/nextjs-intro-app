@@ -4,7 +4,7 @@ import { TECH_CATEGORIES } from '@/types/tech-category';
 import { groupTechStack } from './group-tech-stack';
 
 /**
- * GCS の `career_skill_stack` に実在する技術名の全件（ユニーク 85 / 延べ 116）。
+ * GCS の `career_skill_stack` に実在する技術名の全件（ユニーク 86 / 延べ 117）。
  *
  * **コミット時点のスナップショット。** データ側に技術が追加されてもこの配列は変わらないため、
  * このテストは「いま存在する技術がすべて分類に載っていること」しか保証しない。
@@ -46,6 +46,7 @@ const REAL_TECH_NAMES = [
     'Lambda',
     'M365 Copilot',
     'MSSQL',
+    'Markdown',
     'Maven',
     'Miracle Linux5~8',
     'NFSv3~4',
@@ -98,7 +99,7 @@ const REAL_TECH_NAMES = [
     'グラフィックMW',
 ] as const;
 
-/** 最新案件（美容系口コミサイトの AI 駆動開発）の技術スタック 32 件。並びはデータのまま。 */
+/** 最新案件（美容系口コミサイトの AI 駆動開発）の技術スタック 33 件。並びはデータのまま。 */
 const LATEST_CAREER_STACK = [
     'TypeScript',
     'Nuxt.js',
@@ -125,6 +126,7 @@ const LATEST_CAREER_STACK = [
     'Confluence',
     'JIRA',
     'Google Docs',
+    'Markdown',
     'VSCode',
     'WSL',
     'Slack',
@@ -146,7 +148,7 @@ function groupedAsRecord(stack: readonly string[]): Record<string, string[]> {
 
 describe('groupTechStack', () => {
     // --- 正常系 ---
-    it('最新案件の 32 件を 8 分類へ正しく分ける', () => {
+    it('最新案件の 33 件を 8 分類へ正しく分ける', () => {
         // WSL は Windows Subsystem for Linux であり協働ツールではないため platform に入る。
         // 「Linux を触れる人か」は採用担当者にとって信号になるので、埋もれさせない。
         expect(groupedAsRecord(LATEST_CAREER_STACK)).toEqual({
@@ -163,6 +165,7 @@ describe('groupTechStack', () => {
                 'Confluence',
                 'JIRA',
                 'Google Docs',
+                'Markdown',
                 'VSCode',
                 'Slack',
                 'Google meet',
@@ -260,7 +263,7 @@ describe('groupTechStack', () => {
 
 describe('実データの網羅性', () => {
     // --- 正常系 ---
-    it('実在する 85 技術がすべて分類に載っている（other が 0 件）', () => {
+    it('実在する 86 技術がすべて分類に載っている（other が 0 件）', () => {
         const other = groupTechStack(REAL_TECH_NAMES).find((group) => group.category === 'other');
 
         // 失敗時に「どの技術が漏れたか」が出るよう、件数ではなく中身を比較する。

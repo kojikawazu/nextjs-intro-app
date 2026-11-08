@@ -444,7 +444,7 @@ AiPracticeEntry (<article> + 下罫)
 **進行中バッジは持たない。** `CareerCard` の左罫の色分けは在籍中の案件を際立たせるためのものだが、
 個人開発は「いま動いているか」より「何を作ったか」が主題であり、掲載順で意図を表せる。
 
-**技術スタックは分類しない。** `groupTechStack`（issue #137）は 1 案件あたり最大 32 件を捌く
+**技術スタックは分類しない。** `groupTechStack`（issue #137）は 1 案件あたり最大 33 件を捌く
 仕組みで、数件しか並ばない個人開発では分類ラベルの方が場所を取る。
 
 **スクリーンショットは表示しない。** `next.config.js` が `images: { unoptimized: true }` のため
@@ -1065,7 +1065,7 @@ props に現れ、セクション単体でテストできる。
 
 ### 7.3 技術スタックの分類 (`groupTechStack`)
 
-`src/lib/group-tech-stack.ts`（issue #137）。経歴 1 件の `career_skill_stack`（最大 32 件）を
+`src/lib/group-tech-stack.ts`（issue #137）。経歴 1 件の `career_skill_stack`（最大 33 件）を
 9 区分へ束ねる。
 
 ```text

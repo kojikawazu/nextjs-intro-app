@@ -39,6 +39,8 @@ export const TECH_CATEGORY_LABELS: Readonly<Record<TechCategory, string>> = {
  *   依存として扱い `framework` に寄せた
  * - `Git`: バージョン管理のため `collaboration`（`GitHub` / `GitLab` / `SVN` と同じ枠）
  * - `グラフィックMW`: 名前のとおりミドルウェアのため `platform`
+ * - `Markdown`: ツールではなく記法だが、AI 駆動開発のルール・スキル・ドキュメントを書く手段として
+ *   使っており、`Google Docs` / `Confluence` と同じく `collaboration` に置いた
  *
  * ---- 運用上の注意 ----
  * GCS の JSON に新しい技術が追加されても、この表に無ければ**実行時に黙って
@@ -139,6 +141,7 @@ export const TECH_CATEGORY_BY_NAME: Readonly<Record<string, TechCategory>> = {
     'Google Docs': 'collaboration',
     'Google meet': 'collaboration',
     JIRA: 'collaboration',
+    Markdown: 'collaboration',
     Outlook: 'collaboration',
     RedMine: 'collaboration',
     SVN: 'collaboration',
