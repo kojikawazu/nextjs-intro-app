@@ -4,7 +4,7 @@ import { TECH_CATEGORIES } from '@/types/tech-category';
 import { groupTechStack } from './group-tech-stack';
 
 /**
- * GCS の `career_skill_stack` に実在する技術名の全件（ユニーク 82 / 延べ 113）。
+ * GCS の `career_skill_stack` に実在する技術名の全件（ユニーク 85 / 延べ 116）。
  *
  * **コミット時点のスナップショット。** データ側に技術が追加されてもこの配列は変わらないため、
  * このテストは「いま存在する技術がすべて分類に載っていること」しか保証しない。
@@ -43,7 +43,9 @@ const REAL_TECH_NAMES = [
     'Jest',
     'Keycloak',
     'Laravel',
+    'Lambda',
     'M365 Copilot',
+    'MSSQL',
     'Maven',
     'Miracle Linux5~8',
     'NFSv3~4',
@@ -75,6 +77,7 @@ const REAL_TECH_NAMES = [
     'Tomcat9',
     'Tomcat9/5.5',
     'TypeScript',
+    'Ubuntu',
     'Ubuntu20.04',
     'VMWare',
     'VSCode',
@@ -95,7 +98,7 @@ const REAL_TECH_NAMES = [
     'グラフィックMW',
 ] as const;
 
-/** 最新案件（美容系口コミサイトの AI 駆動開発）の技術スタック 29 件。並びはデータのまま。 */
+/** 最新案件（美容系口コミサイトの AI 駆動開発）の技術スタック 32 件。並びはデータのまま。 */
 const LATEST_CAREER_STACK = [
     'TypeScript',
     'Nuxt.js',
@@ -104,6 +107,8 @@ const LATEST_CAREER_STACK = [
     'PHP',
     'Laravel',
     'Zend framework',
+    'Ubuntu',
+    'MSSQL',
     'GitHub',
     'GitLab',
     'GitHub Copilot',
@@ -116,6 +121,7 @@ const LATEST_CAREER_STACK = [
     'Docker Compose',
     'GitHub Actions',
     'AWS',
+    'Lambda',
     'Confluence',
     'JIRA',
     'Google Docs',
@@ -140,15 +146,15 @@ function groupedAsRecord(stack: readonly string[]): Record<string, string[]> {
 
 describe('groupTechStack', () => {
     // --- 正常系 ---
-    it('最新案件の 29 件を 8 分類へ正しく分ける', () => {
+    it('最新案件の 32 件を 8 分類へ正しく分ける', () => {
         // WSL は Windows Subsystem for Linux であり協働ツールではないため platform に入る。
         // 「Linux を触れる人か」は採用担当者にとって信号になるので、埋もれさせない。
         expect(groupedAsRecord(LATEST_CAREER_STACK)).toEqual({
             language: ['TypeScript', 'PHP'],
             framework: ['Nuxt.js', 'NestJS', 'Ruby on Rails', 'Laravel', 'Zend framework'],
-            platform: ['WSL'],
+            platform: ['Ubuntu', 'MSSQL', 'WSL'],
             testing: ['Jest', 'Vitest', 'Playwright'],
-            infrastructure: ['Docker', 'Docker Compose', 'GitHub Actions', 'AWS'],
+            infrastructure: ['Docker', 'Docker Compose', 'GitHub Actions', 'AWS', 'Lambda'],
             ai: ['GitHub Copilot', 'Claude', 'Gemini'],
             design: ['Clean Architecture', 'DDD'],
             collaboration: [
@@ -254,7 +260,7 @@ describe('groupTechStack', () => {
 
 describe('実データの網羅性', () => {
     // --- 正常系 ---
-    it('実在する 82 技術がすべて分類に載っている（other が 0 件）', () => {
+    it('実在する 85 技術がすべて分類に載っている（other が 0 件）', () => {
         const other = groupTechStack(REAL_TECH_NAMES).find((group) => group.category === 'other');
 
         // 失敗時に「どの技術が漏れたか」が出るよう、件数ではなく中身を比較する。
