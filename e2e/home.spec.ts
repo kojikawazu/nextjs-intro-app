@@ -34,6 +34,18 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         await page.locator('header').getByRole('button', { name: 'Contact' }).click();
         await expect(page.locator('#contact')).toBeInViewport({ timeout: 10_000 });
     });
+
+    test('自己紹介文の年数プレースホルダがサーバー側で数字に置き換わる（issue #198）', async ({
+        page,
+    }) => {
+        await page.goto('/');
+        const about = page.locator('#about');
+
+        // 数字そのものは実行日で変わるため、算出規則の検証はユニットテストに任せる。
+        // ここでは「実データ経路で置き換えが働き、`{career}` が画面に残らない」ことだけを見る。
+        await expect(about.getByText(/エンジニア歴\d+年目/)).toBeVisible();
+        await expect(about).not.toContainText('{career}');
+    });
 });
 
 test.describe('経歴の技術スタック（正常系）', () => {

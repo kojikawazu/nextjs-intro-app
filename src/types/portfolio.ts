@@ -63,8 +63,13 @@ export interface AboutData {
     about_img_url: string;
     /** SNS リンク一覧 */
     sns_list: SNSItem[];
-    /** 自己紹介文。段落ごとに 1 要素へ分割して保持する */
+    /** 自己紹介文。段落ごとに 1 要素へ分割して保持する。`{key}` は `about_year_counters` で置き換わる */
     about_contents: string[];
+    /**
+     * 自己紹介文の `{key}` に差し込む「◯年目」の起点（キー → `YYYY年M月`）。
+     * 任意項目で、無ければ置き換えを行わない（issue #198）。
+     */
+    about_year_counters?: Record<string, string>;
 }
 
 /** 自己紹介セクションに並べる SNS リンク 1 件分のデータ。 */

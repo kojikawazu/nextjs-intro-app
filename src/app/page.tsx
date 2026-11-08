@@ -1,4 +1,6 @@
 import { getPortfolioDataServer } from '@/repositories/portfolio';
+import { fillYearCounters } from '@/lib/about-year-counters';
+import { logWarn } from '@/lib/logger';
 import { HomeClient } from './client';
 
 /**
@@ -27,9 +29,29 @@ export const dynamic = 'force-dynamic';
  * 取得に失敗した場合は例外がそのまま伝播し、`error.tsx` のエラーバウンダリが描画される。
  * ここで握りつぶすと「本文が無いのに 200 が返る」状態になり、検索エンジンに
  * 空ページとしてインデックスされうるため、あえて捕捉しない。
+ *
+ * 自己紹介文の「◯年目」はここで置き換えてから渡す（issue #198）。時刻を読むのをサーバー側の
+ * この 1 箇所に絞ることで、SSR と hydration で値がずれない。`force-dynamic` のため、
+ * 置き換えはリクエストごとに行われ、年数は常にその時点の値になる。
  */
 export default async function HomePage() {
     const portfolioData = await getPortfolioDataServer();
 
-    return <HomeClient portfolioData={portfolioData} />;
+    const { about_contents, about_year_counters } = portfolioData.about_data;
+    const { contents, unresolved } = fillYearCounters(
+        about_contents,
+        about_year_counters,
+        new Date(),
+    );
+    if (unresolved.length > 0) {
+        // データ側の検証（json-intro-data-app の validate-data.py）をすり抜けた場合だけ到達する。
+        logWarn('page: 自己紹介文の年数プレースホルダを解決できなかった', { keys: unresolved });
+    }
+
+    const resolved = {
+        ...portfolioData,
+        about_data: { ...portfolioData.about_data, about_contents: contents },
+    };
+
+    return <HomeClient portfolioData={resolved} />;
 }
