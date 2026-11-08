@@ -220,10 +220,10 @@ page.tsx (Server Component: データ取得)
 | 段 | 内容 | 出どころ |
 |---|------|---------|
 | 見出し | `Solving Problems with Technology` | コードの固定文字列（**変更なし**） |
-| 具体 | 「専門はバックエンド開発。…要件定義(検討)から設計、実装、テスト設計、レビューまでの一連の流れを経験しております。」 | `about_data.about_contents[1]` を **About から移動** |
+| 具体 | 「バックエンド開発から始まり、…技術検証から設計、実装、テスト設計、レビューまでの一連の流れを経験しております。更にAI駆動開発の導入に伴い、…」 | `about_data.about_contents[1]` を **About から移動**（文言は json-intro-data-app#66 で更新） |
 | 数値帯 | プロジェクト数 / 使用技術数 / 経歴開始年 | `career_data` から算出（`summarizeCareers`） |
 
-**見出しは `<br />` で折らない。** テキストノードが分かれると見出しのアクセシブル名が `Solving Problemswith Technology` になりうる。折り返しは `max-w-[17ch]` で作る。
+**見出しは収まる幅では 1 行で出す。** 以前は `max-w-[17ch]` で 2 行に折っていたが、1 行に改めた。入りきらないモバイル幅では自然に折り返し、`text-balance` で 2 行の長さを揃える（「Technology」だけが 2 行目に残らないように）。**`<br />` では折らない。** テキストノードが分かれると見出しのアクセシブル名が `Solving Problemswith Technology` になりうる。
 
 #### 何ができる人かを示す
 
@@ -444,7 +444,7 @@ AiPracticeEntry (<article> + 下罫)
 **進行中バッジは持たない。** `CareerCard` の左罫の色分けは在籍中の案件を際立たせるためのものだが、
 個人開発は「いま動いているか」より「何を作ったか」が主題であり、掲載順で意図を表せる。
 
-**技術スタックは分類しない。** `groupTechStack`（issue #137）は 1 案件あたり最大 30 件を捌く
+**技術スタックは分類しない。** `groupTechStack`（issue #137）は 1 案件あたり最大 33 件を捌く
 仕組みで、数件しか並ばない個人開発では分類ラベルの方が場所を取る。
 
 **スクリーンショットは表示しない。** `next.config.js` が `images: { unoptimized: true }` のため
@@ -1065,7 +1065,7 @@ props に現れ、セクション単体でテストできる。
 
 ### 7.3 技術スタックの分類 (`groupTechStack`)
 
-`src/lib/group-tech-stack.ts`（issue #137）。経歴 1 件の `career_skill_stack`（最大 30 件）を
+`src/lib/group-tech-stack.ts`（issue #137）。経歴 1 件の `career_skill_stack`（最大 33 件）を
 9 区分へ束ねる。
 
 ```text

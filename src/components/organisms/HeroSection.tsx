@@ -24,11 +24,15 @@ export function HeroSection({ lead, summary }: HeroSectionProps) {
     return (
         <section className="container animate-fade-in-up py-10 lg:py-14">
             {/*
-             * 折り返しは <br /> ではなく幅で作る。<br /> を挟むとテキストノードが分かれ、
+             * 収まる幅では 1 行で出す（以前は max-w-[17ch] で 2 行に折っていた）。
+             * 入りきらないモバイル幅では自然に折り返し、text-balance で 2 行の長さを揃えて
+             * 「Technology」だけが 2 行目に残るのを防ぐ。
+             *
+             * <br /> で折らない。<br /> を挟むとテキストノードが分かれ、
              * 見出しのアクセシブル名が「Solving Problemswith Technology」になりうる。
              * e2e/home.spec.ts と error.spec.ts がこの名前で見出しを特定している。
              */}
-            <h1 className="max-w-[17ch] font-serif text-[28px] font-bold leading-snug tracking-wide text-ink sm:text-[34px]">
+            <h1 className="text-balance font-serif text-[28px] font-bold leading-snug tracking-wide text-ink sm:text-[34px]">
                 Solving Problems with Technology
             </h1>
 

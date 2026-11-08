@@ -34,6 +34,18 @@ test.describe('ホーム（正常系：GCS コンテナの実データ経路）'
         await page.locator('header').getByRole('button', { name: 'Contact' }).click();
         await expect(page.locator('#contact')).toBeInViewport({ timeout: 10_000 });
     });
+
+    test('自己紹介文の年数プレースホルダがサーバー側で数字に置き換わる（issue #198）', async ({
+        page,
+    }) => {
+        await page.goto('/');
+        const about = page.locator('#about');
+
+        // 数字そのものは実行日で変わるため、算出規則の検証はユニットテストに任せる。
+        // ここでは「実データ経路で置き換えが働き、`{career}` が画面に残らない」ことだけを見る。
+        await expect(about.getByText(/エンジニア歴\d+年目/)).toBeVisible();
+        await expect(about).not.toContainText('{career}');
+    });
 });
 
 test.describe('経歴の技術スタック（正常系）', () => {
@@ -202,6 +214,43 @@ test.describe('縦の余白リズム', () => {
                 overflow.client,
             );
         }
+    });
+});
+
+test.describe('Hero 見出しの行数', () => {
+    /**
+     * Hero の h1 が何行で描画されているかを返す。
+     *
+     * 行数は CSS からは読めないため、要素の高さを計算済みの line-height で割って求める。
+     * `leading-snug` は px の line-height として解決されるので割り算が成り立つ。
+     *
+     * @param page - Playwright のページ
+     * @returns 描画上の行数（四捨五入）
+     */
+    async function heroHeadingLines(page: import('@playwright/test').Page): Promise<number> {
+        const heading = page.getByRole('heading', { name: 'Solving Problems with Technology' });
+        await expect(heading).toBeVisible();
+
+        return heading.evaluate((element) => {
+            const lineHeight = parseFloat(getComputedStyle(element).lineHeight);
+            return Math.round(element.getBoundingClientRect().height / lineHeight);
+        });
+    }
+
+    test('デスクトップ幅・タブレット幅では 1 行に収まる', async ({ page }) => {
+        for (const width of [1280, 768]) {
+            await page.setViewportSize({ width, height: 900 });
+            await page.goto('/');
+
+            expect(await heroHeadingLines(page), `${width}px で折り返している`).toBe(1);
+        }
+    });
+
+    test('モバイル幅では折り返しても 2 行に収まる', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 800 });
+        await page.goto('/');
+
+        expect(await heroHeadingLines(page)).toBeLessThanOrEqual(2);
     });
 });
 
