@@ -217,6 +217,43 @@ test.describe('縦の余白リズム', () => {
     });
 });
 
+test.describe('Hero 見出しの行数', () => {
+    /**
+     * Hero の h1 が何行で描画されているかを返す。
+     *
+     * 行数は CSS からは読めないため、要素の高さを計算済みの line-height で割って求める。
+     * `leading-snug` は px の line-height として解決されるので割り算が成り立つ。
+     *
+     * @param page - Playwright のページ
+     * @returns 描画上の行数（四捨五入）
+     */
+    async function heroHeadingLines(page: import('@playwright/test').Page): Promise<number> {
+        const heading = page.getByRole('heading', { name: 'Solving Problems with Technology' });
+        await expect(heading).toBeVisible();
+
+        return heading.evaluate((element) => {
+            const lineHeight = parseFloat(getComputedStyle(element).lineHeight);
+            return Math.round(element.getBoundingClientRect().height / lineHeight);
+        });
+    }
+
+    test('デスクトップ幅・タブレット幅では 1 行に収まる', async ({ page }) => {
+        for (const width of [1280, 768]) {
+            await page.setViewportSize({ width, height: 900 });
+            await page.goto('/');
+
+            expect(await heroHeadingLines(page), `${width}px で折り返している`).toBe(1);
+        }
+    });
+
+    test('モバイル幅では折り返しても 2 行に収まる', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 800 });
+        await page.goto('/');
+
+        expect(await heroHeadingLines(page)).toBeLessThanOrEqual(2);
+    });
+});
+
 test.describe('ナビの出し分け', () => {
     // ナビ項目はシードデータ（sample.example.json の navbar_data）の表示名。
     const NAV_ITEMS = ['About', 'Career', 'AI', 'Product', 'Articles', 'Contact'];
